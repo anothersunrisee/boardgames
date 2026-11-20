@@ -102,3 +102,43 @@ Aplikasi mengadopsi estetika **Warm Alabaster Cream & Playful Geometric Mascot U
   - *"Kucing oren sebenarnya adalah alien kiriman galaksi lain yang sedang memata-matai kebodohan manusia."*
 - **Fitur CHAOS CARD:** Tantangan kocak acak saat debat (bicara gaya caleg, dilarang kata 'aku', wajib sebut kata 'CILOK', dll.).
 - **Debate Timer & Audience Voting:** Digital timer per babak + voting audiens instan.
+
+---
+
+### 5. ⚡ Game 05 — Cerdas Cermat Berantai (Chain Quiz Relay)
+- **Top Badge:** `Tim Rantai • Estafet | GAME 05`
+- **Konsep Permainan:**
+  - Pemain dikelompokkan secara acak menjadi tim kecil beranggotakan 3–4 orang.
+  - Setiap anggota tim bergiliran menjawab pertanyaan pengetahuan umum acak dengan tema yang sangat bervariasi (Astronomi, Hukum Tajwid, Biologi, Geografi, Kuliner Nusantara, Pop Culture, dll.).
+  - **Prinsip Estafet Rantai:** Seluruh anggota tim harus menjawab dengan benar secara berurutan. Jika ada 1 orang (bahkan orang terakhir) yang salah, maka rantai putus, tim dinyatakan gagal, dan seluruh tim memperoleh 0 poin (+1 poin per anggota hanya jika semua sukses!).
+  - Dilengkapi kunci jawaban interaktif untuk Host, visual progress node estafet, sound effects, dan tombol acak hukuman jika tim gagal.
+
+---
+
+### 6. 🗑️ Game 06 — Sell Me This Trash! (Absurd Pitching Duel)
+- **Badge Atas:** `Pitch Duel • 45s | GAME 09`
+- **Copywriting Kartu:**
+  *"Sistem acak barang nggak guna (payung bolong?) + pembeli absurd. Adu bacot jualan paling masuk akal!"*
+- **Badge Bawah:** `👥 Duel 1 vs 1 Acak`
+- **Visual & Warna:** Kartu Hijau Lime (`#65A30D`), Pill `#84CC16`, Maskot Berlian/Diamond dengan kacamata hitam & ekspresi smug (`mascotShape: 'diamond'`).
+- **Cara Main:**
+  - Mirip The Devil's Advocate, tapi fokus pada adu pitching jualan produk.
+  - Sistem menggabungkan 1 barang rusak/aneh dengan 1 target pembeli yang sama sekali tidak masuk akal (contoh: *"Jual kipas angin tanpa baling-baling ke astronot di luar angkasa"*).
+  - Tiga fase permainan:
+    1. **Persiapan Ide (15s):** Kedua sales membaca prompt dan merancang strategi marketing paling konyol.
+    2. **Pitching Sales 1 & 2 (35s masing-masing):** Bergantian presentasi meyakinkan audiens di ruangan.
+    3. **Voting Audiens:** Seluruh pemain di ruangan mengetuk layar untuk mem-voting sales yang argumennya paling meyakinkan (+3 poin juara, +1 poin partisipasi, +2 poin jika seri).
+
+---
+
+## 🃏 SHUFFLE CARD HUKUMAN (PARTY PUNISHMENT SYSTEM)
+- Tersedia modal interaktif `<PunishmentModal />` yang dapat dipicu setiap kali ada pemain atau tim yang kalah / gagal di mini-game.
+- Kartu hukuman diacak secara dinamis dengan animasi flip 3D, sound effect, dan tombol kocok ulang (*"Acak Hukuman Lain"*).
+- **Contoh Hukuman Kocak:**
+  - *"Selama 1 game ke depan, kamu ngobrol tapi huruf vokal diganti 'O' semua!"*
+  - *"Selama 1 game ke depan, kamu gaboleh ketawa! Kalau senyum/senyum kecil, wajib reflek pose 'IYUP'!"*
+  - *"Ngomong pakai gaya presenter infotainment gosip TV sambil nunjuk-nunjuk dramatis."*
+  - *"Setiap kali mau bicara, wajib bilang 'Mohon izin Yang Mulia' dengan takzim."*
+  - *"Pura-pura jadi pelayan restoran bintang 5 sombong setiap kali ada yang nanya."*
+  - *"Wajib tirukan gaya mas-mas parkir tiup peluit 'Prit prit mundur terus' tiap ada orang yang berdiri/gerak."*
+

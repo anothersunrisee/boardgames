@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Users } from 'lucide-react';
-import { BlobMascot, type BlobMood, type BlobShape } from './ui/BlobMascot';
+import { BlobMascot, type BlobMood, type BlobShape, type BlobAccessory } from './ui/BlobMascot';
 import { sfx } from '../utils/sound';
 
 export interface GameCardProps {
@@ -18,7 +18,7 @@ export interface GameCardProps {
   mascotMood: BlobMood;
   mascotColor: string;
   mascotAccent: string;
-  mascotAccessory?: 'none' | 'glasses' | 'crown' | 'headband' | 'horns';
+  mascotAccessory?: BlobAccessory;
   onSelect: () => void;
 }
 

@@ -21,6 +21,10 @@ import G4Setup from './pages/game4/G4Setup'
 import G4Match from './pages/game4/G4Match'
 import G4RoundResult from './pages/game4/G4RoundResult'
 import G4Results from './pages/game4/G4Results'
+import G5Play from './pages/game5/G5Play'
+import G5Results from './pages/game5/G5Results'
+import G6Match from './pages/game6/G6Match'
+import G6Results from './pages/game6/G6Results'
 
 export default function App() {
   return (
@@ -55,6 +59,14 @@ export default function App() {
       <Route path="/game4/match"        element={<G4Match />} />
       <Route path="/game4/round-result" element={<G4RoundResult />} />
       <Route path="/game4/results"      element={<G4Results />} />
+
+      {/* Game 5: Cerdas Cermat Berantai */}
+      <Route path="/game5/play"    element={<G5Play />} />
+      <Route path="/game5/results" element={<G5Results />} />
+
+      {/* Game 6: Sell Me This Trash! */}
+      <Route path="/game6/match"   element={<G6Match />} />
+      <Route path="/game6/results" element={<G6Results />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

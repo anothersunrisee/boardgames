@@ -9,7 +9,8 @@ export type BlobShape =
   | 'dome'       // Arch / Ghost shape (Headspace Sensitive)
   | 'flame'      // Organic fire blob (Habitz streak / Devil's Advocate)
   | 'circle'     // Classic round buddy
-  | 'pentagon';  // Habitz pentagon buddy
+  | 'pentagon'   // Habitz pentagon buddy
+  | 'diamond';   // Sharp & playful diamond mascot (Sell Me This Trash)
 
 export type BlobMood =
   | 'happy'      // Closed curved happy eyes
@@ -18,7 +19,10 @@ export type BlobMood =
   | 'cheeky'     // Winking / mischievous grin
   | 'dizzy'      // One spiral eye + one dot eye
   | 'confident'  // Cool glasses / raised brow
-  | 'spicy';     // Devilish eyebrows + smirk
+  | 'spicy'      // Devilish eyebrows + smirk
+  | 'smug';      // Sales smug face + cheeky smirk
+
+export type BlobAccessory = 'none' | 'glasses' | 'sunglasses' | 'crown' | 'headband' | 'horns';
 
 interface BlobMascotProps {
   shape?: BlobShape;
@@ -28,7 +32,7 @@ interface BlobMascotProps {
   size?: number;
   className?: string;
   floating?: boolean;
-  accessory?: 'none' | 'glasses' | 'crown' | 'headband' | 'horns';
+  accessory?: BlobAccessory;
 }
 
 export const BlobMascot: React.FC<BlobMascotProps> = ({
@@ -89,6 +93,13 @@ export const BlobMascot: React.FC<BlobMascotProps> = ({
         return (
           <path
             d="M66 15L104 42C109 45 111 51 109 57L94 98C92 103 87 107 81 107H39C33 107 28 103 26 98L11 57C9 51 11 45 16 42L54 15C58 12 62 12 66 15Z"
+            fill={color}
+          />
+        );
+      case 'diamond':
+        return (
+          <path
+            d="M60 12C63 12 66 14 68 18L106 54C111 58 111 62 106 66L68 102C66 106 63 108 60 108C57 108 54 106 52 102L14 66C9 62 9 58 14 54L52 18C54 14 57 12 60 12Z"
             fill={color}
           />
         );
@@ -172,6 +183,21 @@ export const BlobMascot: React.FC<BlobMascotProps> = ({
             <path d="M54 73C56 78 64 78 66 73" fill="#FF7597" />
           </g>
         );
+      case 'smug':
+        return (
+          <g>
+            {/* Raised left eyebrow, confident right brow */}
+            <path d="M36 43C42 38 49 40 53 45" stroke="#1E1E24" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+            <path d="M68 47L82 46" stroke="#1E1E24" strokeWidth="4.5" strokeLinecap="round" />
+            {/* Half-lidded confident eyes */}
+            <ellipse cx="46" cy="56" rx="9" ry="11" fill="#FFFFFF" />
+            <circle cx="48" cy="56" r="4.5" fill="#1E1E24" />
+            <ellipse cx="74" cy="56" rx="9" ry="11" fill="#FFFFFF" />
+            <circle cx="72" cy="56" r="4.5" fill="#1E1E24" />
+            {/* Cheeky side smirk */}
+            <path d="M48 74C56 79 68 78 76 71" stroke="#1E1E24" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+          </g>
+        );
       case 'confident':
       case 'excited':
       default:
@@ -208,6 +234,17 @@ export const BlobMascot: React.FC<BlobMascotProps> = ({
             <rect x="31" y="43" width="26" height="20" rx="5" fill="#FFFFFF" fillOpacity="0.2" />
             <rect x="63" y="43" width="26" height="20" rx="5" fill="#FFFFFF" fillOpacity="0.2" />
             <line x1="57" y1="52" x2="63" y2="52" />
+          </g>
+        );
+      case 'sunglasses':
+        return (
+          <g fill="#1E1E24" stroke="#1E1E24" strokeWidth="2">
+            <path d="M28 44H58V60C58 64 54 68 48 68H38C32 68 28 64 28 60V44Z" />
+            <path d="M62 44H92V60C92 64 88 68 82 68H72C66 68 62 64 62 60V44Z" />
+            <line x1="56" y1="48" x2="64" y2="48" stroke="#1E1E24" strokeWidth="4" />
+            {/* Reflection sheen */}
+            <line x1="33" y1="48" x2="43" y2="64" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.6" />
+            <line x1="67" y1="48" x2="77" y2="64" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.6" />
           </g>
         );
       case 'crown':

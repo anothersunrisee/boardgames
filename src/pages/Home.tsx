@@ -9,7 +9,7 @@ import { ScoreBoard } from '../components/ScoreBoard';
 import { useGameStore } from '../store/useGameStore';
 import { sfx } from '../utils/sound';
 
-type GameId = 'game1' | 'game2' | 'game3' | 'game4';
+type GameId = 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6';
 
 interface GameItem extends Omit<GameCardProps, 'onSelect'> {
   id: GameId;
@@ -81,6 +81,38 @@ const GAMES: GameItem[] = [
     mascotAccent: '#B53B10',
     mascotAccessory: 'horns',
   },
+  {
+    id: 'game5',
+    route: '/game5/play',
+    numberBadge: 'GAME 05',
+    categoryPill: 'Tim Rantai • Estafet',
+    title: 'Chain Quiz Relay!',
+    description: 'Cerdas cermat berantai tim 3–4 orang acak. 1 orang salah, rantai putus dan poin hangus!',
+    playerCount: 'Tim 3–4 Orang Acak',
+    bgColor: '#7C3AED',      // Purple Violet
+    pillColor: '#A78BFA',
+    mascotShape: 'pentagon',
+    mascotMood: 'curious',
+    mascotColor: '#C4B5FD',
+    mascotAccent: '#5B21B6',
+    mascotAccessory: 'headband',
+  },
+  {
+    id: 'game6',
+    route: '/game6/match',
+    numberBadge: 'GAME 09',
+    categoryPill: 'Pitch Duel • 45s',
+    title: 'Sell Me This Trash!',
+    description: 'Sistem acak barang nggak guna (payung bolong?) + pembeli absurd. Adu bacot jualan paling masuk akal!',
+    playerCount: '👥 Duel 1 vs 1 Acak',
+    bgColor: '#65A30D',      // Lime Green
+    pillColor: '#84CC16',
+    mascotShape: 'diamond',
+    mascotMood: 'smug',
+    mascotColor: '#BEF264',
+    mascotAccent: '#3F6212',
+    mascotAccessory: 'sunglasses',
+  },
 ];
 
 export const Home: React.FC = () => {
@@ -93,6 +125,8 @@ export const Home: React.FC = () => {
     autoStartGame2,
     autoStartGame3,
     autoStartGame4,
+    autoStartGame5,
+    autoStartGame6,
     resetRoomScores,
   } = useGameStore();
 
@@ -123,6 +157,20 @@ export const Home: React.FC = () => {
     } else if (gameId === 'game4') {
       autoStartGame4();
       navigate('/game4/match');
+    } else if (gameId === 'game5') {
+      const res = autoStartGame5();
+      if (res && !res.success) {
+        alert(res.message);
+        return;
+      }
+      navigate('/game5/play');
+    } else if (gameId === 'game6') {
+      const res = autoStartGame6();
+      if (res && !res.success) {
+        alert(res.message);
+        return;
+      }
+      navigate('/game6/match');
     }
   };
 
