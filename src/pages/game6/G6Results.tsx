@@ -16,8 +16,16 @@ import { sfx } from '../../utils/sound';
 
 export default function G6Results() {
   const navigate = useNavigate();
-  const { players, g6Matches, autoStartGame6 } = useGameStore();
+  const { players, g6Matches, autoStartGame6, g6UndoMatch } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
+
+  const handleUndo = () => {
+    const success = g6UndoMatch();
+    if (success) {
+      sfx.playPop();
+      navigate('/game6/match');
+    }
+  };
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const winner = sortedPlayers[0];
@@ -60,10 +68,20 @@ export default function G6Results() {
             <ArrowLeft className="w-4 h-4" />
             <span>Pilih Game Lain</span>
           </button>
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#65A30D] text-white font-bold tracking-wide shadow-xs flex items-center gap-1.5">
-            <Trophy className="w-3.5 h-3.5" />
-            <span>Pitch Duel Selesai</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleUndo}
+              className="text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2] px-2.5 py-1 rounded-full border border-[#DC2626]/20 transition cursor-pointer"
+              title="Undo hasil match terakhir"
+            >
+              ↩️ Undo Match
+            </button>
+            <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#65A30D] text-white font-bold tracking-wide shadow-xs flex items-center gap-1.5">
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Pitch Duel Selesai</span>
+            </span>
+          </div>
         </div>
 
         {/* Mascot Winner Banner */}
@@ -247,7 +265,7 @@ export default function G6Results() {
         targetPlayers={bottom3}
       />
 
-      <HostUtilityBar />
+      <HostUtilityBar onUndo={handleUndo} />
     </div>
   );
 }

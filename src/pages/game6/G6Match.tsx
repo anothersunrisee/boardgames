@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Plus, ThumbsUp, Sparkles } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, ThumbsUp, Sparkles, Shuffle } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -24,6 +24,7 @@ export default function G6Match() {
     g6UpdateMatch,
     g6NextMatch,
     addScore,
+    g6ShuffleItem,
   } = useGameStore();
 
   const match = g6Matches[g6CurrentMatchIndex];
@@ -36,6 +37,20 @@ export default function G6Match() {
   const [showPunishment, setShowPunishment] = useState(false);
   const [loserName, setLoserName] = useState('');
   const timerRef = useRef<number | null>(null);
+
+  const handleShuffleItem = () => {
+    const newItem = g6ShuffleItem();
+    if (newItem) {
+      sfx.playPop();
+    }
+  };
+
+  const handleUndoStage = () => {
+    sfx.playPop();
+    if (stage === 'pitchA') setStage('prep');
+    else if (stage === 'pitchB') setStage('pitchA');
+    else if (stage === 'voting') setStage('pitchB');
+  };
 
   const playerA = players.find((p) => p.id === match?.playerAId);
   const playerB = players.find((p) => p.id === match?.playerBId);
@@ -153,13 +168,28 @@ export default function G6Match() {
       badge="GAME 06 • PITCH DUEL"
       badgeColor="#65A30D"
       activeRoundLabel={`Pitch Match ${match.matchNumber}/${g6Matches.length}`}
+      onShuffle={handleShuffleItem}
+      shuffleLabel="Ganti Barang"
+      onUndo={stage !== 'prep' ? handleUndoStage : undefined}
+      undoLabel="Stage Lalu"
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
         {/* Pitch Item & Absurd Buyer Banner */}
         <div className="rounded-[32px] bg-gradient-to-b from-[#65A30D] to-[#4D7C0F] text-white p-6 md:p-8 shadow-[0_12px_28px_rgba(101,163,13,0.25)] border-2 border-[#3F6212]/30 mb-5 relative overflow-hidden text-center">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider mb-2.5 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#BEF264]" />
-            <span>SELL ME THIS TRASH!</span>
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#BEF264]" />
+              <span>SELL ME THIS TRASH!</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleShuffleItem}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white font-display text-xs font-bold transition cursor-pointer"
+              title="Ganti barang dan target pembeli baru"
+            >
+              <Shuffle className="w-3 h-3 text-[#BEF264]" />
+              <span>Ganti Barang & Target</span>
+            </button>
           </div>
 
           <h2 className="font-display text-2xl md:text-3xl font-bold leading-snug">
@@ -417,7 +447,10 @@ export default function G6Match() {
       />
 
       <div className="block lg:hidden">
-        <HostUtilityBar />
+        <HostUtilityBar
+          onShuffle={handleShuffleItem}
+          onUndo={stage !== 'prep' ? handleUndoStage : undefined}
+        />
       </div>
     </GameDesktopLayout>
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, RotateCcw, Plus, Sparkles, Check, X, Trophy, ArrowRight } from 'lucide-react'
+import { Play, Pause, RotateCcw, Plus, Sparkles, Check, X, Trophy, ArrowRight, Shuffle } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { pickRandomCategories, type Category } from '../../data/game1-categories'
 import { Button } from '../../components/ui/Button'
@@ -17,7 +17,7 @@ type RoundPhase = 'timer' | 'scoring'
 
 export default function G1Round() {
   const navigate = useNavigate()
-  const { players, g1CurrentRound, g1UsedCategoryIds, g1NextRound, addScore } = useGameStore()
+  const { players, g1CurrentRound, g1UsedCategoryIds, g1NextRound, addScore, g1ShuffleCategory } = useGameStore()
 
   const [category, setCategory] = useState<Category | null>(null)
   const [phase, setPhase] = useState<RoundPhase>('timer')
@@ -25,6 +25,22 @@ export default function G1Round() {
   const [isTimerRunning, setIsTimerRunning] = useState(true)
   const [failedPlayerIds, setFailedPlayerIds] = useState<string[]>([])
   const timerRef = useRef<number | null>(null)
+
+  const handleShuffleCategory = () => {
+    const newCat = g1ShuffleCategory()
+    if (newCat) {
+      sfx.playPop()
+      setCategory(newCat)
+    }
+  }
+
+  const handleUndoScoring = () => {
+    sfx.playPop()
+    setPhase('timer')
+    setTimeLeft(30)
+    setIsTimerRunning(false)
+    setFailedPlayerIds([])
+  }
 
   // Pick category on mount or when round changes
   useEffect(() => {
@@ -108,13 +124,30 @@ export default function G1Round() {
       badge="GAME 01 • SAME BRAIN"
       badgeColor="#158467"
       activeRoundLabel={`Ronde ${g1CurrentRound} / 10`}
+      onShuffle={phase === 'timer' ? handleShuffleCategory : undefined}
+      shuffleLabel="Ganti Kategori"
+      onUndo={phase === 'scoring' ? handleUndoScoring : undefined}
+      undoLabel="Undo ke Timer"
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
         {/* Category Card */}
         <div className="rounded-[28px] bg-[#158467] text-white p-6 md:p-8 mb-5 shadow-[0_8px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#5CE6C0]" />
-            <span>Kategori Pertanyaan</span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-[#5CE6C0]" />
+              <span>Kategori Pertanyaan</span>
+            </div>
+            {phase === 'timer' && (
+              <button
+                type="button"
+                onClick={handleShuffleCategory}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white font-display text-xs font-bold transition cursor-pointer"
+                title="Ganti topik kategori baru"
+              >
+                <Shuffle className="w-3 h-3 text-[#FBBF24]" />
+                <span>Ganti Kategori</span>
+              </button>
+            )}
           </div>
           <h2 className="font-display text-2xl md:text-3xl font-bold leading-snug">
             "{category.prompt}"

@@ -26,8 +26,9 @@ export default function G5Results() {
     sfx.playFanfare();
   }, []);
 
-  const failedTeams = g5Teams.filter((t) => t.isFailed);
-  const failingTeam = failedTeams[0] || g5Teams[g5Teams.length - 1];
+  // Cari 1 tim terbawah untuk hukuman tim
+  const sortedTeams = [...g5Teams].sort((a, b) => (a.teamScore || 0) - (b.teamScore || 0));
+  const failingTeam = sortedTeams[0] || g5Teams[0];
   const losingTeamMembers = failingTeam ? players.filter((p) => failingTeam.memberIds.includes(p.id)) : [];
 
   return (
@@ -112,18 +113,18 @@ export default function G5Results() {
                 <div
                   key={team.id}
                   className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                    team.isPassed
+                    (team.correctCount || 0) >= 3
                       ? 'bg-[#ECFDF5] border-[#12B76A]/40 shadow-xs'
                       : 'bg-[#FFF1F2] border-[#F04438]/30 shadow-xs'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${
-                        team.isPassed ? 'bg-[#12B76A]' : 'bg-[#F04438]'
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs ${
+                        (team.correctCount || 0) >= 3 ? 'bg-[#12B76A]' : 'bg-[#F04438]'
                       }`}
                     >
-                      {team.isPassed ? (
+                      {(team.correctCount || 0) >= 3 ? (
                         <Check className="w-4 h-4 stroke-[3]" />
                       ) : (
                         <X className="w-4 h-4 stroke-[3]" />
@@ -138,15 +139,15 @@ export default function G5Results() {
                   <div className="text-right">
                     <span
                       className={`font-display text-xs font-black px-3 py-1 rounded-full inline-flex items-center gap-1 ${
-                        team.isPassed
+                        (team.correctCount || 0) >= 3
                           ? 'bg-[#12B76A] text-white'
                           : 'bg-[#F04438] text-white'
                       }`}
                     >
-                      {team.isPassed ? 'LULUS (+6 pt)' : 'GAGAL (-2 pt)'}
+                      {team.correctCount || 0}/4 Benar
                     </span>
                     <p className="text-[10px] font-bold text-[#64616C] mt-0.5">
-                      {team.isPassed ? '10 Poin Tim' : '0 Poin Tim'}
+                      {team.teamScore || (team.correctCount || 0) * 3} Poin Tim
                     </p>
                   </div>
                 </div>

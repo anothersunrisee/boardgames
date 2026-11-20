@@ -23,12 +23,21 @@ export default function G4RoundResult() {
     g4AddFinalMatch,
     g4EnableChaos,
     g4UsedTopicIds,
+    g4UndoMatch,
   } = useGameStore()
 
   const [showPunishment, setShowPunishment] = useState(false)
   const [loserName, setLoserName] = useState('')
 
   const match: DebateMatch | undefined = g4Matches[g4CurrentMatchIndex]
+
+  const handleUndo = () => {
+    const success = g4UndoMatch()
+    if (success) {
+      sfx.playPop()
+      navigate('/game4/match')
+    }
+  }
 
   useEffect(() => {
     sfx.playSuccess()
@@ -100,9 +109,19 @@ export default function G4RoundResult() {
             <span>Menu Utama</span>
           </button>
 
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#EC5A29] text-white font-bold tracking-wide">
-            {isFinalMatch ? 'Grand Final' : `Match ${match.matchNumber} / ${g4Matches.length}`}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleUndo}
+              className="text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2] px-2.5 py-1 rounded-full border border-[#DC2626]/20 transition cursor-pointer"
+              title="Undo hasil duel ini dan kembali ke panggung debat"
+            >
+              ↩️ Undo Duel
+            </button>
+            <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#EC5A29] text-white font-bold tracking-wide">
+              {isFinalMatch ? 'Grand Final' : `Match ${match.matchNumber} / ${g4Matches.length}`}
+            </span>
+          </div>
         </div>
 
         {/* Match Result Banner */}
@@ -283,7 +302,7 @@ export default function G4RoundResult() {
         loserName={loserName}
       />
 
-      <HostUtilityBar />
+      <HostUtilityBar onUndo={handleUndo} />
     </div>
   )
 }

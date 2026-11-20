@@ -1,9 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Category } from '../data/game1-categories';
+import { CATEGORIES as G1_CATEGORIES, type Category } from '../data/game1-categories';
 import { getRandomItems } from '../data/game2-items';
 import { WORD_CATEGORIES } from '../data/game3-words';
-import { getRandomTopic, getRandomChaosCard, type DebateTopic } from '../data/game4-topics';
+import {
+  DEBATE_TOPICS,
+  getRandomTopic,
+  getRandomChaosCard,
+  type DebateTopic,
+} from '../data/game4-topics';
 import { getRandomTriviaChain, type TriviaQuestion } from '../data/game5-questions';
 import { getRandomPitchItem, type PitchItem } from '../data/game6-pitches';
 
@@ -77,14 +82,25 @@ export type DebateMatch = {
 
 // ─── Game 5 Types (Cerdas Cermat Berantai) ───────────────────────────────────
 
+export type G5RoundHistory = {
+  roundIdx: number;
+  memberId: string;
+  isCorrect: boolean;
+  question: TriviaQuestion;
+};
+
 export type G5Team = {
   id: string;
   name: string;
   memberIds: string[];
   questions: TriviaQuestion[];
   currentMemberIdx: number;
+  roundHistory: G5RoundHistory[];
+  punishedMemberIds: string[];
+  correctCount: number;
   isPassed: boolean;
   isFailed: boolean;
+  isTeamFinished: boolean;
   teamScore?: number;
 };
 
@@ -143,6 +159,8 @@ interface GameStore {
   g1UsedCategoryIds: number[];
   g1AddRound: (round: G1Round) => void;
   g1NextRound: () => void;
+  g1ShuffleCategory: () => Category;
+  g1UndoRound: () => boolean;
   g1Reset: () => void;
 
   // ── Game 2 State ──
@@ -158,6 +176,8 @@ interface GameStore {
   g2SetSlots: (slots: G2GirlSlot[]) => void;
   g2UpdateSlot: (index: number, slot: G2GirlSlot) => void;
   g2NextSlot: () => void;
+  g2ShuffleItem: () => string | null;
+  g2UndoDecision: () => boolean;
   g2Reset: () => void;
 
   // ── Game 3 State ──
@@ -173,6 +193,8 @@ interface GameStore {
   g3SetSlots: (slots: G3BoySlot[]) => void;
   g3UpdateSlot: (index: number, slot: G3BoySlot) => void;
   g3NextSlot: () => void;
+  g3ShuffleItem: () => string | null;
+  g3UndoDecision: () => boolean;
   g3Reset: () => void;
 
   // ── Game 4 State ──
@@ -185,13 +207,23 @@ interface GameStore {
   g4UpdateMatch: (index: number, match: DebateMatch) => void;
   g4NextMatch: () => void;
   g4AddFinalMatch: (match: DebateMatch) => void;
+  g4ShuffleTopic: () => DebateTopic | null;
+  g4ShuffleChaos: () => string | null;
+  g4UndoMatch: () => boolean;
   g4Reset: () => void;
 
   // ── Game 5 State (Cerdas Cermat Berantai) ──
   g5Teams: G5Team[];
   g5CurrentTeamIndex: number;
   g5UsedQuestionIds: number[];
-  g5RecordMemberAnswer: (isCorrect: boolean) => { isChainBroken: boolean; isTeamPassed: boolean };
+  g5RecordMemberAnswer: (isCorrect: boolean) => {
+    isTeamFinished: boolean;
+    isCorrect: boolean;
+    roundNum: number;
+    memberId: string;
+  };
+  g5UndoAnswer: () => boolean;
+  g5ShuffleCurrentQuestion: () => TriviaQuestion | null;
   g5NextTeam: () => void;
   g5ReshuffleTeams: () => void;
   g5SetTeams: (teams: G5Team[]) => void;
@@ -202,6 +234,8 @@ interface GameStore {
   g6CurrentMatchIndex: number;
   g6UpdateMatch: (index: number, match: G6Match) => void;
   g6NextMatch: () => void;
+  g6ShuffleItem: () => PitchItem | null;
+  g6UndoMatch: () => boolean;
   g6Reset: () => void;
 
   // ── Full Reset ──
@@ -462,8 +496,13 @@ export const useGameStore = create<GameStore>()(
         memberIds: members.map((m) => m.id),
         questions,
         currentMemberIdx: 0,
+        roundHistory: [],
+        punishedMemberIds: [],
+        correctCount: 0,
         isPassed: false,
         isFailed: false,
+        isTeamFinished: false,
+        teamScore: 0,
       });
     });
 
@@ -530,6 +569,28 @@ export const useGameStore = create<GameStore>()(
     })),
   g1NextRound: () =>
     set((state) => ({ g1CurrentRound: state.g1CurrentRound + 1 })),
+  g1ShuffleCategory: () => {
+    const { g1UsedCategoryIds } = get();
+    const available = G1_CATEGORIES.filter((c) => !g1UsedCategoryIds.includes(c.id));
+    const pool = available.length > 0 ? available : G1_CATEGORIES;
+    const picked = pool[Math.floor(Math.random() * pool.length)];
+    return picked;
+  },
+  g1UndoRound: () => {
+    const { g1Rounds, addScore } = get();
+    if (g1Rounds.length === 0) return false;
+    const lastRound = g1Rounds[g1Rounds.length - 1];
+    lastRound.answers.forEach((ans) => {
+      if (ans.isUnique) {
+        addScore(ans.playerId, -3);
+      }
+    });
+    set((state) => ({
+      g1Rounds: state.g1Rounds.slice(0, -1),
+      g1CurrentRound: Math.max(1, state.g1CurrentRound - 1),
+    }));
+    return true;
+  },
   g1Reset: () =>
     set({ g1Rounds: [], g1CurrentRound: 1, g1UsedCategoryIds: [] }),
 
@@ -549,6 +610,43 @@ export const useGameStore = create<GameStore>()(
     set((state) => ({ g2GirlWins: state.g2GirlWins + 1 })),
   incrementG2BoyWins: () =>
     set((state) => ({ g2BoyWins: state.g2BoyWins + 1 })),
+  g2ShuffleItem: () => {
+    const { g2Slots, g2CurrentSlotIndex } = get();
+    if (!g2Slots[g2CurrentSlotIndex]) return null;
+    const newItem = getRandomItems(1)[0] || 'Lip Tint';
+    const updated = [...g2Slots];
+    updated[g2CurrentSlotIndex] = {
+      ...updated[g2CurrentSlotIndex],
+      secretItem: newItem,
+    };
+    set({ g2Slots: updated });
+    return newItem;
+  },
+  g2UndoDecision: () => {
+    const { g2Slots, g2CurrentSlotIndex, addScore } = get();
+    const targetIdx = Math.min(g2CurrentSlotIndex, g2Slots.length - 1);
+    const slot = g2Slots[targetIdx];
+    if (!slot) return false;
+
+    const hasBoyCorrect = slot.boyGuesses?.some((g) => g.correct);
+    if (hasBoyCorrect) {
+      set((s) => ({ g2BoyWins: Math.max(0, s.g2BoyWins - 1) }));
+    } else {
+      addScore(slot.playerId, -4);
+      set((s) => ({ g2GirlWins: Math.max(0, s.g2GirlWins - 1) }));
+    }
+
+    const updated = [...g2Slots];
+    updated[targetIdx] = {
+      ...slot,
+      boyGuesses: [],
+    };
+    set({
+      g2Slots: updated,
+      g2CurrentSlotIndex: targetIdx,
+    });
+    return true;
+  },
   g2Reset: () =>
     set({ g2GirlPlayers: [], g2BoyPlayers: [], g2Slots: [], g2CurrentSlotIndex: 0, g2GirlWins: 0, g2BoyWins: 0 }),
 
@@ -568,6 +666,45 @@ export const useGameStore = create<GameStore>()(
     set((state) => ({ g3BoyWins: state.g3BoyWins + 1 })),
   incrementG3GirlWins: () =>
     set((state) => ({ g3GirlWins: state.g3GirlWins + 1 })),
+  g3ShuffleItem: () => {
+    const { g3Slots, g3CurrentSlotIndex } = get();
+    if (!g3Slots[g3CurrentSlotIndex]) return null;
+    const randomCategory = WORD_CATEGORIES[Math.floor(Math.random() * WORD_CATEGORIES.length)];
+    const randomWord = randomCategory.words[Math.floor(Math.random() * randomCategory.words.length)];
+    const updated = [...g3Slots];
+    updated[g3CurrentSlotIndex] = {
+      ...updated[g3CurrentSlotIndex],
+      secretWord: randomWord,
+      category: randomCategory.label,
+    };
+    set({ g3Slots: updated });
+    return randomWord;
+  },
+  g3UndoDecision: () => {
+    const { g3Slots, g3CurrentSlotIndex, addScore } = get();
+    const targetIdx = Math.min(g3CurrentSlotIndex, g3Slots.length - 1);
+    const slot = g3Slots[targetIdx];
+    if (!slot) return false;
+
+    const hasGirlCorrect = slot.girlGuesses?.some((g) => g.correct);
+    if (hasGirlCorrect) {
+      set((s) => ({ g3GirlWins: Math.max(0, s.g3GirlWins - 1) }));
+    } else {
+      addScore(slot.playerId, -4);
+      set((s) => ({ g3BoyWins: Math.max(0, s.g3BoyWins - 1) }));
+    }
+
+    const updated = [...g3Slots];
+    updated[targetIdx] = {
+      ...slot,
+      girlGuesses: [],
+    };
+    set({
+      g3Slots: updated,
+      g3CurrentSlotIndex: targetIdx,
+    });
+    return true;
+  },
   g3Reset: () =>
     set({ g3BoyPlayers: [], g3GirlPlayers: [], g3Slots: [], g3CurrentSlotIndex: 0, g3BoyWins: 0, g3GirlWins: 0 }),
 
@@ -594,6 +731,66 @@ export const useGameStore = create<GameStore>()(
       g4CurrentMatchIndex: state.g4Matches.length,
       g4UsedTopicIds: [...state.g4UsedTopicIds, match.topic.id],
     })),
+  g4ShuffleTopic: () => {
+    const { g4Matches, g4CurrentMatchIndex, g4UsedTopicIds } = get();
+    if (!g4Matches[g4CurrentMatchIndex]) return null;
+    const available = DEBATE_TOPICS.filter((t: DebateTopic) => !g4UsedTopicIds.includes(t.id));
+    const pool = available.length > 0 ? available : DEBATE_TOPICS;
+    const newTopic = pool[Math.floor(Math.random() * pool.length)];
+    const updated = [...g4Matches];
+    updated[g4CurrentMatchIndex] = {
+      ...updated[g4CurrentMatchIndex],
+      topic: newTopic,
+    };
+    set({
+      g4Matches: updated,
+      g4UsedTopicIds: [...g4UsedTopicIds, newTopic.id],
+    });
+    return newTopic;
+  },
+  g4ShuffleChaos: () => {
+    const { g4Matches, g4CurrentMatchIndex } = get();
+    if (!g4Matches[g4CurrentMatchIndex]) return null;
+    const newChaosA = getRandomChaosCard();
+    const newChaosB = getRandomChaosCard();
+    const updated = [...g4Matches];
+    updated[g4CurrentMatchIndex] = {
+      ...updated[g4CurrentMatchIndex],
+      chaosCardA: newChaosA,
+      chaosCardB: newChaosB,
+    };
+    set({ g4Matches: updated });
+    return newChaosA;
+  },
+  g4UndoMatch: () => {
+    const { g4Matches, g4CurrentMatchIndex, addScore } = get();
+    const targetIdx = g4Matches[g4CurrentMatchIndex]?.isCompleted
+      ? g4CurrentMatchIndex
+      : Math.max(0, g4CurrentMatchIndex - 1);
+    const match = g4Matches[targetIdx];
+    if (!match || !match.isCompleted) return false;
+
+    // Rollback scores
+    if (match.winnerId) {
+      addScore(match.winnerId, -8);
+      const loserId = match.winnerId === match.playerAId ? match.playerBId : match.playerAId;
+      addScore(loserId, -2);
+    }
+
+    const updated = [...g4Matches];
+    updated[targetIdx] = {
+      ...match,
+      winnerId: undefined,
+      votesA: 0,
+      votesB: 0,
+      isCompleted: false,
+    };
+    set({
+      g4Matches: updated,
+      g4CurrentMatchIndex: targetIdx,
+    });
+    return true;
+  },
   g4Reset: () =>
     set({
       g4Players: [],
@@ -607,60 +804,130 @@ export const useGameStore = create<GameStore>()(
   g5RecordMemberAnswer: (isCorrect: boolean) => {
     const { g5Teams, g5CurrentTeamIndex, addScore } = get();
     const currentTeam = g5Teams[g5CurrentTeamIndex];
-    if (!currentTeam) return { isChainBroken: true, isTeamPassed: false };
-
-    const totalQuestions = currentTeam.questions.length || 4; // WAJIB 4 seri pertanyaan berantai
-    const nextIdx = currentTeam.currentMemberIdx + 1;
-
-    if (!isCorrect) {
-      // Rantai putus! Tim gagal dapat poin (penalti -2 per anggota)
-      const updatedTeams = [...g5Teams];
-      updatedTeams[g5CurrentTeamIndex] = {
-        ...currentTeam,
-        isFailed: true,
-        isPassed: false,
-        teamScore: 0,
-      };
-      set({ g5Teams: updatedTeams });
-
-      // Potong -2 poin dari akumulasi skor perorangan room tiap anggota tim
-      currentTeam.memberIds.forEach((id) => {
-        addScore(id, -2);
-      });
-
-      return { isChainBroken: true, isTeamPassed: false };
+    if (!currentTeam) {
+      return { isTeamFinished: false, isCorrect: false, roundNum: 0, memberId: '' };
     }
 
-    // Jawaban benar
-    if (nextIdx >= totalQuestions) {
-      // Semua 4 pertanyaan berantai dijawab benar! Tim lulus! (+6 per anggota, 10 poin tim)
-      const updatedTeams = [...g5Teams];
-      updatedTeams[g5CurrentTeamIndex] = {
-        ...currentTeam,
-        currentMemberIdx: nextIdx,
-        isPassed: true,
-        isFailed: false,
-        teamScore: 10,
-      };
-      set({ g5Teams: updatedTeams });
+    const roundIdx = currentTeam.currentMemberIdx;
+    const memberIndexInTeam = roundIdx % currentTeam.memberIds.length;
+    const memberId = currentTeam.memberIds[memberIndexInTeam];
+    const question = currentTeam.questions[roundIdx] || currentTeam.questions[0];
 
-      // Berikan +6 poin ke akumulasi skor perorangan room tiap anggota tim
-      currentTeam.memberIds.forEach((id) => {
-        addScore(id, 6);
-      });
+    const updatedHistory: G5RoundHistory = {
+      roundIdx,
+      memberId,
+      isCorrect,
+      question,
+    };
 
-      return { isChainBroken: false, isTeamPassed: true };
+    let nextCorrectCount = currentTeam.correctCount || 0;
+    const nextPunishedMemberIds = [...(currentTeam.punishedMemberIds || [])];
+
+    if (isCorrect) {
+      nextCorrectCount += 1;
+      // +3 poin per individu untuk jawaban benar
+      addScore(memberId, 3);
+    } else {
+      // 1 orang yang salah mendapat hukuman perorangan
+      if (!nextPunishedMemberIds.includes(memberId)) {
+        nextPunishedMemberIds.push(memberId);
+      }
     }
 
-    // Lanjut ke pertanyaan berikutnya dalam rantai
+    const nextIdx = roundIdx + 1;
+    const isTeamFinished = nextIdx >= 4;
+
     const updatedTeams = [...g5Teams];
     updatedTeams[g5CurrentTeamIndex] = {
       ...currentTeam,
       currentMemberIdx: nextIdx,
+      roundHistory: [...(currentTeam.roundHistory || []), updatedHistory],
+      punishedMemberIds: nextPunishedMemberIds,
+      correctCount: nextCorrectCount,
+      isTeamFinished,
+      isPassed: isTeamFinished && nextCorrectCount >= 3,
+      isFailed: isTeamFinished && nextCorrectCount < 3,
+      teamScore: nextCorrectCount * 3 + (isTeamFinished && nextCorrectCount === 4 ? 4 : 0),
     };
+
     set({ g5Teams: updatedTeams });
 
-    return { isChainBroken: false, isTeamPassed: false };
+    return {
+      isTeamFinished,
+      isCorrect,
+      roundNum: roundIdx + 1,
+      memberId,
+    };
+  },
+
+  g5UndoAnswer: () => {
+    const { g5Teams, g5CurrentTeamIndex, addScore } = get();
+    const currentTeam = g5Teams[g5CurrentTeamIndex];
+    if (!currentTeam || !currentTeam.roundHistory || currentTeam.roundHistory.length === 0) {
+      return false;
+    }
+
+    const last = currentTeam.roundHistory[currentTeam.roundHistory.length - 1];
+    const newHistory = currentTeam.roundHistory.slice(0, -1);
+
+    let nextCorrectCount = currentTeam.correctCount || 0;
+    let nextPunishedMemberIds = [...(currentTeam.punishedMemberIds || [])];
+
+    if (last.isCorrect) {
+      nextCorrectCount = Math.max(0, nextCorrectCount - 1);
+      addScore(last.memberId, -3); // rollback score
+    } else {
+      // rollback punishment if this member has no other wrong answers in history
+      const hasOtherWrong = newHistory.some((h) => !h.isCorrect && h.memberId === last.memberId);
+      if (!hasOtherWrong) {
+        nextPunishedMemberIds = nextPunishedMemberIds.filter((id) => id !== last.memberId);
+      }
+    }
+
+    const prevIdx = Math.max(0, currentTeam.currentMemberIdx - 1);
+
+    const updatedTeams = [...g5Teams];
+    updatedTeams[g5CurrentTeamIndex] = {
+      ...currentTeam,
+      currentMemberIdx: prevIdx,
+      roundHistory: newHistory,
+      punishedMemberIds: nextPunishedMemberIds,
+      correctCount: nextCorrectCount,
+      isTeamFinished: false,
+      isPassed: false,
+      isFailed: false,
+      teamScore: nextCorrectCount * 3,
+    };
+
+    set({ g5Teams: updatedTeams });
+    return true;
+  },
+
+  g5ShuffleCurrentQuestion: () => {
+    const { g5Teams, g5CurrentTeamIndex, g5UsedQuestionIds } = get();
+    const currentTeam = g5Teams[g5CurrentTeamIndex];
+    if (!currentTeam) return null;
+
+    const roundIdx = Math.min(currentTeam.currentMemberIdx, 3);
+    const newQuestions = getRandomTriviaChain(1, g5UsedQuestionIds);
+    if (!newQuestions || newQuestions.length === 0) return null;
+
+    const newQuestion = newQuestions[0];
+    const updatedQuestions = [...currentTeam.questions];
+    updatedQuestions[roundIdx] = newQuestion;
+
+    const updatedTeams = [...g5Teams];
+    updatedTeams[g5CurrentTeamIndex] = {
+      ...currentTeam,
+      questions: updatedQuestions,
+    };
+
+    set({
+      g5Teams: updatedTeams,
+      g5UsedQuestionIds: [...g5UsedQuestionIds, newQuestion.id],
+    });
+
+    return newQuestion;
   },
 
   g5NextTeam: () =>
@@ -677,6 +944,50 @@ export const useGameStore = create<GameStore>()(
     }),
   g6NextMatch: () =>
     set((state) => ({ g6CurrentMatchIndex: state.g6CurrentMatchIndex + 1 })),
+  g6ShuffleItem: () => {
+    const { g6Matches, g6CurrentMatchIndex } = get();
+    if (!g6Matches[g6CurrentMatchIndex]) return null;
+    const newItem = getRandomPitchItem();
+    const updated = [...g6Matches];
+    updated[g6CurrentMatchIndex] = {
+      ...updated[g6CurrentMatchIndex],
+      pitchItem: newItem,
+    };
+    set({ g6Matches: updated });
+    return newItem;
+  },
+  g6UndoMatch: () => {
+    const { g6Matches, g6CurrentMatchIndex, addScore } = get();
+    const targetIdx = g6Matches[g6CurrentMatchIndex]?.isCompleted
+      ? g6CurrentMatchIndex
+      : Math.max(0, g6CurrentMatchIndex - 1);
+    const match = g6Matches[targetIdx];
+    if (!match || !match.isCompleted) return false;
+
+    // Rollback scores
+    if (match.winnerId && match.winnerId !== 'tie') {
+      addScore(match.winnerId, -8);
+      const loserId = match.winnerId === match.playerAId ? match.playerBId : match.playerAId;
+      addScore(loserId, -2);
+    } else if (match.winnerId === 'tie') {
+      addScore(match.playerAId, -4);
+      addScore(match.playerBId, -4);
+    }
+
+    const updated = [...g6Matches];
+    updated[targetIdx] = {
+      ...match,
+      winnerId: undefined,
+      votesA: 0,
+      votesB: 0,
+      isCompleted: false,
+    };
+    set({
+      g6Matches: updated,
+      g6CurrentMatchIndex: targetIdx,
+    });
+    return true;
+  },
   g6Reset: () =>
     set({ g6Matches: [], g6CurrentMatchIndex: 0 }),
 

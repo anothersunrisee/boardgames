@@ -10,6 +10,7 @@ import {
   BookOpen,
   Crown,
   Shuffle,
+  Undo2,
   Flame,
   X,
   Sparkles,
@@ -33,6 +34,10 @@ export interface GameDesktopLayoutProps {
   backLabel?: string;
   sidebarActions?: React.ReactNode;
   activeRoundLabel?: string;
+  onUndo?: () => void;
+  undoLabel?: string;
+  onShuffle?: () => void;
+  shuffleLabel?: string;
 }
 
 // ============================================================================
@@ -337,6 +342,10 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
   backLabel = 'Kembali',
   sidebarActions,
   activeRoundLabel,
+  onUndo,
+  undoLabel = 'Undo (Batal)',
+  onShuffle,
+  shuffleLabel = 'Ganti Soal',
 }) => {
   const navigate = useNavigate();
   const { players } = useGameStore();
@@ -466,6 +475,38 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
               <Home className="w-3.5 h-3.5 text-[#FBBF24]" />
               <span className="hidden sm:inline">Menu Utama</span>
             </button>
+
+            {/* UNDO BUTTON (Jika Tersedia) */}
+            {onUndo && (
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop();
+                  onUndo();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-[#FEE2E2] hover:bg-[#FECACA] border-2 border-[#DC2626]/40 text-[#DC2626] shadow-[0_3px_0_#DC2626] font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer active:translate-y-[2px] transition"
+                title="Batalkan aksi / hasil sebelumnya (Undo)"
+              >
+                <Undo2 className="w-3.5 h-3.5 text-[#DC2626]" />
+                <span className="hidden sm:inline">{undoLabel}</span>
+              </button>
+            )}
+
+            {/* SHUFFLE BUTTON (Jika Tersedia) */}
+            {onShuffle && (
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop();
+                  onShuffle();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-[#EDE9FE] hover:bg-[#DDD6FE] border-2 border-[#7C3AED]/40 text-[#7C3AED] shadow-[0_3px_0_#7C3AED] font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer active:translate-y-[2px] transition"
+                title="Ganti / acak pertanyaan atau topik baru"
+              >
+                <Shuffle className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <span className="hidden sm:inline">{shuffleLabel}</span>
+              </button>
+            )}
           </div>
 
           {/* CENTER: Game Identity Badge + Stage/Round Pill */}

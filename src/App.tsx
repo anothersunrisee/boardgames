@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { CustomGameCursor } from './components/ui/CustomGameCursor'
 import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
 import RoomSetup from './pages/RoomSetup'
@@ -32,7 +33,9 @@ import StudioAssetPack from './pages/StudioAssetPack'
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <CustomGameCursor />
+      <Routes>
       {/* 1. Onboarding Screen (Fruit Ninja Canvas, Mascots, START Button) */}
       <Route path="/" element={<Onboarding />} />
       <Route path="/onboarding" element={<Onboarding />} />
@@ -87,5 +90,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

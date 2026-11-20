@@ -214,7 +214,8 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
     return (
       <img
         src={src}
-        alt={alt || emoji || assetKey}
+        alt=""
+        role="presentation"
         width={size}
         height={size}
         draggable={false}

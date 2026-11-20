@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, RotateCcw, Plus, SkipForward, Flame, Trophy, ThumbsUp } from 'lucide-react'
+import { Play, Pause, RotateCcw, Plus, SkipForward, Flame, Trophy, ThumbsUp, Shuffle } from 'lucide-react'
 import { useGameStore, type DebateMatch } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { BlobMascot } from '../../components/ui/BlobMascot'
@@ -87,6 +87,8 @@ export default function G4Match() {
     g4CurrentMatchIndex,
     g4UpdateMatch,
     addScore,
+    g4ShuffleTopic,
+    g4ShuffleChaos,
   } = useGameStore()
 
   const match: DebateMatch | undefined = g4Matches[g4CurrentMatchIndex]
@@ -96,6 +98,25 @@ export default function G4Match() {
 
   const [stageIndex, setStageIndex] = useState(0)
   const currentStage = STAGE_ORDER[stageIndex]
+
+  const handleShuffleTopic = () => {
+    const newTopic = g4ShuffleTopic()
+    if (newTopic) {
+      sfx.playPop()
+    }
+  }
+
+  const handleShuffleChaos = () => {
+    const newChaos = g4ShuffleChaos()
+    if (newChaos) {
+      sfx.playPop()
+    }
+  }
+
+  const handleUndoStage = () => {
+    sfx.playPop()
+    setStageIndex((s) => Math.max(0, s - 1))
+  }
 
   const [timeLeft, setTimeLeft] = useState(15)
   const [isRunning, setIsRunning] = useState(false)
@@ -196,13 +217,28 @@ export default function G4Match() {
       badge="GAME 04 • DEBAT"
       badgeColor="#EC5A29"
       activeRoundLabel={match.isFinal ? 'Grand Final' : `Match ${match.matchNumber}/${totalMatches}`}
+      onShuffle={handleShuffleTopic}
+      shuffleLabel="Ganti Topik"
+      onUndo={stageIndex > 0 ? handleUndoStage : undefined}
+      undoLabel="Stage Lalu"
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
         {/* Motion Debate Topic Card */}
         <div className="rounded-[28px] bg-[#EC5A29] text-white p-6 mb-5 shadow-[0_8px_0_rgba(30,30,36,0.1)] border-2 border-[#1E1E24]/10">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider mb-2">
-            TOPIK DEBAT ABSURD
-          </span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider">
+              TOPIK DEBAT ABSURD
+            </span>
+            <button
+              type="button"
+              onClick={handleShuffleTopic}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white font-display text-xs font-bold transition cursor-pointer"
+              title="Ganti topik perdebatan"
+            >
+              <Shuffle className="w-3 h-3 text-[#FBBF24]" />
+              <span>Ganti Topik</span>
+            </button>
+          </div>
           <h2 className="font-display text-2xl md:text-3xl font-bold leading-snug">
             "{match.topic.topic}"
           </h2>
@@ -248,9 +284,20 @@ export default function G4Match() {
         {/* Optional Chaos Cards */}
         {(match.chaosCardA || match.chaosCardB) && (
           <div className="rounded-[24px] bg-[#E9D5FF] text-[#1E1E24] p-4 mb-5 border-2 border-[#1E1E24]/10 space-y-2">
-            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-[#7E22CE]">
-              <Flame className="w-4 h-4 text-[#EC5A29]" />
-              <span>Gangguan Chaos Card Aktif!</span>
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-[#7E22CE]">
+                <Flame className="w-4 h-4 text-[#EC5A29]" />
+                <span>Gangguan Chaos Card Aktif!</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleShuffleChaos}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/70 hover:bg-white text-[#7E22CE] text-xs font-bold transition cursor-pointer"
+                title="Ganti Chaos Card baru"
+              >
+                <Shuffle className="w-3 h-3 text-[#7E22CE]" />
+                <span>Ganti Chaos</span>
+              </button>
             </div>
 
             {match.chaosCardA && (
@@ -522,7 +569,10 @@ export default function G4Match() {
       </div>
 
       <div className="block lg:hidden">
-        <HostUtilityBar />
+        <HostUtilityBar
+          onShuffle={handleShuffleTopic}
+          onUndo={stageIndex > 0 ? handleUndoStage : undefined}
+        />
       </div>
     </GameDesktopLayout>
   )

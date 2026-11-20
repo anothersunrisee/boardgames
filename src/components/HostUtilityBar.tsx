@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, RotateCcw, FastForward, Home, Trophy } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, FastForward, Home, Trophy, Undo2, Shuffle } from 'lucide-react';
 import { sfx } from '../utils/sound';
 
 export interface HostUtilityBarProps {
   onSkipRound?: () => void;
   onResetGame?: () => void;
+  onUndo?: () => void;
+  onShuffle?: () => void;
+  undoTitle?: string;
+  shuffleTitle?: string;
 }
 
 export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
   onSkipRound,
   onResetGame,
+  onUndo,
+  onShuffle,
+  undoTitle = 'Batalkan Aksi (Undo)',
+  shuffleTitle = 'Acak / Ganti Soal Baru (Shuffle)',
 }) => {
   const navigate = useNavigate();
   const [muted, setMuted] = useState(sfx.muted);
@@ -22,7 +30,39 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-[#1E1E24] text-[#FAF7F2] shadow-lg border border-white/10">
+    <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-full bg-[#1E1E24] text-[#FAF7F2] shadow-lg border border-white/10">
+      {/* Undo Button (Jika Tersedia) */}
+      {onUndo && (
+        <button
+          type="button"
+          onClick={() => {
+            sfx.playPop();
+            onUndo();
+          }}
+          title={undoTitle}
+          className="px-2.5 py-1.5 rounded-full bg-[#EF4444]/20 hover:bg-[#EF4444]/30 text-[#FCA5A5] flex items-center gap-1 transition cursor-pointer text-xs font-bold"
+        >
+          <Undo2 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Undo</span>
+        </button>
+      )}
+
+      {/* Shuffle Button (Jika Tersedia) */}
+      {onShuffle && (
+        <button
+          type="button"
+          onClick={() => {
+            sfx.playPop();
+            onShuffle();
+          }}
+          title={shuffleTitle}
+          className="px-2.5 py-1.5 rounded-full bg-[#7C3AED]/30 hover:bg-[#7C3AED]/45 text-[#C4B5FD] flex items-center gap-1 transition cursor-pointer text-xs font-bold"
+        >
+          <Shuffle className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Ganti</span>
+        </button>
+      )}
+
       <button
         type="button"
         onClick={() => {

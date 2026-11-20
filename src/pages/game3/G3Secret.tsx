@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, ArrowLeft, Check, X, ArrowRight, Trophy, HelpCircle } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, Check, X, ArrowRight, Trophy, HelpCircle, Shuffle } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -23,6 +23,7 @@ export default function G3Secret() {
     incrementG3BoyWins,
     incrementG3GirlWins,
     addScore,
+    g3ShuffleItem,
   } = useGameStore()
 
   const [isSecretRevealed, setIsSecretRevealed] = useState(false)
@@ -30,6 +31,34 @@ export default function G3Secret() {
   const [q2Done, setQ2Done] = useState(false)
   const [roundResult, setRoundResult] = useState<'guessed' | 'failed' | null>(null)
   const [creditedGirlId, setCreditedGirlId] = useState<string>('')
+
+  const handleShuffleItem = () => {
+    const newItem = g3ShuffleItem()
+    if (newItem) {
+      sfx.playPop()
+      setIsSecretRevealed(true)
+    }
+  }
+
+  const handleUndoDecision = () => {
+    sfx.playPop()
+    if (roundResult) {
+      if (roundResult === 'guessed') {
+        if (creditedGirlId) addScore(creditedGirlId, -5)
+        g3GirlPlayers.forEach((g) => {
+          if (g.id !== creditedGirlId) addScore(g.id, -2)
+        })
+        incrementG3BoyWins()
+      } else {
+        if (boy) addScore(boy.id, -4)
+        g3BoyPlayers.forEach((b) => {
+          if (b.id !== boy?.id) addScore(b.id, -2)
+        })
+      }
+      setRoundResult(null)
+      setCreditedGirlId('')
+    }
+  }
 
   const slot = g3Slots[g3CurrentSlotIndex]
   const boy = g3BoyPlayers.find((p) => p.id === slot?.playerId)
@@ -174,17 +203,29 @@ export default function G3Secret() {
                     {slot.secretWord}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-black/5 hover:bg-black/10 cursor-pointer"
-                  onClick={() => {
-                    sfx.playPop()
-                    setIsSecretRevealed(false)
-                  }}
-                >
-                  <EyeOff className="w-3.5 h-3.5" />
-                  <span>Sembunyikan Kata Rahasia</span>
-                </button>
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-black/5 hover:bg-black/10 cursor-pointer"
+                    onClick={() => {
+                      sfx.playPop()
+                      setIsSecretRevealed(false)
+                    }}
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Sembunyikan Kata Rahasia</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleShuffleItem}
+                    className="text-xs font-bold text-[#2568EF] hover:bg-[#EFF6FF] inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-[#EFF6FF]/70 border border-[#2568EF]/20 cursor-pointer transition"
+                    title="Ganti istilah cowok rahasia"
+                  >
+                    <Shuffle className="w-3.5 h-3.5" />
+                    <span>Ganti Kata</span>
+                  </button>
+                </div>
               </motion.div>
             ) : (
               <motion.div
@@ -358,7 +399,10 @@ export default function G3Secret() {
         )}
       </div>
 
-      <HostUtilityBar />
+      <HostUtilityBar
+        onShuffle={handleShuffleItem}
+        onUndo={roundResult ? handleUndoDecision : undefined}
+      />
     </div>
   )
 }

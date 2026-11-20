@@ -44,6 +44,14 @@ export default function G1Reveal() {
     }
   }
 
+  const handleUndo = () => {
+    sfx.playPop()
+    round.answers.forEach((a) => {
+      if (a.isUnique) addScore(a.playerId, -1)
+    })
+    navigate('/game1/round')
+  }
+
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col">
       <div className="max-w-lg mx-auto w-full flex-1 flex flex-col">
@@ -59,6 +67,15 @@ export default function G1Reveal() {
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Menu Utama</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleUndo}
+            className="text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2] px-2.5 py-1 rounded-full border border-[#DC2626]/20 transition cursor-pointer"
+            title="Undo penilaian ronde ini"
+          >
+            ↩️ Undo Ronde Ini
           </button>
           <span className="font-display text-xs px-3 py-1 rounded-full bg-[#158467] text-white font-bold tracking-wide uppercase">
             Ronde {round.roundNumber} Selesai
@@ -174,7 +191,7 @@ export default function G1Reveal() {
         </div>
       </div>
 
-      <HostUtilityBar />
+      <HostUtilityBar onUndo={handleUndo} />
     </div>
   )
 }
