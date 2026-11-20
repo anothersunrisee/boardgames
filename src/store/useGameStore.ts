@@ -190,8 +190,11 @@ interface GameStore {
   // ── Game 5 State (Cerdas Cermat Berantai) ──
   g5Teams: G5Team[];
   g5CurrentTeamIndex: number;
+  g5UsedQuestionIds: number[];
   g5RecordMemberAnswer: (isCorrect: boolean) => { isChainBroken: boolean; isTeamPassed: boolean };
   g5NextTeam: () => void;
+  g5ReshuffleTeams: () => void;
+  g5SetTeams: (teams: G5Team[]) => void;
   g5Reset: () => void;
 
   // ── Game 6 State (Sell Me This Trash) ──
@@ -231,6 +234,7 @@ const initialState = {
   g4UsedTopicIds: [],
   g5Teams: [],
   g5CurrentTeamIndex: 0,
+  g5UsedQuestionIds: [],
   g6Matches: [],
   g6CurrentMatchIndex: 0,
 };
@@ -390,55 +394,67 @@ export const useGameStore = create<GameStore>()(
   },
 
   // Game 05 Auto (Cerdas Cermat Berantai):
-  // Mengelompokkan pemain menjadi tim-tim kecil 3-4 orang acak, menyiapkan pertanyaan berantai
+  // Mengelompokkan pemain menjadi tim-tim kecil 3-4 orang acak, menyiapkan 4 series chain quiz per tim
   autoStartGame5: () => {
-    const { players } = get();
-    if (players.length < 3) {
-      return { success: false, message: 'Minimal 3 pemain untuk bermain Cerdas Cermat Berantai' };
+    const { players, g5UsedQuestionIds } = get();
+    if (players.length < 2) {
+      return { success: false, message: 'Minimal 2 pemain untuk bermain Cerdas Cermat Berantai' };
     }
 
     const shuffled = [...players].sort(() => Math.random() - 0.5);
-    const teams: G5Team[] = [];
-    let usedQuestionIds: number[] = [];
-
-    // Tentukan ukuran tim (target 3 sampai 4 orang per tim)
     const total = shuffled.length;
     let teamSizes: number[] = [];
 
-    if (total <= 5) {
+    if (total <= 3) {
       teamSizes = [total];
-    } else if (total <= 8) {
-      const half = Math.floor(total / 2);
-      teamSizes = [half, total - half];
+    } else if (total === 4) {
+      teamSizes = [2, 2];
+    } else if (total === 5) {
+      teamSizes = [3, 2];
+    } else if (total === 6) {
+      teamSizes = [3, 3];
+    } else if (total === 7) {
+      teamSizes = [4, 3];
+    } else if (total === 8) {
+      teamSizes = [4, 4];
+    } else if (total === 9) {
+      teamSizes = [3, 3, 3];
+    } else if (total === 10) {
+      teamSizes = [4, 3, 3];
+    } else if (total === 11) {
+      teamSizes = [4, 4, 3];
+    } else if (total === 12) {
+      teamSizes = [4, 4, 4];
     } else {
-      // 9+ pemain: bagi menjadi grup 3-4 orang
-      let remaining = total;
-      while (remaining > 0) {
-        if (remaining === 5) {
-          teamSizes.push(3, 2);
-          break;
-        } else if (remaining === 4) {
-          teamSizes.push(4);
-          break;
-        } else if (remaining >= 6) {
-          teamSizes.push(3);
-          remaining -= 3;
-        } else {
-          teamSizes.push(remaining);
-          break;
-        }
+      const teamCount = Math.min(5, Math.ceil(total / 4));
+      teamSizes = Array(teamCount).fill(Math.floor(total / teamCount));
+      const remainder = total % teamCount;
+      for (let i = 0; i < remainder; i++) {
+        teamSizes[i] += 1;
       }
     }
 
     let cursor = 0;
-    const TEAM_NAMES = ['Tim Alpha ⚡', 'Tim Garuda 🦅', 'Tim Halilintar 🌩️', 'Tim Naga 🐉', 'Tim Rajawali 👑'];
+    const TEAM_NAMES = [
+      'Tim Halilintar 🌩️',
+      'Tim Garuda 🦅',
+      'Tim Naga 🐉',
+      'Tim Rajawali 👑',
+      'Tim Singa 🦁',
+      'Tim Harimau 🐯',
+      'Tim Lumba-Lumba 🐬',
+    ];
+
+    let usedIds = [...g5UsedQuestionIds];
+    const teams: G5Team[] = [];
 
     teamSizes.forEach((size, idx) => {
       const members = shuffled.slice(cursor, cursor + size);
       cursor += size;
 
-      const questions = getRandomTriviaChain(members.length, usedQuestionIds);
-      usedQuestionIds = [...usedQuestionIds, ...questions.map((q) => q.id)];
+      // Setiap tim WAJIB mendapatkan 4 series pertanyaan langsung!
+      const questions = getRandomTriviaChain(4, usedIds);
+      usedIds = [...usedIds, ...questions.map((q) => q.id)];
 
       teams.push({
         id: `g5-t-${idx + 1}`,
@@ -454,10 +470,18 @@ export const useGameStore = create<GameStore>()(
     set({
       g5Teams: teams,
       g5CurrentTeamIndex: 0,
+      g5UsedQuestionIds: usedIds,
     });
 
     return { success: true };
   },
+
+  g5ReshuffleTeams: () => {
+    const { autoStartGame5 } = get();
+    autoStartGame5();
+  },
+
+  g5SetTeams: (teams: G5Team[]) => set({ g5Teams: teams }),
 
   // Game 06 Auto (Sell Me This Trash!):
   // Menghubungkan duel 1v1 dengan barang aneh/rusak + target pasar absurd
@@ -585,11 +609,11 @@ export const useGameStore = create<GameStore>()(
     const currentTeam = g5Teams[g5CurrentTeamIndex];
     if (!currentTeam) return { isChainBroken: true, isTeamPassed: false };
 
-    const memberCount = currentTeam.memberIds.length;
+    const totalQuestions = currentTeam.questions.length || 4; // WAJIB 4 seri pertanyaan berantai
     const nextIdx = currentTeam.currentMemberIdx + 1;
 
     if (!isCorrect) {
-      // Rantai putus! Tim gagal dapat poin (Kesulitan Ekstrem: penalti -2 per anggota)
+      // Rantai putus! Tim gagal dapat poin (penalti -2 per anggota)
       const updatedTeams = [...g5Teams];
       updatedTeams[g5CurrentTeamIndex] = {
         ...currentTeam,
@@ -608,8 +632,8 @@ export const useGameStore = create<GameStore>()(
     }
 
     // Jawaban benar
-    if (nextIdx >= memberCount) {
-      // Semua anggota berhasil menjawab berantai! Tim lulus! (Kesulitan Ekstrem: +6 per anggota, 10 poin tim)
+    if (nextIdx >= totalQuestions) {
+      // Semua 4 pertanyaan berantai dijawab benar! Tim lulus! (+6 per anggota, 10 poin tim)
       const updatedTeams = [...g5Teams];
       updatedTeams[g5CurrentTeamIndex] = {
         ...currentTeam,
@@ -628,7 +652,7 @@ export const useGameStore = create<GameStore>()(
       return { isChainBroken: false, isTeamPassed: true };
     }
 
-    // Lanjut ke anggota tim berikutnya
+    // Lanjut ke pertanyaan berikutnya dalam rantai
     const updatedTeams = [...g5Teams];
     updatedTeams[g5CurrentTeamIndex] = {
       ...currentTeam,

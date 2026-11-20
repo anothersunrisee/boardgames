@@ -78,7 +78,7 @@ const GAMES: GameItem[] = [
   },
   {
     id: 'game5',
-    route: '/game5/play',
+    route: '/game5/setup',
     numberBadge: 'GAME 05',
     categoryPill: 'Tim Rantai • Estafet',
     title: 'Chain Quiz Relay!',

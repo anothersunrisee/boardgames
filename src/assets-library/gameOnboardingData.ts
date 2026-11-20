@@ -303,8 +303,8 @@ export const GAME_ONBOARDING_DATA: Record<GameId, GameOnboardingDetail> = {
       },
       {
         number: 2,
-        title: 'Estafet Soal Trivia Lintas Tema',
-        description: 'Pemain bergiliran menjawab: Orang #1 ditanya sejarah, Orang #2 negara & geografi, Orang #3 politik umum, Orang #4 pop culture!',
+        title: 'Estafet 4 Soal Langsung per Tim',
+        description: 'Satu tim maju ke panggung bersama untuk menyelesaikan 4 seri soal berantai langsung dari beragam tema (Sejarah, IPA, Antariksa, Hewan, dll.).',
         emoji: 'fire',
       },
       {

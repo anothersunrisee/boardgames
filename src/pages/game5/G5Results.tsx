@@ -203,7 +203,7 @@ export default function G5Results() {
             onClick={() => {
               sfx.playPop();
               autoStartGame5();
-              navigate('/game5/play');
+              navigate('/game5/setup');
             }}
           >
             <RotateCcw className="w-5 h-5" />
