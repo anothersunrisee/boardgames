@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -110,7 +111,7 @@ export default function G2Secret() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -128,7 +129,7 @@ export default function G2Secret() {
         </div>
 
         {/* Mascot & Target Girl Banner */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-5 flex flex-col items-center">
           <div className="mb-2">
             <BlobMascot
               shape="scallop"
@@ -141,9 +142,12 @@ export default function G2Secret() {
           <span className="inline-block px-3 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-xs font-extrabold uppercase tracking-wider mb-1">
             Giliran Benda Rahasia
           </span>
-          <h1 className="font-display text-3xl font-bold text-[#1E1E24]">
-            {girl.name} ({girl.kubu})
-          </h1>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <PlayerProfileAvatar characterId={girl.avatarId} size={36} name={girl.name} />
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
+              {girl.name} ({girl.kubu})
+            </h1>
+          </div>
           <p className="text-xs text-[#64616C] font-semibold mt-1">
             Hanya perlihatkan layar ini ke {girl.name}!
           </p>

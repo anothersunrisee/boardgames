@@ -17,6 +17,7 @@ export type Player = {
   gender?: Gender;
   kubu: string;
   score: number;
+  avatarId?: string;
 };
 
 // ─── Game 1 Types ────────────────────────────────────────────────────────────
@@ -103,16 +104,16 @@ export type G6Match = {
 // ─── Default Room Players Preset ─────────────────────────────────────────────
 
 export const DEFAULT_ROOM_PLAYERS: Player[] = [
-  { id: 'p1', name: 'Alya', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p2', name: 'Bella', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p3', name: 'Caca', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p4', name: 'Dara', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p5', name: 'Elsa', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p6', name: 'Fani', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p7', name: 'Gaby', gender: 'cewek', kubu: 'Tim Cewek', score: 0 },
-  { id: 'p8', name: 'Dimas', gender: 'cowok', kubu: 'Tim Cowok', score: 0 },
-  { id: 'p9', name: 'Kevin', gender: 'cowok', kubu: 'Tim Cowok', score: 0 },
-  { id: 'p10', name: 'Reno', gender: 'cowok', kubu: 'Tim Cowok', score: 0 },
+  { id: 'p1', name: 'Alya', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c01' },
+  { id: 'p2', name: 'Bella', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c07' },
+  { id: 'p3', name: 'Caca', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c04' },
+  { id: 'p4', name: 'Dara', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c09' },
+  { id: 'p5', name: 'Elsa', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c12' },
+  { id: 'p6', name: 'Fani', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c16' },
+  { id: 'p7', name: 'Gaby', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c19' },
+  { id: 'p8', name: 'Dimas', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c05' },
+  { id: 'p9', name: 'Kevin', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c02' },
+  { id: 'p10', name: 'Reno', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c08' },
 ];
 
 // ─── Store Interface ─────────────────────────────────────────────────────────

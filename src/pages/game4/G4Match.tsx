@@ -5,6 +5,7 @@ import { Play, Pause, RotateCcw, Plus, SkipForward, Flame, Trophy, ThumbsUp, Arr
 import { useGameStore, type DebateMatch } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -197,7 +198,7 @@ export default function G4Match() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -230,26 +231,36 @@ export default function G4Match() {
 
           {/* Combatants Dual Cards */}
           <div className="grid grid-cols-2 gap-3 mt-5">
-            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
-                PRO (Setuju)
-              </span>
-              <p className="font-display text-lg font-bold mt-1.5 text-white">
-                {playerA.name}
-              </p>
-              <p className="text-xs text-white/80 italic mt-0.5 leading-snug">
+            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
+                  PRO (Setuju)
+                </span>
+                <div className="flex items-center gap-2.5 mt-2">
+                  <PlayerProfileAvatar characterId={playerA.avatarId} size={42} name={playerA.name} />
+                  <p className="font-display text-lg font-bold text-white truncate">
+                    {playerA.name}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-white/80 italic mt-2 leading-snug">
                 "{match.topic.proStance}"
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
-                KONTRA (Tolak)
-              </span>
-              <p className="font-display text-lg font-bold mt-1.5 text-white">
-                {playerB.name}
-              </p>
-              <p className="text-xs text-white/80 italic mt-0.5 leading-snug">
+            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
+                  KONTRA (Tolak)
+                </span>
+                <div className="flex items-center gap-2.5 mt-2">
+                  <PlayerProfileAvatar characterId={playerB.avatarId} size={42} name={playerB.name} />
+                  <p className="font-display text-lg font-bold text-white truncate">
+                    {playerB.name}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-white/80 italic mt-2 leading-snug">
                 "{match.topic.contraStance}"
               </p>
             </div>
@@ -382,8 +393,9 @@ export default function G4Match() {
               {/* Counters */}
               <div className="grid grid-cols-2 gap-4 mb-5">
                 {/* Player A */}
-                <div className="p-4 rounded-2xl border-2 border-[#12B76A] bg-[#D6F5EC]/50 text-center">
-                  <p className="font-display text-sm font-bold text-[#158467] truncate">
+                <div className="p-4 rounded-2xl border-2 border-[#12B76A] bg-[#D6F5EC]/50 text-center flex flex-col items-center">
+                  <PlayerProfileAvatar characterId={playerA.avatarId} size={48} name={playerA.name} />
+                  <p className="font-display text-sm font-bold text-[#158467] truncate mt-1">
                     {playerA.name} (PRO)
                   </p>
                   <div className="flex items-center justify-center gap-3 my-2.5">
@@ -415,8 +427,9 @@ export default function G4Match() {
                 </div>
 
                 {/* Player B */}
-                <div className="p-4 rounded-2xl border-2 border-[#F04438] bg-[#FFE8DF]/50 text-center">
-                  <p className="font-display text-sm font-bold text-[#B42318] truncate">
+                <div className="p-4 rounded-2xl border-2 border-[#F04438] bg-[#FFE8DF]/50 text-center flex flex-col items-center">
+                  <PlayerProfileAvatar characterId={playerB.avatarId} size={48} name={playerB.name} />
+                  <p className="font-display text-sm font-bold text-[#B42318] truncate mt-1">
                     {playerB.name} (KONTRA)
                   </p>
                   <div className="flex items-center justify-center gap-3 my-2.5">

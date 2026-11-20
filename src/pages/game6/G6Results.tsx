@@ -7,6 +7,8 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { ScoreBoard } from '../../components/ScoreBoard';
 import { BlobMascot } from '../../components/ui/BlobMascot';
+import { ConfettiShower } from '../../components/motion/ConfettiShower';
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar';
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { sfx } from '../../utils/sound';
@@ -41,7 +43,8 @@ export default function G6Results() {
   });
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between relative overflow-hidden">
+      <ConfettiShower particleCount={55} />
       <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
         {/* Top Header Back Navigation */}
         <div className="flex items-center justify-between mb-6">
@@ -50,7 +53,7 @@ export default function G6Results() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop();
-              navigate('/');
+              navigate('/hub');
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -63,7 +66,7 @@ export default function G6Results() {
 
         {/* Mascot Winner Banner */}
         <motion.div
-          className="text-center mb-6"
+          className="text-center mb-6 flex flex-col items-center"
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 15 }}
@@ -84,8 +87,14 @@ export default function G6Results() {
           </span>
 
           <h1 className="font-display text-3xl md:text-4xl font-bold text-[#1E1E24]">
-            Top Sales Absurd: {winner?.name}! 👑
+            Top Sales Absurd:
           </h1>
+          <div className="flex items-center justify-center gap-2.5 mt-1.5">
+            <PlayerProfileAvatar characterId={winner?.avatarId} size={48} name={winner?.name} />
+            <p className="font-display text-2xl md:text-3xl font-bold text-[#65A30D]">
+              {winner?.name}! 👑
+            </p>
+          </div>
           <p className="text-sm font-semibold text-[#64616C] mt-1">
             Total Skor: {winner?.score} Poin Jualan
           </p>
@@ -192,7 +201,7 @@ export default function G6Results() {
             size="lg"
             onClick={() => {
               sfx.playPop();
-              navigate('/');
+              navigate('/hub');
             }}
           >
             <Home className="w-5 h-5" />

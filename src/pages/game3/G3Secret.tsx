@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -110,7 +111,7 @@ export default function G3Secret() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -128,7 +129,7 @@ export default function G3Secret() {
         </div>
 
         {/* Mascot & Target Boy Banner */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-5 flex flex-col items-center">
           <div className="mb-2">
             <BlobMascot
               shape="hexagon"
@@ -142,9 +143,12 @@ export default function G3Secret() {
           <span className="inline-block px-3 py-1 rounded-full bg-[#E0EBFF] text-[#2568EF] text-xs font-extrabold uppercase tracking-wider mb-1">
             Kategori: {slot.category}
           </span>
-          <h1 className="font-display text-3xl font-bold text-[#1E1E24]">
-            {boy.name} ({boy.kubu})
-          </h1>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <PlayerProfileAvatar characterId={boy.avatarId} size={36} name={boy.name} />
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
+              {boy.name} ({boy.kubu})
+            </h1>
+          </div>
           <p className="text-xs text-[#64616C] font-semibold mt-1">
             Hanya perlihatkan layar ini ke {boy.name}!
           </p>

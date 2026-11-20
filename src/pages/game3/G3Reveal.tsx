@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -54,7 +55,7 @@ export default function G3Reveal() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -109,6 +110,8 @@ export default function G3Reveal() {
                   >
                     {gg.correct ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4 stroke-[3]" />}
                   </div>
+
+                  <PlayerProfileAvatar characterId={girl?.avatarId} size={36} name={girl?.name} />
 
                   <div className="flex-1 min-w-0">
                     <p className="font-display text-base font-bold text-[#1E1E24]">{girl?.name}</p>

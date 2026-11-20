@@ -5,7 +5,7 @@ import { ArrowLeft, Lock, CheckCircle2 } from 'lucide-react'
 import { useGameStore, type QnAPair } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
-import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { PassDeviceModal } from '../../components/PassDeviceModal'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
@@ -104,6 +104,7 @@ export default function G2QnA() {
           {phase === 'pass' && (
             <PassDeviceModal
               playerName={currentBoy.name}
+              avatarId={currentBoy.avatarId}
               teamName={currentBoy.kubu}
               subtitle={`Pertanyaan ke-${turn.questionNum} dari 2 untuk ${girl.name}!`}
               accentColor="#2568EF"
@@ -120,7 +121,7 @@ export default function G2QnA() {
             <motion.div key={`q-${turnIdx}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col justify-between">
               <Card className="p-6 bg-white shadow-md border-2 border-[#2568EF]/20 mb-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <BlobMascot shape="hexagon" mood="curious" color="#7CC0FF" size={54} floating={false} />
+                  <PlayerProfileAvatar characterId={currentBoy.avatarId} size={50} name={currentBoy.name} />
                   <div>
                     <span className="font-display text-sm font-bold text-[#2568EF]">
                       Giliran {currentBoy.name} (Tanya ke-{turn.questionNum})
@@ -168,7 +169,7 @@ export default function G2QnA() {
 
                 <Card className="p-6 bg-white shadow-md border-2 border-[#D8317E]/20">
                   <div className="flex items-center gap-3 mb-4">
-                    <BlobMascot shape="scallop" mood="cheeky" color="#FF8AC2" size={54} floating={false} />
+                    <PlayerProfileAvatar characterId={girl.avatarId} size={50} name={girl.name} />
                     <div>
                       <span className="font-display text-sm font-bold text-[#D8317E]">
                         Jawaban {girl.name} (Beri Clue)

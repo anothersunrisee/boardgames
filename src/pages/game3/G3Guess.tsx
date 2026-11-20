@@ -5,7 +5,7 @@ import { ArrowLeft, Lock, CheckCircle2 } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
-import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { PassDeviceModal } from '../../components/PassDeviceModal'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
@@ -101,6 +101,7 @@ export default function G3Guess() {
           {phase === 'pass' && (
             <PassDeviceModal
               playerName={currentGirl.name}
+              avatarId={currentGirl.avatarId}
               teamName={currentGirl.kubu}
               subtitle={`Saatnya kamu menebak kata ${slot.category} milik ${boy.name}!`}
               accentColor="#D8317E"
@@ -119,7 +120,7 @@ export default function G3Guess() {
             <motion.div key={`guess-${currentGirlIdx}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col justify-between">
               <Card className="p-6 bg-white shadow-md border-2 border-[#D8317E]/20 mb-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <BlobMascot shape="scallop" mood="curious" color="#FF8AC2" size={54} floating={false} />
+                  <PlayerProfileAvatar characterId={currentGirl.avatarId} size={50} name={currentGirl.name} />
                   <div>
                     <span className="font-display text-sm font-bold text-[#D8317E]">
                       Giliran Tebak: {currentGirl.name}

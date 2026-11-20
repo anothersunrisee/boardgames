@@ -2,10 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Hand, ShieldAlert } from 'lucide-react';
 import { BlobMascot } from './ui/BlobMascot';
+import { PlayerProfileAvatar } from './characters/PlayerProfileAvatar';
 import { Button } from './ui/Button';
 
 interface PassDeviceModalProps {
   playerName: string;
+  avatarId?: string;
   teamName?: string;
   subtitle?: string;
   accentColor?: string;
@@ -15,6 +17,7 @@ interface PassDeviceModalProps {
 
 export const PassDeviceModal: React.FC<PassDeviceModalProps> = ({
   playerName,
+  avatarId,
   teamName,
   subtitle = 'Jangan intip layar kalau bukan giliranmu ya!',
   accentColor = '#9D71E8',
@@ -38,15 +41,20 @@ export const PassDeviceModal: React.FC<PassDeviceModalProps> = ({
         </button>
       )}
       <div
-        style={{ backgroundColor: `${accentColor}22` }}
-        className="w-44 h-44 rounded-full flex items-center justify-center mb-6"
+        style={{ backgroundColor: `${accentColor}18` }}
+        className="w-40 h-40 rounded-full flex flex-col items-center justify-center mb-5 relative"
       >
         <BlobMascot
           shape="pentagon"
           mood="curious"
           color={accentColor}
-          size={130}
+          size={110}
         />
+        {avatarId && (
+          <div className="absolute -bottom-2 -right-1 shadow-md rounded-2xl bg-white p-1">
+            <PlayerProfileAvatar characterId={avatarId} size={48} name={playerName} />
+          </div>
+        )}
       </div>
 
       <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-extrabold uppercase tracking-wider mb-3">

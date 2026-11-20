@@ -1,18 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { CharacterDef, CharacterMood } from '../../assets-library/types';
+import { getCharacterById } from '../../assets-library/characters';
 
 // ============================================================================
 // STYLE A COMPONENT: ABSTRACT PLAYER PROFILE AVATAR (20 UNIQUE)
 // Circular #121216 black portrait badge + bold geometric shape + minimal face
 // ============================================================================
 export const PlayerProfileAvatar: React.FC<{
-  character: CharacterDef;
+  character?: CharacterDef;
+  characterId?: string;
+  name?: string;
   size?: number;
   mood?: CharacterMood;
   animated?: boolean;
   className?: string;
-}> = ({ character, size = 84, mood = 'idle', animated = true, className = '' }) => {
+}> = ({
+  character: propCharacter,
+  characterId,
+  size = 84,
+  mood = 'idle',
+  animated = true,
+  className = '',
+}) => {
+  const character = propCharacter || getCharacterById(characterId || 'c01');
   const clipId = `avatar-clip-${character.id}-${size}`;
 
   const renderAbstractSilhouette = () => {

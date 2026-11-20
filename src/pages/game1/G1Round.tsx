@@ -6,7 +6,9 @@ import { useGameStore } from '../../store/useGameStore'
 import { pickRandomCategories, type Category } from '../../data/game1-categories'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
-import { BlobMascot } from '../../components/ui/BlobMascot'
+import { GameMascotBot } from '../../components/characters/GameMascotBot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
+import { CHARACTER_PACK, getCharacterById } from '../../assets-library/characters'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -108,7 +110,7 @@ export default function G1Round() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -150,13 +152,10 @@ export default function G1Round() {
               className="flex-1 flex flex-col items-center justify-center text-center"
             >
               <div className="mb-4">
-                <BlobMascot
-                  shape="flower"
-                  mood={timeLeft <= 5 ? 'dizzy' : 'excited'}
-                  color="#5CE6C0"
-                  accentColor="#0F5E49"
-                  accessory="headband"
-                  size={95}
+                <GameMascotBot
+                  character={CHARACTER_PACK[1]}
+                  mood={timeLeft <= 5 ? 'shocked' : timeLeft <= 15 ? 'thinking' : 'happy'}
+                  size={96}
                 />
               </div>
 
@@ -265,13 +264,20 @@ export default function G1Round() {
                           : 'bg-white border-[#12B76A]/40 hover:border-[#12B76A] shadow-xs'
                       }`}
                     >
-                      <div className="min-w-0 pr-2">
-                        <p className={`font-display text-base font-bold truncate ${isFailed ? 'line-through text-[#64616C]' : 'text-[#1E1E24]'}`}>
-                          {player.name}
-                        </p>
-                        <p className="text-[11px] text-[#64616C] font-semibold">
-                          Kubu: {player.kubu} • Skor: {player.score} pt
-                        </p>
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <PlayerProfileAvatar
+                          character={getCharacterById(player.avatarId || 'c01')}
+                          size={36}
+                          mood={isFailed ? 'shocked' : 'idle'}
+                        />
+                        <div className="min-w-0">
+                          <p className={`font-display text-base font-bold truncate ${isFailed ? 'line-through text-[#64616C]' : 'text-[#1E1E24]'}`}>
+                            {player.name}
+                          </p>
+                          <p className="text-[11px] text-[#64616C] font-semibold">
+                            Kubu: {player.kubu} • Skor: {player.score} pt
+                          </p>
+                        </div>
                       </div>
 
                       <span

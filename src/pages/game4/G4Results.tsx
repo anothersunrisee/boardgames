@@ -1,28 +1,35 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { RotateCcw, Home, ArrowLeft } from 'lucide-react'
+import { RotateCcw, Home, ArrowLeft, AlertTriangle } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { ConfettiShower } from '../../components/motion/ConfettiShower'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
+import { PunishmentModal } from '../../components/PunishmentModal'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
 export default function G4Results() {
   const navigate = useNavigate()
   const { players, g4Matches, autoStartGame4 } = useGameStore()
+  const [showPunishment, setShowPunishment] = useState(false)
+  const [selectedLoser, setSelectedLoser] = useState('')
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const supremeAdvocate = sortedPlayers[0]
+  const lowestScorer = sortedPlayers[sortedPlayers.length - 1]
 
   useEffect(() => {
     sfx.playFanfare()
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between relative overflow-hidden">
+      <ConfettiShower particleCount={55} />
       <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
         {/* Top Header Back Navigation */}
         <div className="flex items-center justify-between mb-6">
@@ -31,7 +38,7 @@ export default function G4Results() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -44,7 +51,7 @@ export default function G4Results() {
 
         {/* Supreme Champion Mascot Banner */}
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-8 flex flex-col items-center"
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 15 }}
@@ -67,9 +74,14 @@ export default function G4Results() {
           <h1 className="font-display text-3xl md:text-4xl font-bold text-[#1E1E24]">
             Supreme Devil's Advocate:
           </h1>
-          <p className="font-display text-2xl md:text-3xl font-bold text-[#EC5A29] mt-1">
-            {supremeAdvocate?.name} 👑
-          </p>
+
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <PlayerProfileAvatar characterId={supremeAdvocate?.avatarId} size={50} name={supremeAdvocate?.name} />
+            <p className="font-display text-2xl md:text-3xl font-bold text-[#EC5A29]">
+              {supremeAdvocate?.name} 👑
+            </p>
+          </div>
+
           <p className="text-sm font-semibold text-[#64616C] mt-1">
             Kubu {supremeAdvocate?.kubu} • Total Skor: {supremeAdvocate?.score} Poin Kemenangan
           </p>
@@ -79,6 +91,23 @@ export default function G4Results() {
         <div className="mb-6">
           <ScoreBoard players={players} highlightId={supremeAdvocate?.id} />
         </div>
+
+        {/* Punishment Card Button */}
+        {lowestScorer && lowestScorer.id !== supremeAdvocate?.id && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedLoser(lowestScorer.name)
+                setShowPunishment(true)
+              }}
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>🃏 Acak Kartu Hukuman untuk Debater Terbawah ({lowestScorer.name})!</span>
+            </button>
+          </div>
+        )}
 
         {/* Match History */}
         <motion.div
@@ -155,7 +184,7 @@ export default function G4Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <Home className="w-5 h-5" />
@@ -163,6 +192,12 @@ export default function G4Results() {
           </Button>
         </div>
       </div>
+
+      <PunishmentModal
+        open={showPunishment}
+        onClose={() => setShowPunishment(false)}
+        loserName={selectedLoser || lowestScorer?.name}
+      />
 
       <HostUtilityBar />
     </div>

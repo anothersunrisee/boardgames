@@ -15,7 +15,7 @@ export const CONFETTI_PIECES = Array.from({ length: 28 }).map((_, idx) => ({
   shape: idx % 3, // 0: rect, 1: circle, 2: diamond
 }));
 
-export const ConfettiShower: React.FC<{ active?: boolean }> = ({ active = true }) => {
+export const ConfettiShower: React.FC<{ active?: boolean; particleCount?: number }> = ({ active = true }) => {
   if (!active) return null;
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">

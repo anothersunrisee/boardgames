@@ -1,13 +1,15 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Trophy, ArrowRight, Flame, Award } from 'lucide-react'
+import { ArrowLeft, Trophy, ArrowRight, Flame, Award, AlertTriangle } from 'lucide-react'
 import { useGameStore, type DebateMatch } from '../../store/useGameStore'
 import { getRandomTopic, getRandomChaosCard } from '../../data/game4-topics'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
+import { PunishmentModal } from '../../components/PunishmentModal'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -23,6 +25,9 @@ export default function G4RoundResult() {
     g4UsedTopicIds,
   } = useGameStore()
 
+  const [showPunishment, setShowPunishment] = useState(false)
+  const [loserName, setLoserName] = useState('')
+
   const match: DebateMatch | undefined = g4Matches[g4CurrentMatchIndex]
 
   useEffect(() => {
@@ -30,7 +35,7 @@ export default function G4RoundResult() {
   }, [])
 
   if (!match) {
-    navigate('/')
+    navigate('/hub')
     return null
   }
 
@@ -39,6 +44,7 @@ export default function G4RoundResult() {
 
   const isTie = match.winnerId === 'tie'
   const winner = isTie ? null : players.find((p) => p.id === match.winnerId)
+  const loser = isTie ? null : match.winnerId === playerA?.id ? playerB : playerA
   const isFinalMatch = match.isFinal
 
   const isAllStandardMatchesCompleted =
@@ -87,7 +93,7 @@ export default function G4RoundResult() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -138,23 +144,24 @@ export default function G4RoundResult() {
           <div className="grid grid-cols-2 gap-3 text-center">
             {/* Player A */}
             <div
-              className={`p-3.5 rounded-2xl border-2 transition-all ${
+              className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col items-center ${
                 match.winnerId === playerA?.id
                   ? 'bg-[#D6F5EC] border-[#12B76A]'
                   : 'bg-[#FAF7F2] border-[#1E1E24]/10'
               }`}
             >
-              <p className="font-display text-base font-bold text-[#1E1E24]">{playerA?.name}</p>
+              <PlayerProfileAvatar characterId={playerA?.avatarId} size={44} name={playerA?.name} />
+              <p className="font-display text-base font-bold text-[#1E1E24] mt-1">{playerA?.name}</p>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#12B76A] text-white inline-block mt-0.5 mb-1.5">
                 PRO
               </span>
               <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesA} suara</p>
               <p className="text-xs font-semibold text-[#64616C] mt-1">
                 {match.winnerId === playerA?.id
-                  ? '+3 Poin Menang'
+                  ? '+4 Poin Menang'
                   : isTie
                   ? '+2 Poin Seri'
-                  : '+1 Partisipasi'}
+                  : '-2 Poin Kalah'}
               </p>
               {match.bestPerformanceId === playerA?.id && (
                 <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#EC5A29] bg-[#FFE8DF] px-2 py-0.5 rounded-full">
@@ -166,23 +173,24 @@ export default function G4RoundResult() {
 
             {/* Player B */}
             <div
-              className={`p-3.5 rounded-2xl border-2 transition-all ${
+              className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col items-center ${
                 match.winnerId === playerB?.id
                   ? 'bg-[#D6F5EC] border-[#12B76A]'
                   : 'bg-[#FAF7F2] border-[#1E1E24]/10'
               }`}
             >
-              <p className="font-display text-base font-bold text-[#1E1E24]">{playerB?.name}</p>
+              <PlayerProfileAvatar characterId={playerB?.avatarId} size={44} name={playerB?.name} />
+              <p className="font-display text-base font-bold text-[#1E1E24] mt-1">{playerB?.name}</p>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#F04438] text-white inline-block mt-0.5 mb-1.5">
                 KONTRA
               </span>
               <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesB} suara</p>
               <p className="text-xs font-semibold text-[#64616C] mt-1">
                 {match.winnerId === playerB?.id
-                  ? '+3 Poin Menang'
+                  ? '+4 Poin Menang'
                   : isTie
                   ? '+2 Poin Seri'
-                  : '+1 Partisipasi'}
+                  : '-2 Poin Kalah'}
               </p>
               {match.bestPerformanceId === playerB?.id && (
                 <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#EC5A29] bg-[#FFE8DF] px-2 py-0.5 rounded-full">
@@ -198,6 +206,23 @@ export default function G4RoundResult() {
         <div className="mb-6">
           <ScoreBoard players={players} title="Klasemen Skor Sementara" />
         </div>
+
+        {/* Punishment Button for Loser */}
+        {loser && (
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setLoserName(loser.name)
+                setShowPunishment(true)
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>🃏 Ambil Kartu Hukuman untuk {loser.name}!</span>
+            </button>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-3 mt-auto">
@@ -251,6 +276,12 @@ export default function G4RoundResult() {
           )}
         </div>
       </div>
+
+      <PunishmentModal
+        open={showPunishment}
+        onClose={() => setShowPunishment(false)}
+        loserName={loserName}
+      />
 
       <HostUtilityBar />
     </div>

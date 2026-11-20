@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { BlobMascot } from '../../components/ui/BlobMascot';
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar';
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { sfx } from '../../utils/sound';
@@ -74,7 +75,7 @@ export default function G6Match() {
   }, [isRunning, timeLeft, stage]);
 
   if (!match || !playerA || !playerB) {
-    navigate('/');
+    navigate('/hub');
     return null;
   }
 
@@ -153,7 +154,7 @@ export default function G6Match() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop();
-              navigate('/');
+              navigate('/hub');
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -206,7 +207,7 @@ export default function G6Match() {
         {/* Pitching Combatants Duel Cards */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div
-            className={`p-3.5 rounded-2xl border-2 transition-all text-center ${
+            className={`p-3.5 rounded-2xl border-2 transition-all text-center flex flex-col items-center ${
               stage === 'pitchA'
                 ? 'bg-[#ECFCCB] border-[#65A30D] ring-2 ring-[#65A30D] shadow-md scale-102'
                 : 'bg-white border-[#1E1E24]/10'
@@ -215,18 +216,21 @@ export default function G6Match() {
             <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#65A30D] text-white">
               Sales 1
             </span>
-            <p className="font-display text-lg font-bold text-[#1E1E24] mt-1">
-              {playerA.name}
-            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <PlayerProfileAvatar characterId={playerA.avatarId} size={36} name={playerA.name} />
+              <p className="font-display text-base md:text-lg font-bold text-[#1E1E24] truncate">
+                {playerA.name}
+              </p>
+            </div>
             {stage === 'pitchA' && (
-              <span className="inline-block text-[11px] font-bold text-[#65A30D] animate-pulse mt-0.5">
+              <span className="inline-block text-[11px] font-bold text-[#65A30D] animate-pulse mt-1">
                 🎙️ Sedang Presentasi!
               </span>
             )}
           </div>
 
           <div
-            className={`p-3.5 rounded-2xl border-2 transition-all text-center ${
+            className={`p-3.5 rounded-2xl border-2 transition-all text-center flex flex-col items-center ${
               stage === 'pitchB'
                 ? 'bg-[#ECFCCB] border-[#65A30D] ring-2 ring-[#65A30D] shadow-md scale-102'
                 : 'bg-white border-[#1E1E24]/10'
@@ -235,11 +239,14 @@ export default function G6Match() {
             <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#3F6212] text-white">
               Sales 2
             </span>
-            <p className="font-display text-lg font-bold text-[#1E1E24] mt-1">
-              {playerB.name}
-            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <PlayerProfileAvatar characterId={playerB.avatarId} size={36} name={playerB.name} />
+              <p className="font-display text-base md:text-lg font-bold text-[#1E1E24] truncate">
+                {playerB.name}
+              </p>
+            </div>
             {stage === 'pitchB' && (
-              <span className="inline-block text-[11px] font-bold text-[#65A30D] animate-pulse mt-0.5">
+              <span className="inline-block text-[11px] font-bold text-[#65A30D] animate-pulse mt-1">
                 🎙️ Sedang Presentasi!
               </span>
             )}
@@ -363,9 +370,10 @@ export default function G6Match() {
               <div className="grid grid-cols-2 gap-4">
                 <div
                   onClick={handleVoteA}
-                  className="p-5 rounded-2xl bg-white border-3 border-[#65A30D] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs"
+                  className="p-5 rounded-2xl bg-white border-3 border-[#65A30D] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center"
                 >
-                  <p className="font-display text-base font-bold text-[#1E1E24]">{playerA.name}</p>
+                  <PlayerProfileAvatar characterId={playerA.avatarId} size={44} name={playerA.name} />
+                  <p className="font-display text-base font-bold text-[#1E1E24] mt-1.5">{playerA.name}</p>
                   <p className="font-display text-4xl font-bold text-[#65A30D] my-2">{votesA}</p>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#65A30D] text-white text-xs font-bold">
                     <ThumbsUp className="w-3.5 h-3.5" />
@@ -375,9 +383,10 @@ export default function G6Match() {
 
                 <div
                   onClick={handleVoteB}
-                  className="p-5 rounded-2xl bg-white border-3 border-[#3F6212] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs"
+                  className="p-5 rounded-2xl bg-white border-3 border-[#3F6212] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center"
                 >
-                  <p className="font-display text-base font-bold text-[#1E1E24]">{playerB.name}</p>
+                  <PlayerProfileAvatar characterId={playerB.avatarId} size={44} name={playerB.name} />
+                  <p className="font-display text-base font-bold text-[#1E1E24] mt-1.5">{playerB.name}</p>
                   <p className="font-display text-4xl font-bold text-[#3F6212] my-2">{votesB}</p>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#3F6212] text-white text-xs font-bold">
                     <ThumbsUp className="w-3.5 h-3.5" />

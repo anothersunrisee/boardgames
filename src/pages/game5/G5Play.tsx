@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { BlobMascot } from '../../components/ui/BlobMascot';
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar';
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { sfx } from '../../utils/sound';
@@ -28,7 +29,7 @@ export default function G5Play() {
   const currentTeam = g5Teams[g5CurrentTeamIndex];
 
   if (!currentTeam || g5Teams.length === 0) {
-    navigate('/');
+    navigate('/hub');
     return null;
   }
 
@@ -75,7 +76,7 @@ export default function G5Play() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop();
-              navigate('/');
+              navigate('/hub');
             }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -124,14 +125,15 @@ export default function G5Play() {
               return (
                 <div key={mId} className="flex items-center gap-2">
                   <div
-                    className={`px-3 py-1.5 rounded-xl font-display text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-xl font-display text-xs font-bold transition-all flex items-center gap-1.5 ${
                       isPast
                         ? 'bg-[#D6F5EC] text-[#12B76A] border-2 border-[#12B76A]'
                         : isCurrent
-                        ? 'bg-[#7C3AED] text-white border-2 border-[#7C3AED] shadow-sm scale-105'
+                        ? 'bg-[#7C3AED] text-white border-2 border-[#7C3AED] shadow-sm scale-105 ring-2 ring-[#7C3AED]/30'
                         : 'bg-[#FAF7F2] text-[#64616C] border border-[#1E1E24]/10'
                     }`}
                   >
+                    <PlayerProfileAvatar characterId={mem?.avatarId} size={22} name={mem?.name} />
                     <span>
                       {isPast ? '✅ ' : `${idx + 1}. `}
                       {mem?.name}
@@ -163,9 +165,12 @@ export default function G5Play() {
                   <span>Kategori: {currentQuestion?.category}</span>
                 </div>
 
-                <p className="text-xs text-white/80 font-bold mb-1">
-                  Pertanyaan untuk: <span className="underline font-black">{currentMember?.name}</span>
-                </p>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <PlayerProfileAvatar characterId={currentMember?.avatarId} size={32} name={currentMember?.name} />
+                  <p className="text-xs text-white/90 font-bold">
+                    Pertanyaan untuk: <span className="underline font-black">{currentMember?.name}</span>
+                  </p>
+                </div>
 
                 <h2 className="font-display text-xl md:text-2xl font-bold leading-snug my-2">
                   "{currentQuestion?.question}"

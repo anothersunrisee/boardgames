@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -51,7 +52,7 @@ export default function G2Reveal() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1 cursor-pointer"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -106,6 +107,8 @@ export default function G2Reveal() {
                   >
                     {bg.correct ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4 stroke-[3]" />}
                   </div>
+
+                  <PlayerProfileAvatar characterId={boy?.avatarId} size={36} name={boy?.name} />
 
                   <div className="flex-1 min-w-0">
                     <p className="font-display text-base font-bold text-[#1E1E24]">{boy?.name}</p>

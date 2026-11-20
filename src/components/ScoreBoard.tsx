@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trophy, Users } from 'lucide-react';
-import { BlobMascot } from './ui/BlobMascot';
+import { PlayerProfileAvatar } from './characters/PlayerProfileAvatar';
+import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
 
 export interface PlayerScoreItem {
   id: string;
@@ -8,6 +9,7 @@ export interface PlayerScoreItem {
   kubu?: string;
   team?: string;
   score: number;
+  avatarId?: string;
 }
 
 interface ScoreBoardProps {
@@ -17,9 +19,9 @@ interface ScoreBoardProps {
 }
 
 const RANK_STYLES = [
-  'bg-[#F472B6] text-[#1E1E24]', // #1 Vibrant Pastel Pink
+  'bg-[#FBBF24] text-[#1E1E24]', // #1 Butter Gold
   'bg-[#FAF7F2] text-[#1E1E24]', // #2 Warm Cream
-  'bg-[#FCD34D] text-[#1E1E24]', // #3 Butter Gold
+  'bg-[#F9A8B8] text-[#1E1E24]', // #3 Pastel Berry
 ];
 
 export const ScoreBoard: React.FC<ScoreBoardProps> = ({
@@ -42,19 +44,19 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div className="rounded-[32px] bg-[#488B76] p-6 md:p-7 text-white shadow-[0_8px_0_rgba(30,30,36,0.12)] border-[3px] border-[#1E1E24]/10">
+    <div className="rounded-[32px] bg-[#488B76] p-5 md:p-6 text-white shadow-[0_8px_0_rgba(30,30,36,0.12)] border-[3px] border-[#1E1E24]/10">
       {/* Header + Segmented Pill Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <Trophy className="w-7 h-7 text-[#FCD34D]" />
-          <h2 className="font-display text-2xl md:text-3xl font-bold">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div className="flex items-center gap-2.5">
+          <Trophy className="w-6 h-6 text-[#FBBF24]" />
+          <h2 className="font-display text-xl md:text-2xl font-bold">{title}</h2>
         </div>
 
         <div className="inline-flex p-1 rounded-full bg-[#356B5A]">
           <button
             type="button"
             onClick={() => setTab('individu')}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
               tab === 'individu'
                 ? 'bg-[#FAF7F2] text-[#1E1E24] shadow-xs'
                 : 'text-white/80 hover:text-white'
@@ -65,7 +67,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           <button
             type="button"
             onClick={() => setTab('kubu')}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
               tab === 'kubu'
                 ? 'bg-[#FAF7F2] text-[#1E1E24] shadow-xs'
                 : 'text-white/80 hover:text-white'
@@ -78,41 +80,40 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
 
       {/* Stacked Leaderboard Rows */}
       {tab === 'individu' ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {sortedPlayers.map((player, idx) => {
             const isWinner = player.id === highlightId;
             const rowStyle =
-              RANK_STYLES[idx] || 'bg-[#5CA08B] text-white border border-white/15';
+              RANK_STYLES[idx] || 'bg-[#356B5A] text-white border border-white/15';
+            const char = getCharacterById(player.avatarId || CHARACTER_PACK[idx % CHARACTER_PACK.length].id);
 
             return (
               <div
                 key={player.id}
-                className={`flex items-center justify-between px-4 py-3.5 rounded-[22px] font-bold shadow-xs transition-transform ${
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-[20px] font-bold shadow-xs transition-transform ${
                   isWinner ? 'ring-3 ring-amber-300 scale-[1.01]' : ''
                 } ${rowStyle}`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-lg w-8 text-center">
+                <div className="flex items-center gap-2.5">
+                  <span className="font-display text-base w-6 text-center">
                     #{idx + 1}
                   </span>
-                  <BlobMascot
-                    shape={idx === 0 ? 'flower' : idx === 1 ? 'scallop' : 'circle'}
-                    mood={idx === 0 ? 'excited' : 'happy'}
-                    color={idx === 0 ? '#FBBF24' : '#60A5FA'}
+                  <PlayerProfileAvatar
+                    character={char}
                     size={38}
-                    floating={false}
+                    mood={idx === 0 ? 'winner' : 'idle'}
                   />
                   <div>
-                    <p className="text-base leading-tight">{player.name}</p>
-                    <p className="text-xs opacity-75 font-semibold">
+                    <p className="text-sm font-bold leading-tight">{player.name}</p>
+                    <p className="text-[11px] opacity-75 font-semibold">
                       {player.kubu || player.team}
                     </p>
                   </div>
                 </div>
 
-                {/* Circular Score Pill */}
+                {/* Score Pill */}
                 <div
-                  className={`px-4 py-1.5 rounded-full font-display text-base shadow-xs ${
+                  className={`px-3.5 py-1 rounded-full font-display text-sm shadow-xs ${
                     player.score < 0
                       ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
                       : 'bg-white text-[#1E1E24]'
@@ -125,29 +126,23 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           })}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {sortedTeams.map((item, idx) => (
             <div
               key={item.team}
-              className={`flex items-center justify-between px-5 py-4 rounded-[22px] font-bold ${
-                RANK_STYLES[idx] || 'bg-[#5CA08B] text-white'
+              className={`flex items-center justify-between px-4 py-3 rounded-[20px] font-bold ${
+                RANK_STYLES[idx] || 'bg-[#356B5A] text-white border border-white/15'
               }`}
             >
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5" />
-                <span className="font-display text-lg">
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4" />
+                <span className="font-display text-base">
                   #{idx + 1} {item.team}
                 </span>
               </div>
-              <div
-                className={`px-4 py-1.5 rounded-full font-display text-base ${
-                  item.score < 0
-                    ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
-                    : 'bg-white text-[#1E1E24]'
-                }`}
-              >
-                {item.score > 0 ? `+${item.score}` : item.score} pts
-              </div>
+              <span className="px-3.5 py-1 rounded-full bg-white text-[#1E1E24] font-display text-sm shadow-xs">
+                {item.score} pts
+              </span>
             </div>
           ))}
         </div>

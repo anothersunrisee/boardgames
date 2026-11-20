@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
 import RoomSetup from './pages/RoomSetup'
 import RoomPodium from './pages/RoomPodium'
@@ -31,18 +32,28 @@ import StudioAssetPack from './pages/StudioAssetPack'
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/studio" element={<StudioAssetPack />} />
+      {/* 1. Onboarding Screen (Fruit Ninja Canvas, Mascots, START Button) */}
+      <Route path="/" element={<Onboarding />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+
+      {/* 2. Room Setup & Player Registration */}
       <Route path="/room" element={<RoomSetup />} />
       <Route path="/room/podium" element={<RoomPodium />} />
 
-      {/* Game 1 */}
+      {/* 3. Game Selection Hub */}
+      <Route path="/hub" element={<Home />} />
+      <Route path="/games" element={<Home />} />
+
+      {/* Studio Showcase */}
+      <Route path="/studio" element={<StudioAssetPack />} />
+
+      {/* Game 1: Same Brain? NO! */}
       <Route path="/game1/setup"   element={<G1Setup />} />
       <Route path="/game1/round"   element={<G1Round />} />
       <Route path="/game1/reveal"  element={<G1Reveal />} />
       <Route path="/game1/results" element={<G1Results />} />
 
-      {/* Game 2 */}
+      {/* Game 2: Beauty Expert?! */}
       <Route path="/game2/setup"   element={<G2Setup />} />
       <Route path="/game2/secret"  element={<G2Secret />} />
       <Route path="/game2/qna"     element={<G2QnA />} />
@@ -50,7 +61,7 @@ export default function App() {
       <Route path="/game2/reveal"  element={<G2Reveal />} />
       <Route path="/game2/results" element={<G2Results />} />
 
-      {/* Game 3 */}
+      {/* Game 3: Boys Stuff, Girls Guess! */}
       <Route path="/game3/setup"   element={<G3Setup />} />
       <Route path="/game3/secret"  element={<G3Secret />} />
       <Route path="/game3/qna"     element={<G3QnA />} />
@@ -58,7 +69,7 @@ export default function App() {
       <Route path="/game3/reveal"  element={<G3Reveal />} />
       <Route path="/game3/results" element={<G3Results />} />
 
-      {/* Game 4 */}
+      {/* Game 4: The Devil's Advocate */}
       <Route path="/game4/setup"        element={<G4Setup />} />
       <Route path="/game4/match"        element={<G4Match />} />
       <Route path="/game4/round-result" element={<G4RoundResult />} />

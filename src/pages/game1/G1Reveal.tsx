@@ -6,6 +6,7 @@ import { useGameStore, type G1Round } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { BlobMascot } from '../../components/ui/BlobMascot'
+import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
 
@@ -53,7 +54,7 @@ export default function G1Reveal() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1 cursor-pointer"
             onClick={() => {
               sfx.playPop()
-              navigate('/')
+              navigate('/hub')
             }}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -100,6 +101,8 @@ export default function G1Reveal() {
                       <X className="w-5 h-5 stroke-[3]" />
                     )}
                   </div>
+
+                  <PlayerProfileAvatar characterId={player?.avatarId} size={36} name={player?.name} />
 
                   <div className="flex-1 min-w-0">
                     <p className="font-display text-lg font-bold text-[#1E1E24] truncate">

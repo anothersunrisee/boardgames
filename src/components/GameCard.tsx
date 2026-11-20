@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Users } from 'lucide-react';
-import { BlobMascot, type BlobMood, type BlobShape, type BlobAccessory } from './ui/BlobMascot';
-import { sfx } from '../utils/sound';
+import { GameMascotBot } from './characters/GameMascotBot';
+import { getCharacterById } from '../assets-library/characters';
+import { sfx } from '../assets-library/soundEngine';
 
 export interface GameCardProps {
   id?: string;
@@ -14,15 +15,22 @@ export interface GameCardProps {
   playerCount: string;
   bgColor: string;
   pillColor: string;
-  mascotShape: BlobShape;
-  mascotMood: BlobMood;
-  mascotColor: string;
-  mascotAccent: string;
-  mascotAccessory?: BlobAccessory;
+  characterId?: string;
+  mascotMood?: 'idle' | 'happy' | 'thinking' | 'shocked' | 'winner' | 'dizzy';
   onSelect: () => void;
 }
 
+const DEFAULT_GAME_CHAR_MAP: Record<string, string> = {
+  game1: 'c02', // Kiko (Emerald)
+  game2: 'c12', // Riri (Berry Pink)
+  game3: 'c05', // Zuzu (Cobalt Blue)
+  game4: 'c15', // Bimi (Tangerine / Chaos)
+  game5: 'c10', // Nori (Teal / Purple)
+  game6: 'c17', // Juno (Lime / Gold Smug)
+};
+
 export const GameCard: React.FC<GameCardProps> = ({
+  id,
   numberBadge,
   categoryPill,
   title,
@@ -30,16 +38,16 @@ export const GameCard: React.FC<GameCardProps> = ({
   playerCount,
   bgColor,
   pillColor,
-  mascotShape,
-  mascotMood,
-  mascotColor,
-  mascotAccent,
-  mascotAccessory = 'none',
+  characterId,
+  mascotMood = 'happy',
   onSelect,
 }) => {
+  const chosenCharId = characterId || (id ? DEFAULT_GAME_CHAR_MAP[id] : undefined) || 'c01';
+  const character = getCharacterById(chosenCharId);
+
   return (
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -5, scale: 1.01 }}
       whileTap={{ scale: 0.985 }}
       onClick={() => {
         sfx.playPop(580);
@@ -63,7 +71,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           </span>
         </div>
 
-        {/* Circular Action Arrow at Top Right (Never overlaps the mascot) */}
+        {/* Circular Action Arrow at Top Right */}
         <div className="w-10 h-10 rounded-full bg-[#1E1E24] text-[#FAF7F2] flex items-center justify-center shadow-md group-hover:scale-110 group-hover:bg-white group-hover:text-[#1E1E24] transition-all shrink-0">
           <ArrowUpRight className="w-5 h-5" />
         </div>
@@ -87,15 +95,14 @@ export const GameCard: React.FC<GameCardProps> = ({
         </div>
       </div>
 
-      {/* Peeking Geometric Mascot on Right/Bottom-Right (Fully Visible & Unblocked) */}
-      <div className="absolute right-0 -bottom-3 pointer-events-none transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
-        <BlobMascot
-          shape={mascotShape}
+      {/* Animated In-Game Mascot Bot (Style B) on Right with glowing white pill eyes that blink & glance */}
+      <div className="absolute -right-3 -bottom-3 pointer-events-none transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+        <GameMascotBot
+          character={character}
+          size={135}
           mood={mascotMood}
-          color={mascotColor}
-          accentColor={mascotAccent}
-          accessory={mascotAccessory}
-          size={140}
+          stickerBorder={true}
+          showCrown={mascotMood === 'winner'}
         />
       </div>
     </motion.div>

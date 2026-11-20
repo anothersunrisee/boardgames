@@ -74,7 +74,7 @@ export default function G2Setup() {
           className="text-sm font-bold text-[#64616C] hover:text-[#1E1E24] mb-6 flex items-center gap-1.5 cursor-pointer w-fit"
           onClick={() => {
             sfx.playPop()
-            navigate('/')
+            navigate('/hub')
           }}
         >
           <ArrowLeft className="w-4 h-4" />
