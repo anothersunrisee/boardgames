@@ -933,6 +933,10 @@ const FruitNinjaMascotCanvas: React.FC<{
     let isPointerDown = false;
     let lastPointerX = 0;
     let lastPointerY = 0;
+    let mouseX = -100;
+    let mouseY = -100;
+    let isMouseInside = false;
+    let isTouchDevice = false;
 
     const spawnMascot = (xOverride?: number) => {
       if (mascots.length >= 9) return;
@@ -1129,9 +1133,18 @@ const FruitNinjaMascotCanvas: React.FC<{
       if (target && target.closest('[data-ui-interactive="true"]')) return;
 
       isPointerDown = true;
+      if (e.pointerType === 'touch') isTouchDevice = true;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      isMouseInside = true;
       lastPointerX = e.clientX;
       lastPointerY = e.clientY;
       bladeTrail.push({ x: e.clientX, y: e.clientY, age: 0 });
+
+      if (canvas) {
+        canvas.classList.remove('cursor-ninja');
+        canvas.classList.add('cursor-ninja-slash');
+      }
 
       const hit = hitTestPoint(e.clientX, e.clientY);
       if (!hit) {
@@ -1147,6 +1160,11 @@ const FruitNinjaMascotCanvas: React.FC<{
     };
 
     const onPointerMove = (e: PointerEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      isMouseInside = true;
+      if (e.pointerType === 'touch') isTouchDevice = true;
+
       if (!isPointerDown) return;
       const cx = e.clientX;
       const cy = e.clientY;
@@ -1159,12 +1177,26 @@ const FruitNinjaMascotCanvas: React.FC<{
 
     const onPointerUp = () => {
       isPointerDown = false;
+      if (canvas) {
+        canvas.classList.remove('cursor-ninja-slash');
+        canvas.classList.add('cursor-ninja');
+      }
+    };
+
+    const onPointerLeave = () => {
+      isMouseInside = false;
+      isPointerDown = false;
+      if (canvas) {
+        canvas.classList.remove('cursor-ninja-slash');
+        canvas.classList.add('cursor-ninja');
+      }
     };
 
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
+    window.addEventListener('pointerleave', onPointerLeave);
 
     // Initial launch wave
     spawnMascot(width * 0.22);
@@ -1475,6 +1507,95 @@ const FruitNinjaMascotCanvas: React.FC<{
         ctx.restore();
       }
 
+      // Draw high-visibility Fruit Ninja interactive slicing reticle at cursor position
+      if (isMouseInside && mouseX > 0 && mouseY > 0 && !isTouchDevice) {
+        ctx.save();
+        ctx.translate(mouseX, mouseY);
+
+        const pulse = Math.sin(elapsedSec * 6) * 1.5;
+        const baseR = isPointerDown ? 20 : 15;
+        const curR = baseR + pulse;
+
+        // 1. Soft Ambient Luminous Halo (Visible over both light cream and dark elements)
+        const haloGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, curR + 14);
+        if (isPointerDown) {
+          haloGrad.addColorStop(0, 'rgba(255, 90, 38, 0.45)');
+          haloGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.25)');
+          haloGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        } else {
+          haloGrad.addColorStop(0, 'rgba(251, 191, 36, 0.35)');
+          haloGrad.addColorStop(0.6, 'rgba(236, 90, 41, 0.15)');
+          haloGrad.addColorStop(1, 'rgba(236, 90, 41, 0)');
+        }
+        ctx.fillStyle = haloGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, curR + 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. High-Contrast Outer Reticle Ring (White Halo + Dark Ink Outline)
+        ctx.beginPath();
+        ctx.arc(0, 0, curR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 4.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, curR, 0, Math.PI * 2);
+        ctx.strokeStyle = isPointerDown ? '#FF5A26' : '#F59E0B';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, curR - 1.5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#1E1E24';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 3. Slicing Crosshair Ticks with White Backing
+        const rot = elapsedSec * (isPointerDown ? 3.5 : 1.2);
+        for (let k = 0; k < 4; k++) {
+          const angle = rot + (k * Math.PI) / 2;
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const rInner = curR - 5;
+          const rOuter = curR + 7;
+
+          ctx.beginPath();
+          ctx.moveTo(cos * rInner, sin * rInner);
+          ctx.lineTo(cos * rOuter, sin * rOuter);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(cos * rInner, sin * rInner);
+          ctx.lineTo(cos * rOuter, sin * rOuter);
+          ctx.strokeStyle = isPointerDown ? '#FF5A26' : '#1E1E24';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+
+        // 4. Center Glowing Pip
+        ctx.beginPath();
+        ctx.arc(0, 0, isPointerDown ? 4.5 : 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+        ctx.strokeStyle = '#1E1E24';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 5. Mini Orbiting Sparkle Star
+        const orbitR = curR + 10;
+        const starAngle = -elapsedSec * 4;
+        const sx = Math.cos(starAngle) * orbitR;
+        const sy = Math.sin(starAngle) * orbitR;
+        drawFourPointStar(ctx, sx, sy, isPointerDown ? 6 : 4.5, isPointerDown ? '#FF5A26' : '#F59E0B');
+
+        ctx.restore();
+      }
+
       ctx.restore();
       rafId = requestAnimationFrame(frame);
     };
@@ -1490,6 +1611,7 @@ const FruitNinjaMascotCanvas: React.FC<{
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
+      window.removeEventListener('pointerleave', onPointerLeave);
     };
   }, [active]);
 
@@ -1497,7 +1619,7 @@ const FruitNinjaMascotCanvas: React.FC<{
     <canvas
       ref={canvasRef}
       style={{ touchAction: 'none' }}
-      className="fixed inset-0 z-10 cursor-crosshair select-none"
+      className="fixed inset-0 z-10 cursor-ninja select-none"
     />
   );
 };

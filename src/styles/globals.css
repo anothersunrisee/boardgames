@@ -78,6 +78,16 @@
   transform: translateY(4px);
 }
 
+/* Custom High-Visibility Fruit Ninja Slicing Cursors */
+.cursor-ninja {
+  cursor: url('/cursors/blade-cursor.svg') 4 4, crosshair !important;
+}
+
+.cursor-ninja-slash {
+  cursor: url('/cursors/blade-cursor-slash.svg') 4 4, crosshair !important;
+}
+
+
 .input-field {
   box-sizing: border-box;
   min-width: 0;
