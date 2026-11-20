@@ -12,7 +12,7 @@ import { sfx } from '../../utils/sound'
 
 export default function G4Results() {
   const navigate = useNavigate()
-  const { players, g4Matches, fullReset } = useGameStore()
+  const { players, g4Matches, autoStartGame4 } = useGameStore()
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const supremeAdvocate = sortedPlayers[0]
@@ -31,12 +31,11 @@ export default function G4Results() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              fullReset()
               navigate('/')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Menu</span>
+            <span>Pilih Game Lain</span>
           </button>
           <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#EC5A29] text-white font-bold tracking-wide">
             Turnamen Selesai
@@ -142,11 +141,12 @@ export default function G4Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              navigate('/game4/setup')
+              autoStartGame4()
+              navigate('/game4/match')
             }}
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Tanding Debat Lagi (Reset)</span>
+            <span>Tanding Debat Lagi (Acak Ulang)</span>
           </Button>
 
           <Button
@@ -155,12 +155,11 @@ export default function G4Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              fullReset()
               navigate('/')
             }}
           >
             <Home className="w-5 h-5" />
-            <span>Kembali ke Menu Utama</span>
+            <span>Pilih Game Lain</span>
           </Button>
         </div>
       </div>

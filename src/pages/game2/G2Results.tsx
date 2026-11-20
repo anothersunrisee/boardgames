@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { RotateCcw, Home } from 'lucide-react'
+import { RotateCcw, Home, ArrowLeft } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { ScoreBoard } from '../../components/ScoreBoard'
@@ -11,7 +11,7 @@ import { sfx } from '../../utils/sound'
 
 export default function G2Results() {
   const navigate = useNavigate()
-  const { players, fullReset } = useGameStore()
+  const { players, autoStartGame2 } = useGameStore()
   const winner = [...players].sort((a, b) => b.score - a.score)[0]
 
   useEffect(() => {
@@ -21,6 +21,24 @@ export default function G2Results() {
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
       <div className="max-w-lg mx-auto w-full flex-1 flex flex-col">
+        {/* Top Header Back Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            type="button"
+            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
+            onClick={() => {
+              sfx.playPop()
+              navigate('/')
+            }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Pilih Game Lain</span>
+          </button>
+          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#D8317E] text-white font-bold tracking-wide">
+            Hasil Akhir
+          </span>
+        </div>
+
         <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, scale: 0.85 }}
@@ -61,11 +79,12 @@ export default function G2Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              navigate('/game2/setup')
+              autoStartGame2()
+              navigate('/game2/secret')
             }}
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Main Lagi (Reset)</span>
+            <span>Main Game Ini Lagi (Acak Ulang)</span>
           </Button>
 
           <Button
@@ -74,12 +93,11 @@ export default function G2Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              fullReset()
               navigate('/')
             }}
           >
             <Home className="w-5 h-5" />
-            <span>Kembali ke Menu Utama</span>
+            <span>Pilih Game Lain</span>
           </Button>
         </div>
       </div>

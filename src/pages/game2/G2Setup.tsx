@@ -46,8 +46,8 @@ export default function G2Setup() {
   const handleStart = () => {
     if (!isValid) return
     sfx.playSuccess()
-    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), kubu: r.kubu.trim() || 'Cewek', score: 0 }))
-    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), kubu: r.kubu.trim() || 'Cowok', score: 0 }))
+    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cewek' as const, kubu: r.kubu.trim() || 'Cewek', score: 0 }))
+    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cowok' as const, kubu: r.kubu.trim() || 'Cowok', score: 0 }))
     const allPlayers = [...girls, ...boys]
 
     const items = getRandomItems(girls.length)

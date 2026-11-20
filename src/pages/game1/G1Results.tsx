@@ -11,7 +11,7 @@ import { sfx } from '../../utils/sound'
 
 export default function G1Results() {
   const navigate = useNavigate()
-  const { players, fullReset } = useGameStore()
+  const { players, autoStartGame1 } = useGameStore()
 
   const winner = [...players].sort((a, b) => b.score - a.score)[0]
 
@@ -29,12 +29,11 @@ export default function G1Results() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              fullReset()
               navigate('/')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Menu</span>
+            <span>Kembali ke Pilih Game</span>
           </button>
           <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#158467] text-white font-bold tracking-wide">
             Hasil Akhir
@@ -84,11 +83,12 @@ export default function G1Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              navigate('/game1/setup')
+              autoStartGame1()
+              navigate('/game1/round')
             }}
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Main Ronde Baru (Reset)</span>
+            <span>Main Game Ini Lagi (Acak Ulang)</span>
           </Button>
 
           <Button
@@ -97,12 +97,11 @@ export default function G1Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              fullReset()
               navigate('/')
             }}
           >
             <Home className="w-5 h-5" />
-            <span>Kembali ke Menu Utama</span>
+            <span>Pilih Game Lain</span>
           </Button>
         </div>
       </div>

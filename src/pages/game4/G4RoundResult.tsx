@@ -30,7 +30,7 @@ export default function G4RoundResult() {
   }, [])
 
   if (!match) {
-    navigate('/game4/setup')
+    navigate('/')
     return null
   }
 

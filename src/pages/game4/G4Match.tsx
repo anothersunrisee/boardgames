@@ -196,11 +196,11 @@ export default function G4Match() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/game4/setup')
+              navigate('/')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Setup</span>
+            <span>Pilih Game</span>
           </button>
 
           <div className="flex items-center gap-2">

@@ -76,11 +76,11 @@ export default function G2Secret() {
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
             onClick={() => {
               sfx.playPop()
-              navigate('/game2/setup')
+              navigate('/')
             }}
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Setup Ulang</span>
+            <span>Pilih Game</span>
           </button>
 
           <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#D8317E] text-white font-bold tracking-wide">

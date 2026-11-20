@@ -62,9 +62,10 @@ export default function G4Setup() {
     if (!isValid) return
     sfx.playSuccess()
 
-    const players: Player[] = rows.map((r) => ({
+    const players: Player[] = rows.map((r, i) => ({
       id: r.id,
       name: r.name.trim(),
+      gender: i % 2 === 0 ? 'cowok' : 'cewek',
       kubu: r.kubu.trim(),
       score: 0,
     }))

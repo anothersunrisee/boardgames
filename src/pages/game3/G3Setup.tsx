@@ -43,8 +43,8 @@ export default function G3Setup() {
   const handleStart = () => {
     if (!isValid) return
     sfx.playSuccess()
-    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), kubu: r.kubu.trim() || 'Cowok', score: 0 }))
-    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), kubu: r.kubu.trim() || 'Cewek', score: 0 }))
+    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cowok' as const, kubu: r.kubu.trim() || 'Cowok', score: 0 }))
+    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cewek' as const, kubu: r.kubu.trim() || 'Cewek', score: 0 }))
 
     const cat = WORD_CATEGORIES.find((c) => c.label === selectedCategory)!
     const shuffledWords = [...cat.words].sort(() => Math.random() - 0.5)
