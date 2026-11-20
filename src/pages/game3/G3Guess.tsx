@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { PassDeviceModal } from '../../components/PassDeviceModal'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
+import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout'
 import { sfx } from '../../utils/sound'
 
 export default function G3Guess() {
@@ -59,10 +60,15 @@ export default function G3Guess() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
-      <div className="max-w-lg mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header with Back Navigation */}
-        <div className="flex items-center justify-between mb-5">
+    <GameDesktopLayout
+      gameTitle="Boys Stuff"
+      badge="GAME 03 • BOYS STUFF"
+      badgeColor="#2568EF"
+      activeRoundLabel={`Tebak Kata ${boy.name} (${slot.category})`}
+    >
+      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+        {/* Top Header on Mobile */}
+        <div className="flex lg:hidden items-center justify-between mb-5">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1 cursor-pointer"
@@ -174,7 +180,9 @@ export default function G3Guess() {
         </AnimatePresence>
       </div>
 
-      <HostUtilityBar />
-    </div>
+      <div className="block lg:hidden">
+        <HostUtilityBar />
+      </div>
+    </GameDesktopLayout>
   )
 }

@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { BlobMascot } from '../../components/ui/BlobMascot'
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
+import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout'
 import { sfx } from '../../utils/sound'
 
 type Stage =
@@ -189,10 +190,15 @@ export default function G4Match() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col">
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
-        {/* Header Progress with Back Button */}
-        <div className="flex items-center justify-between mb-4">
+    <GameDesktopLayout
+      gameTitle="The Devil's Advocate"
+      badge="GAME 04 • DEBAT"
+      badgeColor="#EC5A29"
+      activeRoundLabel={match.isFinal ? 'Grand Final' : `Match ${match.matchNumber}/${totalMatches}`}
+    >
+      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+        {/* Header Progress with Back Button on Mobile */}
+        <div className="flex lg:hidden items-center justify-between mb-4">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
@@ -543,7 +549,9 @@ export default function G4Match() {
         )}
       </div>
 
-      <HostUtilityBar />
-    </div>
+      <div className="block lg:hidden">
+        <HostUtilityBar />
+      </div>
+    </GameDesktopLayout>
   )
 }

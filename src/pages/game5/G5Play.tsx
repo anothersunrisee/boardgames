@@ -11,6 +11,7 @@ import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { ConfettiShower } from '../../components/motion/ConfettiShower';
 import { FluentEmoji } from '../../components/ui/FluentEmoji';
+import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout';
 import { sfx } from '../../utils/sound';
 
 export default function G5Play() {
@@ -69,12 +70,17 @@ export default function G5Play() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between relative overflow-hidden">
+    <GameDesktopLayout
+      gameTitle="Cerdas Cermat Berantai"
+      badge="GAME 05 • RELAY"
+      badgeColor="#7C3AED"
+      activeRoundLabel={`${currentTeam.name} (${g5CurrentTeamIndex + 1}/${g5Teams.length})`}
+    >
       {teamOutcome === 'success' && <ConfettiShower particleCount={50} />}
 
-      <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header */}
-        <div className="flex items-center justify-between mb-5">
+      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+        {/* Top Header on Mobile (Hidden on Desktop because it's in the 20% Sidebar) */}
+        <div className="flex lg:hidden items-center justify-between mb-5">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
@@ -474,7 +480,9 @@ export default function G5Play() {
         loserName={failedMemberName}
       />
 
-      <HostUtilityBar />
-    </div>
+      <div className="block lg:hidden">
+        <HostUtilityBar />
+      </div>
+    </GameDesktopLayout>
   );
 }

@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Volume2,
   VolumeX,
-  Code2,
   Copy,
   Check,
   Download,
@@ -1591,11 +1590,11 @@ const LottieCircleTransition: React.FC<{
         swappedRef.current = true;
         onMidpointSwap();
       }
-    }, 520);
+    }, 950);
 
     const doneTimer = window.setTimeout(() => {
       onComplete();
-    }, 1220);
+    }, 2400);
 
     return () => {
       clearTimeout(midTimer);
@@ -1608,9 +1607,10 @@ const LottieCircleTransition: React.FC<{
       {active && (
         <motion.div
           key="lottie-stacked-circles"
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
+          transition={{ duration: 0.35 }}
           className="fixed inset-0 z-[120] pointer-events-auto flex items-center justify-center overflow-hidden"
         >
           {TRANSITION_CIRCLE_COLORS.map((hex, i) => (
@@ -1619,15 +1619,15 @@ const LottieCircleTransition: React.FC<{
               initial={{ scale: 0 }}
               animate={{ scale: [0, 2.95, 2.95, 0] }}
               transition={{
-                duration: 1.14,
-                delay: i * 0.04,
-                times: [0, 0.42, 0.54, 1],
-                ease: [0.22, 1, 0.36, 1],
+                duration: 2.35,
+                delay: i * 0.08,
+                times: [0, 0.45, 0.82, 1],
+                ease: [0.16, 1, 0.3, 1],
               }}
               style={{
                 backgroundColor: hex,
-                width: '82vmax',
-                height: '82vmax',
+                width: '85vmax',
+                height: '85vmax',
                 zIndex: i + 1,
               }}
               className="absolute rounded-full shadow-[0_0_50px_rgba(0,0,0,0.22)]"
@@ -1635,13 +1635,13 @@ const LottieCircleTransition: React.FC<{
           ))}
 
           <motion.div
-            initial={{ scale: 0.45, opacity: 0 }}
-            animate={{ scale: [0.45, 1.08, 1, 0.5], opacity: [0, 1, 1, 0] }}
+            initial={{ scale: 0.55, opacity: 0 }}
+            animate={{ scale: [0.55, 1.04, 1, 0.7], opacity: [0, 1, 1, 0] }}
             transition={{
-              duration: 0.88,
-              delay: 0.16,
-              times: [0, 0.3, 0.72, 1],
-              ease: [0.22, 1, 0.36, 1],
+              duration: 1.85,
+              delay: 0.35,
+              times: [0, 0.3, 0.82, 1],
+              ease: [0.16, 1, 0.3, 1],
             }}
             className="relative z-20 flex flex-col items-center gap-2.5"
           >
@@ -2058,19 +2058,6 @@ export default function Onboarding() {
           <span className="text-base leading-none">💥</span>
           <span className="tabular-nums">{explodeCount}</span>
         </motion.div>
-
-        {/* Export Lottie JSON Button */}
-        <button
-          onClick={() => {
-            audio.playUiTap();
-            setExportOpen(true);
-          }}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-xs border-2 border-[#1E1E24]/12 shadow-[0_4px_0_rgba(30,30,36,0.08)] font-display font-bold text-xs text-[#1E1E24] hover:bg-[#FAF7F2] active:translate-y-[2px] cursor-pointer transition"
-          title="Lihat & Download Lottie JSON"
-        >
-          <Code2 className="w-3.5 h-3.5 text-[#2568EF]" />
-          <span>Lottie JSON</span>
-        </button>
 
         {/* Sound Mute / Unmute Button */}
         <button

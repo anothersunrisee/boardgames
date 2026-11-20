@@ -17,6 +17,7 @@ interface ScoreBoardProps {
   players: PlayerScoreItem[];
   title?: string;
   highlightId?: string;
+  transparent?: boolean;
 }
 
 const RANK_STYLES = [
@@ -29,6 +30,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   players,
   title = 'Leaderboard',
   highlightId,
+  transparent = false,
 }) => {
   const [tab, setTab] = useState<'individu' | 'kubu'>('individu');
 
@@ -45,7 +47,13 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div className="rounded-[32px] bg-[#488B76] p-5 md:p-6 text-white shadow-[0_8px_0_rgba(30,30,36,0.12)] border-[3px] border-[#1E1E24]/10">
+    <div
+      className={
+        transparent
+          ? 'text-white w-full'
+          : 'rounded-[32px] bg-[#488B76] p-5 md:p-6 text-white shadow-[0_8px_0_rgba(30,30,36,0.12)] border-[3px] border-[#1E1E24]/10'
+      }
+    >
       {/* Header + Segmented Pill Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-2.5">
@@ -79,9 +87,9 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
         </div>
       </div>
 
-      {/* Stacked Leaderboard Rows */}
+      {/* Stacked Leaderboard Rows (Responsive: 1-col on mobile, 2-cols on desktop) */}
       {tab === 'individu' ? (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1.5 custom-scroll">
           {sortedPlayers.map((player, idx) => {
             const isWinner = player.id === highlightId;
             const rowStyle =
@@ -95,8 +103,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                   isWinner ? 'ring-3 ring-amber-300 scale-[1.01]' : ''
                 } ${rowStyle}`}
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="font-display text-base w-6 text-center flex items-center justify-center">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="font-display text-base w-6 text-center flex items-center justify-center shrink-0">
                     {idx === 0 ? <FluentEmoji name="crown" variant="3d" size={20} /> : `#${idx + 1}`}
                   </span>
                   <PlayerProfileAvatar
@@ -104,9 +112,9 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                     size={38}
                     mood={idx === 0 ? 'winner' : 'idle'}
                   />
-                  <div>
-                    <p className="text-sm font-bold leading-tight">{player.name}</p>
-                    <p className="text-[11px] opacity-75 font-semibold">
+                  <div className="truncate">
+                    <p className="text-sm font-bold leading-tight truncate">{player.name}</p>
+                    <p className="text-[11px] opacity-75 font-semibold truncate">
                       {player.kubu || player.team}
                     </p>
                   </div>
@@ -114,7 +122,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
 
                 {/* Score Pill */}
                 <div
-                  className={`px-3.5 py-1 rounded-full font-display text-sm shadow-xs ${
+                  className={`px-3 py-1 rounded-full font-display text-sm shadow-xs shrink-0 ml-2 ${
                     player.score < 0
                       ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
                       : 'bg-white text-[#1E1E24]'
@@ -127,7 +135,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           })}
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1.5 custom-scroll">
           {sortedTeams.map((item, idx) => (
             <div
               key={item.team}
@@ -135,13 +143,13 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 RANK_STYLES[idx] || 'bg-[#356B5A] text-white border border-white/15'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <Users className="w-4 h-4" />
-                <span className="font-display text-base">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Users className="w-4 h-4 shrink-0" />
+                <span className="font-display text-base truncate">
                   #{idx + 1} {item.team}
                 </span>
               </div>
-              <span className="px-3.5 py-1 rounded-full bg-white text-[#1E1E24] font-display text-sm shadow-xs">
+              <span className="px-3.5 py-1 rounded-full bg-white text-[#1E1E24] font-display text-sm shadow-xs shrink-0 ml-2">
                 {item.score} pts
               </span>
             </div>

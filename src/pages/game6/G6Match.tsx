@@ -10,6 +10,7 @@ import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAv
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { FluentEmoji } from '../../components/ui/FluentEmoji';
+import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout';
 import { sfx } from '../../utils/sound';
 
 type PitchStage = 'prep' | 'pitchA' | 'pitchB' | 'voting';
@@ -146,10 +147,15 @@ export default function G6Match() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header */}
-        <div className="flex items-center justify-between mb-4">
+    <GameDesktopLayout
+      gameTitle="Sell Me This Trash!"
+      badge="GAME 06 • PITCH DUEL"
+      badgeColor="#65A30D"
+      activeRoundLabel={`Pitch Match ${match.matchNumber}/${g6Matches.length}`}
+    >
+      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+        {/* Top Header on Mobile (Desktop uses Right Sidebar) */}
+        <div className="flex lg:hidden items-center justify-between mb-4">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
@@ -428,7 +434,9 @@ export default function G6Match() {
         loserName={loserName}
       />
 
-      <HostUtilityBar />
-    </div>
+      <div className="block lg:hidden">
+        <HostUtilityBar />
+      </div>
+    </GameDesktopLayout>
   );
 }

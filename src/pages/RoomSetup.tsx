@@ -140,7 +140,7 @@ export const RoomSetup: React.FC = () => {
         }}
       />
 
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
         {/* Header Mascot & Title */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -236,8 +236,8 @@ export const RoomSetup: React.FC = () => {
             </div>
           </div>
 
-          {/* Players Rows */}
-          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+          {/* Players Rows (Responsive: 1-col on mobile, 2-cols on desktop) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[460px] md:max-h-[520px] overflow-y-auto pr-1.5 custom-scroll">
             {roster.map((player, index) => {
               const char = getCharacterById(player.avatarId || CHARACTER_PACK[index % CHARACTER_PACK.length].id);
               const isPickingAvatar = avatarPickerPlayerId === player.id;
@@ -245,9 +245,9 @@ export const RoomSetup: React.FC = () => {
               return (
                 <div key={player.id} className="space-y-2">
                   <div
-                    className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/8 hover:border-[#1E1E24]/20 transition"
+                    className="flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/8 hover:border-[#1E1E24]/20 transition shadow-2xs"
                   >
-                    <span className="w-5 text-center font-display text-xs font-bold text-[#64616C]">
+                    <span className="w-4 text-center font-display text-xs font-bold text-[#64616C] shrink-0">
                       {index + 1}
                     </span>
 
@@ -261,13 +261,13 @@ export const RoomSetup: React.FC = () => {
                       className="shrink-0 p-0.5 rounded-full hover:scale-105 active:scale-95 transition cursor-pointer"
                       title="Klik untuk ganti avatar karakter"
                     >
-                      <PlayerProfileAvatar character={char} size={38} />
+                      <PlayerProfileAvatar character={char} size={36} />
                     </button>
 
                     {/* Name Input */}
                     <input
                       type="text"
-                      className="input-field text-sm font-bold py-1.5 flex-1 min-w-[130px] rounded-xl"
+                      className="input-field text-xs sm:text-sm font-bold py-1.5 flex-1 min-w-[80px] rounded-xl"
                       placeholder={`Nama pemain ${index + 1}`}
                       value={player.name}
                       onChange={(e) => handleUpdateField(player.id, 'name', e.target.value)}
@@ -279,33 +279,33 @@ export const RoomSetup: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleUpdateField(player.id, 'gender', 'cewek')}
-                        className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                        className={`px-2 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-0.5 ${
                           player.gender === 'cewek'
                             ? 'bg-[#D8317E] text-white shadow-xs'
                             : 'text-[#64616C] hover:text-[#1E1E24]'
                         }`}
                       >
                         <span>👧</span>
-                        <span>Cewek</span>
+                        <span className="hidden sm:inline">Cewek</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleUpdateField(player.id, 'gender', 'cowok')}
-                        className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                        className={`px-2 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-0.5 ${
                           player.gender === 'cowok'
                             ? 'bg-[#2568EF] text-white shadow-xs'
                             : 'text-[#64616C] hover:text-[#1E1E24]'
                         }`}
                       >
                         <span>👦</span>
-                        <span>Cowok</span>
+                        <span className="hidden sm:inline">Cowok</span>
                       </button>
                     </div>
 
                     {/* Team / Kubu Input */}
                     <input
                       type="text"
-                      className="input-field text-xs font-semibold py-1.5 w-24 sm:w-28 shrink-0 rounded-xl"
+                      className="input-field text-[11px] font-semibold py-1.5 w-18 sm:w-24 shrink-0 rounded-xl"
                       placeholder="Kubu / Tim"
                       value={player.kubu}
                       onChange={(e) => handleUpdateField(player.id, 'kubu', e.target.value)}
@@ -317,10 +317,10 @@ export const RoomSetup: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleRemovePlayer(player.id)}
-                        className="w-8 h-8 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
+                        className="w-7 h-7 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
                         title="Hapus pemain"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>

@@ -233,18 +233,6 @@ export const Home: React.FC = () => {
                 type="button"
                 onClick={() => {
                   sfx.playPop();
-                  navigate('/studio');
-                }}
-                className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#E0EBFF] text-[#2568EF] hover:bg-[#CCE0FF] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#2568EF]" />
-                <span>🎨 Studio</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  sfx.playPop();
                   navigate('/room');
                 }}
                 className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#FAF7F2] text-[#1E1E24] hover:bg-black/5 border border-[#1E1E24]/10 flex items-center gap-1.5 cursor-pointer shadow-xs transition"
@@ -338,18 +326,18 @@ export const Home: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-lg bg-[#488B76] rounded-[32px] p-6 text-white shadow-xl relative"
+              className="w-full max-w-md md:max-w-4xl bg-[#488B76] rounded-[36px] p-5 md:p-7 text-white shadow-2xl relative max-h-[92vh] flex flex-col justify-between overflow-hidden border-[3px] border-[#1E1E24]/10"
             >
               <button
                 type="button"
                 onClick={() => setShowScoreModal(false)}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center cursor-pointer text-white"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center cursor-pointer text-white z-20"
               >
                 <X className="w-4 h-4 stroke-[3]" />
               </button>
 
-              <div className="mb-4">
-                <ScoreBoard players={players} title="Akumulasi Skor Room" />
+              <div className="mb-4 overflow-hidden">
+                <ScoreBoard players={players} title="Akumulasi Skor Room" transparent />
               </div>
 
               <div className="flex items-center justify-between pt-2 flex-wrap gap-2">

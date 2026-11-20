@@ -10,6 +10,7 @@ import { GameMascotBot } from '../../components/characters/GameMascotBot'
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { CHARACTER_PACK, getCharacterById } from '../../assets-library/characters'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
+import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout'
 import { sfx } from '../../utils/sound'
 
 type RoundPhase = 'timer' | 'scoring'
@@ -101,10 +102,15 @@ export default function G1Round() {
   const failedCount = failedPlayerIds.length
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
-      <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between mb-5">
+    <GameDesktopLayout
+      gameTitle="Same Brain? No!"
+      badge="GAME 01 • SAME BRAIN"
+      badgeColor="#158467"
+      activeRoundLabel={`Ronde ${g1CurrentRound} / 10`}
+    >
+      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+        {/* Top Header Bar on Mobile */}
+        <div className="flex lg:hidden items-center justify-between mb-5">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
@@ -354,7 +360,9 @@ export default function G1Round() {
         </AnimatePresence>
       </div>
 
-      <HostUtilityBar />
-    </div>
+      <div className="block lg:hidden">
+        <HostUtilityBar />
+      </div>
+    </GameDesktopLayout>
   )
 }

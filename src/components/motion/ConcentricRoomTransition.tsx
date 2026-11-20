@@ -21,7 +21,7 @@ export const ConcentricRoomTransition: React.FC<{
     sfx.playWhoosh();
     const timer = setTimeout(() => {
       onComplete();
-    }, 2400);
+    }, 3200);
     return () => clearTimeout(timer);
   }, [active, onComplete]);
 
@@ -29,29 +29,31 @@ export const ConcentricRoomTransition: React.FC<{
     <AnimatePresence>
       {active && (
         <motion.div
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.35 }}
+          transition={{ duration: 0.5 }}
           className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center overflow-hidden"
         >
-          {/* Overlapping Concentric Circles Expanding Outward from Center */}
+          {/* Overlapping Concentric Circles Expanding Gently Outward from Center */}
           {RING_PALETTE.map((hex, i) => (
             <motion.div
               key={hex}
-              initial={{ scale: 0, opacity: 1 }}
+              initial={{ scale: 0, opacity: 0.95 }}
               animate={{
                 scale: [0, 3.2, 3.2, 0],
+                opacity: [0.95, 1, 1, 0.9],
               }}
               transition={{
-                duration: 2.35,
-                times: [0, 0.36, 0.72, 1],
-                delay: i * 0.065,
-                ease: [0.22, 1, 0.36, 1],
+                duration: 3.1,
+                times: [0, 0.45, 0.82, 1],
+                delay: i * 0.09,
+                ease: [0.16, 1, 0.3, 1],
               }}
               style={{
                 backgroundColor: hex,
-                width: '82vmax',
-                height: '82vmax',
+                width: '85vmax',
+                height: '85vmax',
               }}
               className="absolute rounded-full shadow-2xl"
             />
@@ -59,17 +61,17 @@ export const ConcentricRoomTransition: React.FC<{
 
           {/* Center Room Title Reveal */}
           <motion.div
-            initial={{ scale: 0.55, opacity: 0, y: 18 }}
+            initial={{ scale: 0.6, opacity: 0, y: 15 }}
             animate={{
-              scale: [0.55, 1.06, 1, 0.85],
+              scale: [0.6, 1.03, 1, 0.88],
               opacity: [0, 1, 1, 0],
-              y: [18, 0, 0, -12],
+              y: [15, 0, 0, -10],
             }}
             transition={{
-              duration: 1.9,
-              delay: 0.32,
-              times: [0, 0.25, 0.78, 1],
-              ease: [0.22, 1, 0.36, 1],
+              duration: 2.6,
+              delay: 0.45,
+              times: [0, 0.3, 0.82, 1],
+              ease: [0.16, 1, 0.3, 1],
             }}
             className="relative z-10 text-center px-6"
           >
