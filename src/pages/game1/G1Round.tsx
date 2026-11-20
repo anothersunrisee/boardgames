@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Play, Pause, RotateCcw, Plus, Sparkles, Check, X, Trophy, ArrowRight } from 'lucide-react'
+import { Play, Pause, RotateCcw, Plus, Sparkles, Check, X, Trophy, ArrowRight } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { pickRandomCategories, type Category } from '../../data/game1-categories'
 import { Button } from '../../components/ui/Button'
@@ -110,30 +110,6 @@ export default function G1Round() {
       activeRoundLabel={`Ronde ${g1CurrentRound} / 10`}
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header Bar on Mobile */}
-        <div className="flex lg:hidden items-center justify-between mb-5">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
-            onClick={() => {
-              sfx.playPop()
-              navigate('/hub')
-            }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Pilih Game</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#158467] text-white font-bold tracking-wide">
-              RONDE {g1CurrentRound} / 10
-            </span>
-            <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-[11px] font-black uppercase">
-              Host Mode
-            </span>
-          </div>
-        </div>
-
         {/* Category Card */}
         <div className="rounded-[28px] bg-[#158467] text-white p-6 md:p-8 mb-5 shadow-[0_8px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider mb-2">

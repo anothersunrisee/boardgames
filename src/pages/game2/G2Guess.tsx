@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Lock, CheckCircle2 } from 'lucide-react'
+import { Lock, CheckCircle2 } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -74,27 +74,13 @@ export default function G2Guess() {
       badge="GAME 02 • BEAUTY"
       badgeColor="#D8317E"
       activeRoundLabel={`Tebak Benda: ${girl.name}`}
+      onBack={() => {
+        sfx.playPop();
+        navigate('/game2/qna');
+      }}
+      backLabel="Sesi Tanya"
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header on Mobile */}
-        <div className="flex lg:hidden items-center justify-between mb-5">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1 cursor-pointer"
-            onClick={() => {
-              sfx.playPop()
-              navigate('/game2/qna')
-            }}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Sesi Tanya</span>
-          </button>
-
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#D8317E] text-white font-bold tracking-wide">
-            Tebak Benda: {girl.name}
-          </span>
-        </div>
-
         {/* QnA Recap */}
         {qnaSummary.length > 0 && (
           <Card className="mb-4 p-4 bg-white shadow-xs border border-[#1E1E24]/10 max-h-40 overflow-y-auto">

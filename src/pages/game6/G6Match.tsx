@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Play, Pause, RotateCcw, Plus, ThumbsUp, Sparkles } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, ThumbsUp, Sparkles } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -155,25 +155,6 @@ export default function G6Match() {
       activeRoundLabel={`Pitch Match ${match.matchNumber}/${g6Matches.length}`}
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header on Mobile (Desktop uses Right Sidebar) */}
-        <div className="flex lg:hidden items-center justify-between mb-4">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
-            onClick={() => {
-              sfx.playPop();
-              navigate('/hub');
-            }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Pilih Game Lain</span>
-          </button>
-
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#65A30D] text-white font-bold tracking-wide shadow-xs">
-            Pitch Duel • Match {match.matchNumber} / {g6Matches.length}
-          </span>
-        </div>
-
         {/* Pitch Item & Absurd Buyer Banner */}
         <div className="rounded-[32px] bg-gradient-to-b from-[#65A30D] to-[#4D7C0F] text-white p-6 md:p-8 shadow-[0_12px_28px_rgba(101,163,13,0.25)] border-2 border-[#3F6212]/30 mb-5 relative overflow-hidden text-center">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider mb-2.5 shadow-xs">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Check, X, ArrowRight, Trophy, Eye, EyeOff, Sparkles, AlertTriangle } from 'lucide-react';
+import { Check, X, ArrowRight, Trophy, Eye, EyeOff, Sparkles, AlertTriangle } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -80,28 +80,6 @@ export default function G5Play() {
       {teamOutcome === 'success' && <ConfettiShower particleCount={50} />}
 
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header on Mobile (Hidden on Desktop because it's in the 20% Sidebar) */}
-        <div className="flex lg:hidden items-center justify-between mb-5">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
-            onClick={() => {
-              sfx.playPop();
-              navigate('/hub');
-            }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Pilih Game Lain</span>
-          </button>
-
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#7C3AED] text-white font-bold tracking-wide shadow-xs flex items-center gap-1.5">
-            <span>{currentTeam.name}</span>
-            <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px]">
-              {g5CurrentTeamIndex + 1}/{g5Teams.length}
-            </span>
-          </span>
-        </div>
-
         {/* Mascot & Chain Progress Bar */}
         <div className="text-center mb-5">
           <div className="mb-2 inline-block">

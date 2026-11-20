@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Mapping from unicode emoji to curated Microsoft Fluent Emoji asset key
 const UNICODE_TO_ASSET: Record<string, string> = {
@@ -37,9 +37,75 @@ const UNICODE_TO_ASSET: Record<string, string> = {
   '📢': 'megaphone',
   '🎨': 'artist-palette',
   '🤡': 'clown-face',
+  '💡': 'glowing-star',
+  '👧': 'sparkles',
+  '👦': 'high-voltage',
+  '⚔️': 'collision',
+  '⚔': 'collision',
+  '🗣️': 'megaphone',
+  '🗣': 'megaphone',
+  '🗳️': 'trophy',
+  '🗳': 'trophy',
+  '💄': 'sparkles',
+  '🕵️': 'eyes',
+  '🕵': 'eyes',
+  '🧠': 'exploding-head',
+  '🔧': 'rocket',
+  '⏱️': 'hourglass',
+  '⏱': 'hourglass',
+  '👥': 'chains',
+  '🔗': 'chains',
+  '🗑️': 'warning',
+  '🗑': 'warning',
+  '😆': 'partying-face',
+  '🛒': 'gem-stone',
 };
 
-// List of available 3D PNG versions
+// Aliases for string names passed to <FluentEmoji name="..." />
+const ASSET_ALIASES: Record<string, string> = {
+  'crossed_swords': 'collision',
+  'crossed-swords': 'collision',
+  'swords': 'collision',
+  'zap': 'high-voltage',
+  'lightning': 'high-voltage',
+  'high_voltage': 'high-voltage',
+  'speaking_head': 'megaphone',
+  'speaking-head': 'megaphone',
+  'bullhorn': 'megaphone',
+  'ballot_box': 'trophy',
+  'ballot-box': 'trophy',
+  'mobile': 'hourglass',
+  'phone': 'hourglass',
+  'cross_mark': 'cross-mark',
+  'cross': 'cross-mark',
+  'check_mark': 'check-mark',
+  'check': 'check-mark',
+  'party_popper': 'party-popper',
+  'party': 'party-popper',
+  'lipstick': 'sparkles',
+  'detective': 'eyes',
+  'spy': 'eyes',
+  'brain': 'exploding-head',
+  'wrench': 'rocket',
+  'tool': 'rocket',
+  'stopwatch': 'hourglass',
+  'timer': 'hourglass',
+  'thinking': 'thinking-face',
+  'busts_in_silhouette': 'chains',
+  'busts': 'chains',
+  'users': 'chains',
+  'link': 'chains',
+  'wastebasket': 'warning',
+  'trash': 'warning',
+  'laughing': 'partying-face',
+  'shopping_cart': 'gem-stone',
+  'cart': 'gem-stone',
+  'bulb': 'glowing-star',
+  'lightbulb': 'glowing-star',
+  'idea': 'glowing-star',
+};
+
+// List of available 3D PNG versions in public/emojis/*-3d.png
 const HAS_3D = new Set([
   'party-popper',
   'high-voltage',
@@ -87,26 +153,46 @@ export interface FluentEmojiProps {
 /**
  * Windows 11 Microsoft Fluent Emoji Component
  * Renders high-fidelity official Windows 11 emojis across all operating systems & browsers.
+ * Features automatic alias resolution and fallback resilience (never displays broken images).
  */
 export const FluentEmoji: React.FC<FluentEmojiProps> = ({
   emoji,
   name,
   size = 24,
-  variant = 'color',
+  variant = '3d',
   className = '',
   style = {},
   alt,
 }) => {
-  // Determine asset key
-  let assetKey = name;
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  // 1. Resolve normalized asset key
+  let assetKey: string | undefined = undefined;
+
+  if (name) {
+    const cleanName = name.toLowerCase().trim();
+    assetKey = ASSET_ALIASES[cleanName] || (HAS_3D.has(cleanName) ? cleanName : undefined);
+    if (!assetKey && cleanName.replace(/_/g, '-') in ASSET_ALIASES) {
+      assetKey = ASSET_ALIASES[cleanName.replace(/_/g, '-')];
+    }
+    if (!assetKey && HAS_3D.has(cleanName.replace(/_/g, '-'))) {
+      assetKey = cleanName.replace(/_/g, '-');
+    }
+  }
+
   if (!assetKey && emoji) {
-    // Strip variation selectors if needed
     const cleanEmoji = emoji.trim();
     assetKey = UNICODE_TO_ASSET[cleanEmoji] || UNICODE_TO_ASSET[cleanEmoji.replace(/\uFE0F/g, '')];
   }
 
-  if (assetKey) {
-    const is3D = variant === '3d' && HAS_3D.has(assetKey);
+  // Fallback to sparkles if completely unknown but 3D requested
+  if (!assetKey && !emoji) {
+    assetKey = 'sparkles';
+  }
+
+  // 2. If valid assetKey and not failed, render official Windows 11 3D asset
+  if (assetKey && HAS_3D.has(assetKey) && !loadFailed) {
+    const is3D = variant === '3d';
     const src = is3D ? `/emojis/${assetKey}-3d.png` : `/emojis/${assetKey}.svg`;
 
     return (
@@ -116,6 +202,7 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
         width={size}
         height={size}
         draggable={false}
+        onError={() => setLoadFailed(true)}
         className={`inline-block select-none align-middle pointer-events-none object-contain ${className}`}
         style={{
           width: size,
@@ -129,19 +216,21 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
     );
   }
 
-  // Fallback: Use the Windows 11 Fluent Emoji web font
+  // 3. Resilient Fallback: Font-based or clean Unicode emoji with Windows 11 font stack
+  const fallbackChar = emoji || (assetKey ? '✨' : '🎮');
+
   return (
     <span
       className={`inline-block select-none align-middle font-normal leading-none ${className}`}
       style={{
-        fontFamily: "'Fluent Emoji Color', 'Fluent Emoji Flat', sans-serif",
+        fontFamily: "'Fluent Emoji Color', 'Fluent Emoji Flat', 'Segoe UI Emoji', sans-serif",
         fontSize: size,
         lineHeight: 1,
         ...style,
       }}
-      aria-label={alt || emoji}
+      aria-label={alt || emoji || assetKey}
     >
-      {emoji}
+      {fallbackChar}
     </span>
   );
 };

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Lock, CheckCircle2 } from 'lucide-react'
+import { Lock, CheckCircle2 } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -65,28 +65,14 @@ export default function G3Guess() {
       gameTitle="Boys Stuff"
       badge="GAME 03 • BOYS STUFF"
       badgeColor="#2568EF"
-      activeRoundLabel={`Tebak Kata ${boy.name} (${slot.category})`}
+      activeRoundLabel={`Tebak: ${boy.name} (${slot.category})`}
+      onBack={() => {
+        sfx.playPop();
+        navigate('/game3/qna');
+      }}
+      backLabel="Sesi Tanya"
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Top Header on Mobile */}
-        <div className="flex lg:hidden items-center justify-between mb-5">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1 cursor-pointer"
-            onClick={() => {
-              sfx.playPop()
-              navigate('/game3/qna')
-            }}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Sesi Tanya</span>
-          </button>
-
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#2568EF] text-white font-bold tracking-wide">
-            Tebak Kata {boy.name} ({slot.category})
-          </span>
-        </div>
-
         {/* QnA Recap */}
         {slot.qna.length > 0 && (
           <Card className="mb-4 p-4 bg-white shadow-xs border border-[#1E1E24]/10 max-h-40 overflow-y-auto">

@@ -326,7 +326,7 @@ export const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* 2-Column Responsive Category Cards */}
+        {/* 2-Column Responsive Category Cards (Equal Width & Equal Height) */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -337,7 +337,7 @@ export const Home: React.FC = () => {
               transition: { staggerChildren: 0.08 },
             },
           }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-fr"
         >
           {GAMES.map((game) => (
             <motion.div
@@ -346,6 +346,7 @@ export const Home: React.FC = () => {
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 },
               }}
+              className="h-full flex"
             >
               <GameCard {...game} onSelect={() => handleGameCardClick(game.id)} />
             </motion.div>

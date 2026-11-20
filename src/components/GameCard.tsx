@@ -54,10 +54,10 @@ export const GameCard: React.FC<GameCardProps> = ({
         onSelect();
       }}
       style={{ backgroundColor: bgColor }}
-      className="group relative overflow-hidden rounded-[32px] p-6 md:p-7 text-white cursor-pointer border-[3px] border-[#1E1E24]/10 shadow-[0_8px_0_rgba(30,30,36,0.1)] transition-all min-h-[220px] flex flex-col justify-between"
+      className="group relative overflow-hidden rounded-[32px] p-6 md:p-7 text-white cursor-pointer border-[3px] border-[#1E1E24]/10 shadow-[0_8px_0_rgba(30,30,36,0.1)] transition-all min-h-[260px] h-full w-full flex flex-col justify-between select-none"
     >
       {/* Top Row: Category Pill + Game Number & Action Button at Top Right */}
-      <div className="relative z-10 flex items-center justify-between gap-2">
+      <div className="relative z-10 flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
           <span
             style={{ backgroundColor: pillColor }}
@@ -77,18 +77,18 @@ export const GameCard: React.FC<GameCardProps> = ({
         </div>
       </div>
 
-      {/* Middle Row: Title & Copywriting */}
-      <div className="relative z-10 max-w-[68%] my-3">
-        <h2 className="font-display text-2xl md:text-3xl font-bold leading-tight mb-1.5">
+      {/* Middle Row: Title & Copywriting (Clamped so each card has identical uniform height) */}
+      <div className="relative z-10 max-w-[66%] my-3 flex-1 flex flex-col justify-center">
+        <h2 className="font-display text-2xl md:text-3xl font-bold leading-tight mb-1.5 line-clamp-1">
           {title}
         </h2>
-        <p className="text-white/90 text-sm md:text-base font-medium leading-snug">
+        <p className="text-white/90 text-sm md:text-base font-medium leading-snug line-clamp-3">
           {description}
         </p>
       </div>
 
       {/* Bottom Row: Player Tag on Left */}
-      <div className="relative z-10 flex items-center mt-auto pt-2">
+      <div className="relative z-10 flex items-center mt-auto pt-2 shrink-0">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1E1E24]/25 text-xs font-bold text-white">
           <Users className="w-3.5 h-3.5" />
           <span>{playerCount}</span>
@@ -96,17 +96,15 @@ export const GameCard: React.FC<GameCardProps> = ({
       </div>
 
       {/* Animated In-Game Mascot Bot (Style B) on Right with glowing white pill eyes that blink & glance */}
-      <div className="absolute -right-3 -bottom-3 pointer-events-none transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+      <div className="absolute -right-2 -bottom-2 pointer-events-none transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
         <GameMascotBot
           character={character}
-          size={135}
           mood={mascotMood}
-          stickerBorder={true}
-          showCrown={mascotMood === 'winner'}
+          size={116}
+          stickerBorder
+          animated
         />
       </div>
     </motion.div>
   );
 };
-
-export default GameCard;

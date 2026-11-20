@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, RotateCcw, Plus, SkipForward, Flame, Trophy, ThumbsUp, ArrowLeft } from 'lucide-react'
+import { Play, Pause, RotateCcw, Plus, SkipForward, Flame, Trophy, ThumbsUp } from 'lucide-react'
 import { useGameStore, type DebateMatch } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { BlobMascot } from '../../components/ui/BlobMascot'
@@ -198,35 +198,6 @@ export default function G4Match() {
       activeRoundLabel={match.isFinal ? 'Grand Final' : `Match ${match.matchNumber}/${totalMatches}`}
     >
       <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Header Progress with Back Button on Mobile */}
-        <div className="flex lg:hidden items-center justify-between mb-4">
-          <button
-            type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
-            onClick={() => {
-              sfx.playPop()
-              navigate('/hub')
-            }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Pilih Game</span>
-          </button>
-
-          <div className="flex items-center gap-2">
-            <span
-              className="font-display text-xs px-3.5 py-1.5 rounded-full text-white font-bold tracking-wide"
-              style={{
-                backgroundColor: match.isFinal ? '#F59E0B' : '#EC5A29',
-              }}
-            >
-              {match.isFinal ? '👑 GRAND FINAL DEBATE' : `MATCH ${match.matchNumber} / ${totalMatches}`}
-            </span>
-            <span className="hidden sm:inline text-xs font-semibold text-[#64616C]">
-              👥 {audienceCount} juri
-            </span>
-          </div>
-        </div>
-
         {/* Motion Debate Topic Card */}
         <div className="rounded-[28px] bg-[#EC5A29] text-white p-6 mb-5 shadow-[0_8px_0_rgba(30,30,36,0.1)] border-2 border-[#1E1E24]/10">
           <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider mb-2">
