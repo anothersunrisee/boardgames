@@ -11,12 +11,19 @@ import { sfx } from '../../utils/sound'
 
 export default function G2Results() {
   const navigate = useNavigate()
-  const { players, autoStartGame2 } = useGameStore()
+  const { players, autoStartGame2, g2GirlWins, g2BoyWins } = useGameStore()
   const winner = [...players].sort((a, b) => b.score - a.score)[0]
 
   useEffect(() => {
     sfx.playFanfare()
   }, [])
+
+  const winningTeam =
+    g2GirlWins > g2BoyWins
+      ? 'Tim Cewek Menang Kelompok!'
+      : g2BoyWins > g2GirlWins
+      ? 'Tim Cowok Menang Kelompok!'
+      : 'Hasil Kelompok Seri!'
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
@@ -68,8 +75,48 @@ export default function G2Results() {
           </p>
         </motion.div>
 
+        {/* Skor Kelompok Game 2 */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-black uppercase tracking-wider text-[#64616C]">
+              📊 Nilai Kelompok Game Ini:
+            </span>
+            <span className="text-xs font-bold text-[#D8317E]">{winningTeam}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div
+              className={`p-4 rounded-2xl border-2 text-center ${
+                g2GirlWins >= g2BoyWins
+                  ? 'bg-[#FCE4F0] border-[#D8317E] ring-2 ring-[#D8317E]'
+                  : 'bg-white border-[#1E1E24]/10'
+              }`}
+            >
+              <span className="text-[10px] font-black uppercase text-[#D8317E] px-2.5 py-0.5 rounded-full bg-[#D8317E]/10">
+                Tim Cewek (Bertahan)
+              </span>
+              <p className="font-display text-3xl font-bold text-[#D8317E] mt-1">{g2GirlWins}</p>
+              <span className="text-xs font-bold text-[#64616C]">Ronde Menang</span>
+            </div>
+
+            <div
+              className={`p-4 rounded-2xl border-2 text-center ${
+                g2BoyWins >= g2GirlWins
+                  ? 'bg-[#E0EBFF] border-[#2568EF] ring-2 ring-[#2568EF]'
+                  : 'bg-white border-[#1E1E24]/10'
+              }`}
+            >
+              <span className="text-[10px] font-black uppercase text-[#2568EF] px-2.5 py-0.5 rounded-full bg-[#2568EF]/10">
+                Tim Cowok (Menebak)
+              </span>
+              <p className="font-display text-3xl font-bold text-[#2568EF] mt-1">{g2BoyWins}</p>
+              <span className="text-xs font-bold text-[#64616C]">Ronde Menang</span>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
-          <ScoreBoard players={players} highlightId={winner?.id} />
+          <ScoreBoard players={players} title="Papan Skor Perorangan Room" highlightId={winner?.id} />
         </div>
 
         <div className="space-y-3 mt-auto">

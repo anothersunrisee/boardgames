@@ -111,8 +111,14 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 </div>
 
                 {/* Circular Score Pill */}
-                <div className="px-4 py-1.5 rounded-full bg-white text-[#1E1E24] font-display text-base shadow-xs">
-                  {player.score} pts
+                <div
+                  className={`px-4 py-1.5 rounded-full font-display text-base shadow-xs ${
+                    player.score < 0
+                      ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
+                      : 'bg-white text-[#1E1E24]'
+                  }`}
+                >
+                  {player.score > 0 ? `+${player.score}` : player.score} pts
                 </div>
               </div>
             );
@@ -133,8 +139,14 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                   #{idx + 1} {item.team}
                 </span>
               </div>
-              <div className="px-4 py-1.5 rounded-full bg-white text-[#1E1E24] font-display text-base">
-                {item.score} pts
+              <div
+                className={`px-4 py-1.5 rounded-full font-display text-base ${
+                  item.score < 0
+                    ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
+                    : 'bg-white text-[#1E1E24]'
+                }`}
+              >
+                {item.score > 0 ? `+${item.score}` : item.score} pts
               </div>
             </div>
           ))}

@@ -11,12 +11,19 @@ import { sfx } from '../../utils/sound'
 
 export default function G3Results() {
   const navigate = useNavigate()
-  const { players, autoStartGame3 } = useGameStore()
+  const { players, autoStartGame3, g3BoyWins, g3GirlWins } = useGameStore()
   const winner = [...players].sort((a, b) => b.score - a.score)[0]
 
   useEffect(() => {
     sfx.playFanfare()
   }, [])
+
+  const winningTeam =
+    g3BoyWins > g3GirlWins
+      ? 'Tim Cowok Menang Kelompok!'
+      : g3GirlWins > g3BoyWins
+      ? 'Tim Cewek Menang Kelompok!'
+      : 'Hasil Kelompok Seri!'
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
@@ -68,8 +75,48 @@ export default function G3Results() {
           </p>
         </motion.div>
 
+        {/* Skor Kelompok Game 3 */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-black uppercase tracking-wider text-[#64616C]">
+              📊 Nilai Kelompok Game Ini:
+            </span>
+            <span className="text-xs font-bold text-[#2568EF]">{winningTeam}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div
+              className={`p-4 rounded-2xl border-2 text-center ${
+                g3BoyWins >= g3GirlWins
+                  ? 'bg-[#E0EBFF] border-[#2568EF] ring-2 ring-[#2568EF]'
+                  : 'bg-white border-[#1E1E24]/10'
+              }`}
+            >
+              <span className="text-[10px] font-black uppercase text-[#2568EF] px-2.5 py-0.5 rounded-full bg-[#2568EF]/10">
+                Tim Cowok (Bertahan)
+              </span>
+              <p className="font-display text-3xl font-bold text-[#2568EF] mt-1">{g3BoyWins}</p>
+              <span className="text-xs font-bold text-[#64616C]">Ronde Menang</span>
+            </div>
+
+            <div
+              className={`p-4 rounded-2xl border-2 text-center ${
+                g3GirlWins >= g3BoyWins
+                  ? 'bg-[#FCE4F0] border-[#D8317E] ring-2 ring-[#D8317E]'
+                  : 'bg-white border-[#1E1E24]/10'
+              }`}
+            >
+              <span className="text-[10px] font-black uppercase text-[#D8317E] px-2.5 py-0.5 rounded-full bg-[#D8317E]/10">
+                Tim Cewek (Menebak)
+              </span>
+              <p className="font-display text-3xl font-bold text-[#D8317E] mt-1">{g3GirlWins}</p>
+              <span className="text-xs font-bold text-[#64616C]">Ronde Menang</span>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
-          <ScoreBoard players={players} highlightId={winner?.id} />
+          <ScoreBoard players={players} title="Papan Skor Perorangan Room" highlightId={winner?.id} />
         </div>
 
         <div className="space-y-3 mt-auto">

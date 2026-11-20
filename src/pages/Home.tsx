@@ -198,7 +198,7 @@ export const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto flex-wrap">
             <button
               type="button"
               onClick={() => {
@@ -221,6 +221,17 @@ export const Home: React.FC = () => {
             >
               <Trophy className="w-3.5 h-3.5" />
               <span>Skor Room</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                sfx.playPop();
+                navigate('/room/podium');
+              }}
+              className="px-3.5 py-1.5 rounded-2xl text-xs font-extrabold bg-[#F59E0B] text-white hover:bg-[#D97706] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+            >
+              <span>🏆 Juara Akhir</span>
             </button>
           </div>
         </div>
@@ -298,7 +309,7 @@ export const Home: React.FC = () => {
                 <ScoreBoard players={players} title="Akumulasi Skor Room" />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -311,13 +322,27 @@ export const Home: React.FC = () => {
                   <span>Reset Poin Room</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setShowScoreModal(false)}
-                  className="px-5 py-2 rounded-xl text-xs font-extrabold bg-[#FCD34D] text-[#1E1E24] hover:bg-[#FBBF24] cursor-pointer"
-                >
-                  Tutup
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop();
+                      setShowScoreModal(false);
+                      navigate('/room/podium');
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-[#F59E0B] text-white hover:bg-[#D97706] cursor-pointer shadow-xs"
+                  >
+                    🏆 Lihat Juara Room
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowScoreModal(false)}
+                    className="px-4 py-1.5 rounded-xl text-xs font-extrabold bg-[#FAF7F2] text-[#1E1E24] hover:bg-white cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

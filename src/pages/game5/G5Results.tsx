@@ -103,15 +103,20 @@ export default function G5Results() {
                     <p className="font-display text-sm font-bold text-[#1E1E24]">{team.name}</p>
                     <p className="text-xs text-[#64616C]">{members}</p>
                   </div>
-                  <span
-                    className={`font-display text-xs font-black px-3 py-1 rounded-full ${
-                      team.isPassed
-                        ? 'bg-[#12B76A] text-white'
-                        : 'bg-[#F04438] text-white'
-                    }`}
-                  >
-                    {team.isPassed ? 'LULUS (+1 pt)' : 'GAGAL (0 pt)'}
-                  </span>
+                  <div className="text-right">
+                    <span
+                      className={`font-display text-xs font-black px-3 py-1 rounded-full inline-block ${
+                        team.isPassed
+                          ? 'bg-[#12B76A] text-white'
+                          : 'bg-[#F04438] text-white'
+                      }`}
+                    >
+                      {team.isPassed ? 'LULUS (+6 pt)' : 'GAGAL (-2 pt)'}
+                    </span>
+                    <p className="text-[10px] font-bold text-[#64616C] mt-0.5">
+                      {team.isPassed ? '10 Poin Tim' : '0 Poin Tim'}
+                    </p>
+                  </div>
                 </div>
               );
             })}

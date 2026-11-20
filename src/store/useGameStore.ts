@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Category } from '../data/game1-categories';
 import { getRandomItems } from '../data/game2-items';
 import { WORD_CATEGORIES } from '../data/game3-words';
@@ -83,6 +84,7 @@ export type G5Team = {
   currentMemberIdx: number;
   isPassed: boolean;
   isFailed: boolean;
+  teamScore?: number;
 };
 
 // ─── Game 6 Types (Sell Me This Trash) ───────────────────────────────────────
@@ -147,6 +149,10 @@ interface GameStore {
   g2BoyPlayers: Player[];
   g2Slots: G2GirlSlot[];
   g2CurrentSlotIndex: number;
+  g2GirlWins: number;
+  g2BoyWins: number;
+  incrementG2GirlWins: () => void;
+  incrementG2BoyWins: () => void;
   g2SetPlayers: (girls: Player[], boys: Player[]) => void;
   g2SetSlots: (slots: G2GirlSlot[]) => void;
   g2UpdateSlot: (index: number, slot: G2GirlSlot) => void;
@@ -158,6 +164,10 @@ interface GameStore {
   g3GirlPlayers: Player[];
   g3Slots: G3BoySlot[];
   g3CurrentSlotIndex: number;
+  g3BoyWins: number;
+  g3GirlWins: number;
+  incrementG3BoyWins: () => void;
+  incrementG3GirlWins: () => void;
   g3SetPlayers: (boys: Player[], girls: Player[]) => void;
   g3SetSlots: (slots: G3BoySlot[]) => void;
   g3UpdateSlot: (index: number, slot: G3BoySlot) => void;
@@ -205,10 +215,14 @@ const initialState = {
   g2BoyPlayers: [],
   g2Slots: [],
   g2CurrentSlotIndex: 0,
+  g2GirlWins: 0,
+  g2BoyWins: 0,
   g3BoyPlayers: [],
   g3GirlPlayers: [],
   g3Slots: [],
   g3CurrentSlotIndex: 0,
+  g3BoyWins: 0,
+  g3GirlWins: 0,
   g4Players: [],
   g4Matches: [],
   g4CurrentMatchIndex: 0,
@@ -220,8 +234,10 @@ const initialState = {
   g6CurrentMatchIndex: 0,
 };
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  ...initialState,
+export const useGameStore = create<GameStore>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
   // ── Room & Players Actions ──
   setRoomCreated: (created) => set({ roomCreated: created }),
@@ -283,6 +299,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       g2BoyPlayers: boys,
       g2Slots: slots,
       g2CurrentSlotIndex: 0,
+      g2GirlWins: 0,
+      g2BoyWins: 0,
     });
 
     return { success: true };
@@ -323,6 +341,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       g3GirlPlayers: girls,
       g3Slots: slots,
       g3CurrentSlotIndex: 0,
+      g3BoyWins: 0,
+      g3GirlWins: 0,
     });
 
     return { success: true };
@@ -500,8 +520,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
   g2NextSlot: () =>
     set((state) => ({ g2CurrentSlotIndex: state.g2CurrentSlotIndex + 1 })),
+  incrementG2GirlWins: () =>
+    set((state) => ({ g2GirlWins: state.g2GirlWins + 1 })),
+  incrementG2BoyWins: () =>
+    set((state) => ({ g2BoyWins: state.g2BoyWins + 1 })),
   g2Reset: () =>
-    set({ g2GirlPlayers: [], g2BoyPlayers: [], g2Slots: [], g2CurrentSlotIndex: 0 }),
+    set({ g2GirlPlayers: [], g2BoyPlayers: [], g2Slots: [], g2CurrentSlotIndex: 0, g2GirlWins: 0, g2BoyWins: 0 }),
 
   // ── Game 3 State Handlers ──
   g3SetPlayers: (boys, girls) =>
@@ -515,8 +539,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
   g3NextSlot: () =>
     set((state) => ({ g3CurrentSlotIndex: state.g3CurrentSlotIndex + 1 })),
+  incrementG3BoyWins: () =>
+    set((state) => ({ g3BoyWins: state.g3BoyWins + 1 })),
+  incrementG3GirlWins: () =>
+    set((state) => ({ g3GirlWins: state.g3GirlWins + 1 })),
   g3Reset: () =>
-    set({ g3BoyPlayers: [], g3GirlPlayers: [], g3Slots: [], g3CurrentSlotIndex: 0 }),
+    set({ g3BoyPlayers: [], g3GirlPlayers: [], g3Slots: [], g3CurrentSlotIndex: 0, g3BoyWins: 0, g3GirlWins: 0 }),
 
   // ── Game 4 State Handlers ──
   g4SetSetup: (players, matches, enableChaos) =>
@@ -560,32 +588,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const nextIdx = currentTeam.currentMemberIdx + 1;
 
     if (!isCorrect) {
-      // Rantai putus! Tim gagal dapat poin
+      // Rantai putus! Tim gagal dapat poin (Kesulitan Ekstrem: penalti -2 per anggota)
       const updatedTeams = [...g5Teams];
       updatedTeams[g5CurrentTeamIndex] = {
         ...currentTeam,
         isFailed: true,
         isPassed: false,
+        teamScore: 0,
       };
       set({ g5Teams: updatedTeams });
+
+      // Potong -2 poin dari akumulasi skor perorangan room tiap anggota tim
+      currentTeam.memberIds.forEach((id) => {
+        addScore(id, -2);
+      });
+
       return { isChainBroken: true, isTeamPassed: false };
     }
 
     // Jawaban benar
     if (nextIdx >= memberCount) {
-      // Semua anggota berhasil menjawab berantai! Tim lulus!
+      // Semua anggota berhasil menjawab berantai! Tim lulus! (Kesulitan Ekstrem: +6 per anggota, 10 poin tim)
       const updatedTeams = [...g5Teams];
       updatedTeams[g5CurrentTeamIndex] = {
         ...currentTeam,
         currentMemberIdx: nextIdx,
         isPassed: true,
         isFailed: false,
+        teamScore: 10,
       };
       set({ g5Teams: updatedTeams });
 
-      // Berikan poin ke seluruh anggota tim yang sukses berantai (+1 poin tiap orang)
+      // Berikan +6 poin ke akumulasi skor perorangan room tiap anggota tim
       currentTeam.memberIds.forEach((id) => {
-        addScore(id, 1);
+        addScore(id, 6);
       });
 
       return { isChainBroken: false, isTeamPassed: true };
@@ -621,4 +657,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // ── Full Reset ──
   fullReset: () => set(initialState),
-}));
+}),
+{
+  name: 'party_games_room_storage_v1',
+  storage: createJSONStorage(() => localStorage),
+}
+)
+);

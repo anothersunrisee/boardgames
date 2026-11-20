@@ -142,3 +142,31 @@ Aplikasi mengadopsi estetika **Warm Alabaster Cream & Playful Geometric Mascot U
   - *"Pura-pura jadi pelayan restoran bintang 5 sombong setiap kali ada yang nanya."*
   - *"Wajib tirukan gaya mas-mas parkir tiup peluit 'Prit prit mundur terus' tiap ada orang yang berdiri/gerak."*
 
+---
+
+## 💾 SISTEM SKOR PERORANGAN, SKOR KELOMPOK & PERSISTENSI CACHE BROWSER
+
+1. **Persistent Browser Cache (`localStorage` via Zustand `persist`):**
+   - Seluruh data room (`roomName`, `roomCreated`), daftar pemain (`players`), skor kumulatif perorangan (`score`), serta ronde/pertandingan tersimpan aman di `localStorage` dengan key `'party_games_room_storage_v1'`.
+   - **Tahan Refresh:** Jika browser di-refresh, tab tertutup tidak sengaja, atau dibuka kembali keesokan harinya, akumulasi skor setiap pemain tidak akan hilang!
+
+2. **Skor Kelompok vs Skor Perorangan Kumulatif:**
+   - **Skor Kelompok:** Ditampilkan di dalam game beregu (misal Game 02 & 03: Ronde Menang Cewek vs Cowok; Game 05: Status Lulus/Gagal Tim).
+   - **Skor Perorangan Kumulatif:** Seluruh hasil permainan (baik game individual maupun beregu) dikonversi menjadi poin perorangan yang diakumulasikan ke masing-masing pemain di room.
+
+3. **Tingkat Kesulitan Game & Pembobotan Poin (+ dan -):**
+   - **Game 01 (Same Brain? NO!):** Unik `+2 pt` | Kembar / Sama `-1 pt`.
+   - **Game 02 (Beauty Expert?!):** Penebak Cowok `+5 pt`, Tim Cowok `+2 pt`, Cewek Ketebak `-1 pt` | Cewek Bertahan `+3 pt`, Tim Cewek `+1 pt`, Tim Cowok `-1 pt`.
+   - **Game 03 (Boys Stuff, Girls Guess!):** Penebak Cewek `+5 pt`, Tim Cewek `+2 pt`, Cowok Ketebak `-1 pt` | Cowok Bertahan `+3 pt`, Tim Cowok `+1 pt`, Tim Cewek `-1 pt`.
+   - **Game 04 (The Devil's Advocate):** Menang Debat `+4 pt` | Kalah Debat `-2 pt` | Seri `+2 pt` | Best Performance `+1 pt`.
+   - **Game 05 (Cerdas Cermat Berantai):** Rantai Lulus (Semua Benar) `+6 pt per anggota` (10 pt tim) | Rantai Putus (1 Salah) `-2 pt per anggota` (0 pt tim).
+   - **Game 06 (Sell Me This Trash!):** Sales Juara `+5 pt` | Sales Kalah `-2 pt` | Seri `+2 pt`.
+
+4. **Podium Juara Umum & Hukuman Juru Kunci (`/room/podium`):**
+   - Halaman khusus *Grand Finale* untuk melihat siapa yang meraih poin tertinggi di seluruh room:
+     - 🥇 **JUARA 1 & MVP ROOM:** Mahkota emas, fanfare, total skor kumulatif tertinggi.
+     - 🥈 **Runner-Up & 🥉 Peringkat 3.**
+     - **Klasemen Lengkap:** Menampilkan seluruh peringkat dan badge nilai positif/negatif.
+     - **💀 Hukuman Si Juru Kunci:** Tombol otomatis untuk memberikan kartu hukuman acak kepada pemain dengan skor paling rendah.
+
+

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, RotateCcw, FastForward, Home } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, FastForward, Home, Trophy } from 'lucide-react';
 import { sfx } from '../utils/sound';
 
 export interface HostUtilityBarProps {
@@ -33,6 +33,18 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
         className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
       >
         <Home className="w-4 h-4" />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          sfx.playPop();
+          navigate('/room/podium');
+        }}
+        title="Juara & Klasemen Room"
+        className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer text-[#F59E0B]"
+      >
+        <Trophy className="w-4 h-4" />
       </button>
 
       <button

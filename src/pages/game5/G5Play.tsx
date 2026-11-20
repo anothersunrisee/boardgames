@@ -239,10 +239,10 @@ export default function G5Play() {
             >
               <span className="text-5xl inline-block">🎉⚡</span>
               <h2 className="font-display text-2xl font-bold text-[#158467]">
-                RANTAI BERHASIL DITUNTASKAN!
+                RANTAI BERHASIL DITUNTASKAN! (+6 pt)
               </h2>
               <p className="text-sm font-semibold text-[#158467]">
-                Luar biasa! Semua anggota <strong>{currentTeam.name}</strong> berhasil menjawab benar secara berurutan. Masing-masing anggota mendapat <strong>+1 poin</strong>!
+                Luar biasa! Semua anggota <strong>{currentTeam.name}</strong> berhasil menjawab benar secara berurutan. Tim meraih <strong>10 Poin Kelompok</strong> dan masing-masing anggota mendapat <strong>+6 poin di Room</strong>!
               </p>
 
               <div className="pt-3">
@@ -275,10 +275,10 @@ export default function G5Play() {
             >
               <span className="text-5xl inline-block">💥⛓️</span>
               <h2 className="font-display text-2xl font-bold text-[#F04438]">
-                RANTAI TERPUTUS! (0 Poin)
+                RANTAI TERPUTUS! (-2 Poin Room)
               </h2>
               <p className="text-sm font-semibold text-[#64616C]">
-                Sayang sekali, <strong>{failedMemberName}</strong> gagal menjawab dengan benar. Poin tim hangus untuk putaran ini!
+                Sayang sekali, <strong>{failedMemberName}</strong> gagal menjawab dengan benar. Rantai putus: Tim mendapat <strong>0 Poin</strong> dan seluruh anggota tim kena penalti <strong>-2 poin di Room</strong>!
               </p>
 
               {/* Punishment Card Button for Loser */}

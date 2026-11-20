@@ -153,14 +153,15 @@ export default function G4Match() {
     let scoreA = 0
     let scoreB = 0
 
+    // Poin Kesulitan Tinggi (Adu Debat 1v1): Menang +4 pt, Kalah -2 pt, Seri +2 pt
     if (votesA > votesB) {
       winnerId = playerA.id
-      scoreA += 3
-      scoreB += 1
+      scoreA += 4
+      scoreB -= 2
     } else if (votesB > votesA) {
       winnerId = playerB.id
-      scoreB += 3
-      scoreA += 1
+      scoreB += 4
+      scoreA -= 2
     } else {
       winnerId = 'tie'
       scoreA += 2

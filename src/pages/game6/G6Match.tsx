@@ -110,15 +110,16 @@ export default function G6Match() {
     sfx.playSuccess();
     let winnerId: string | 'tie' = 'tie';
 
+    // Poin Kesulitan Tinggi (Pitching Duel 1v1): Menang +5 pt, Kalah -2 pt, Seri +2 pt
     if (votesA > votesB) {
       winnerId = playerA.id;
-      addScore(playerA.id, 3);
-      addScore(playerB.id, 1);
+      addScore(playerA.id, 5);
+      addScore(playerB.id, -2);
       setLoserName(playerB.name);
     } else if (votesB > votesA) {
       winnerId = playerB.id;
-      addScore(playerB.id, 3);
-      addScore(playerA.id, 1);
+      addScore(playerB.id, 5);
+      addScore(playerA.id, -2);
       setLoserName(playerA.name);
     } else {
       winnerId = 'tie';

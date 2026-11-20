@@ -17,6 +17,10 @@ export default function G2Secret() {
     g2Slots,
     g2CurrentSlotIndex,
     g2NextSlot,
+    g2GirlWins,
+    g2BoyWins,
+    incrementG2GirlWins,
+    incrementG2BoyWins,
     addScore,
   } = useGameStore()
 
@@ -41,15 +45,45 @@ export default function G2Secret() {
     const targetBoyId = boyId || g2BoyPlayers[0]?.id
     setCreditedBoyId(targetBoyId)
     setRoundResult('guessed')
+
+    // Cowok berhasil menebak barang skincare (Tingkat Kesulitan Tinggi):
+    // 1. Penebak dapat +5 poin di room
     if (targetBoyId) {
-      addScore(targetBoyId, 1)
+      addScore(targetBoyId, 5)
     }
+    // 2. Anggota tim cowok lainnya dapat +2 poin bonus tim di room
+    g2BoyPlayers.forEach((b) => {
+      if (b.id !== targetBoyId) {
+        addScore(b.id, 2)
+      }
+    })
+    // 3. Cewek pemegang rahasia yang ketebak kena penalti -1 poin di room
+    addScore(girl.id, -1)
+
+    // 4. Update skor kelompok Game 2
+    incrementG2BoyWins()
   }
 
   const handleMarkFailed = () => {
     sfx.playBuzzer()
     setRoundResult('failed')
-    addScore(girl.id, 1)
+
+    // Cowok gagal menebak (Cewek berhasil mempertahankan rahasia):
+    // 1. Cewek pemegang rahasia dapat +3 poin di room
+    addScore(girl.id, 3)
+    // 2. Seluruh cewek lainnya dapat +1 poin bonus tim di room
+    g2GirlPlayers.forEach((g) => {
+      if (g.id !== girl.id) {
+        addScore(g.id, 1)
+      }
+    })
+    // 3. Seluruh cowok kena penalti -1 poin di room
+    g2BoyPlayers.forEach((b) => {
+      addScore(b.id, -1)
+    })
+
+    // 4. Update skor kelompok Game 2
+    incrementG2GirlWins()
   }
 
   const handleNext = () => {
@@ -70,7 +104,7 @@ export default function G2Secret() {
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
       <div className="max-w-lg mx-auto w-full flex-1 flex flex-col">
         {/* Top Header */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
@@ -83,9 +117,14 @@ export default function G2Secret() {
             <span>Pilih Game</span>
           </button>
 
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#D8317E] text-white font-bold tracking-wide">
-            Cewek {g2CurrentSlotIndex + 1} / {g2Slots.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-display text-xs px-3 py-1 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 text-[#1E1E24] font-bold">
+              👧 {g2GirlWins} vs 👦 {g2BoyWins}
+            </span>
+            <span className="font-display text-xs px-3.5 py-1 rounded-full bg-[#D8317E] text-white font-bold tracking-wide">
+              Cewek {g2CurrentSlotIndex + 1} / {g2Slots.length}
+            </span>
+          </div>
         </div>
 
         {/* Mascot & Target Girl Banner */}
@@ -236,7 +275,7 @@ export default function G2Secret() {
                 onClick={() => handleMarkGuessed()}
               >
                 <Check className="w-5 h-5 stroke-[3]" />
-                <span>KETEBAK! (+1 Cowok)</span>
+                <span>KETEBAK! (+5 Cowok)</span>
               </Button>
 
               <Button
@@ -246,16 +285,16 @@ export default function G2Secret() {
                 onClick={handleMarkFailed}
               >
                 <X className="w-5 h-5 stroke-[3]" />
-                <span>GAGAL! (+1 {girl.name})</span>
+                <span>GAGAL! (+3 {girl.name})</span>
               </Button>
             </div>
 
             {/* Quick Boy selector if host wants to give point to specific boy */}
             <div className="text-center pt-2">
               <span className="text-[11px] text-[#64616C] font-semibold">
-                Atau pilih cowok yang berhasil nebak:{' '}
+                Pilih cowok yang berhasil menebak:
               </span>
-              <div className="flex justify-center gap-1.5 mt-1.5">
+              <div className="flex justify-center gap-1.5 mt-1.5 flex-wrap">
                 {g2BoyPlayers.map((boy) => (
                   <button
                     key={boy.id}
@@ -263,7 +302,7 @@ export default function G2Secret() {
                     className="px-2.5 py-1 text-xs font-bold rounded-full bg-white border border-[#2568EF]/30 text-[#2568EF] hover:bg-[#E0EBFF] cursor-pointer"
                     onClick={() => handleMarkGuessed(boy.id)}
                   >
-                    +1 {boy.name}
+                    🎯 {boy.name} (+5)
                   </button>
                 ))}
               </div>
@@ -284,8 +323,8 @@ export default function G2Secret() {
             >
               <p className="font-display text-lg font-bold">
                 {roundResult === 'guessed'
-                  ? `🎉 Berhasil Ditebak! (+1 Poin untuk ${g2BoyPlayers.find((b) => b.id === creditedBoyId)?.name || 'Cowok'})`
-                  : `❌ Gagal Ditebak! (+1 Poin Bertahan untuk ${girl.name})`}
+                  ? `🎉 Berhasil Ditebak ${creditedBoyId ? `oleh ${g2BoyPlayers.find((b) => b.id === creditedBoyId)?.name || 'Cowok'}` : ''}! (+5 Penebak, +2 Tim Cowok, -1 ${girl.name})`
+                  : `❌ Gagal Ditebak! (+3 ${girl.name}, +1 Tim Cewek, -1 Tim Cowok)`}
               </p>
               <p className="text-xs font-semibold mt-0.5">
                 Benda rahasia tadi: <strong>"{slot.secretItem}"</strong>

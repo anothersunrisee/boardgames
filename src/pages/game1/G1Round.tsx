@@ -79,10 +79,12 @@ export default function G1Round() {
   const handleFinishScoring = () => {
     sfx.playSuccess()
 
-    // Add +1 score to all players who didn't fail (unique answers)
+    // Poin Kesulitan Sedang: Unik +2 poin, Kembar -1 poin (penalti)
     players.forEach((p) => {
       if (!failedPlayerIds.includes(p.id)) {
-        addScore(p.id, 1)
+        addScore(p.id, 2)
+      } else {
+        addScore(p.id, -1)
       }
     })
 
@@ -282,12 +284,12 @@ export default function G1Round() {
                         {isFailed ? (
                           <>
                             <X className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>Kembar (0)</span>
+                            <span>Kembar (-1)</span>
                           </>
                         ) : (
                           <>
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>Unik (+1)</span>
+                            <span>Unik (+2)</span>
                           </>
                         )}
                       </span>
@@ -299,11 +301,11 @@ export default function G1Round() {
               {/* Status tally bar */}
               <div className="p-3 rounded-2xl bg-white border border-[#1E1E24]/10 flex items-center justify-around text-center mb-5 text-xs font-bold">
                 <span className="text-[#12B76A]">
-                  ✅ {uniqueCount} Pemain Unik (+1 pt)
+                  ✅ {uniqueCount} Pemain Unik (+2 pt)
                 </span>
                 <span className="text-[#64616C]">|</span>
                 <span className="text-[#F04438]">
-                  ❌ {failedCount} Pemain Kembar (0 pt)
+                  ❌ {failedCount} Pemain Kembar (-1 pt)
                 </span>
               </div>
 

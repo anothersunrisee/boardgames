@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import RoomSetup from './pages/RoomSetup'
+import RoomPodium from './pages/RoomPodium'
 import G1Setup from './pages/game1/G1Setup'
 import G1Round from './pages/game1/G1Round'
 import G1Reveal from './pages/game1/G1Reveal'
@@ -31,6 +32,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/room" element={<RoomSetup />} />
+      <Route path="/room/podium" element={<RoomPodium />} />
 
       {/* Game 1 */}
       <Route path="/game1/setup"   element={<G1Setup />} />
