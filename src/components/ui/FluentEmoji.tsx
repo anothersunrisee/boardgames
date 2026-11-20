@@ -59,6 +59,20 @@ const UNICODE_TO_ASSET: Record<string, string> = {
   '🗑': 'warning',
   '😆': 'partying-face',
   '🛒': 'gem-stone',
+  '📜': 'hourglass',
+  '🌍': 'gem-stone',
+  '🌎': 'gem-stone',
+  '🌏': 'gem-stone',
+  '🏛️': 'trophy',
+  '🏛': 'trophy',
+  '🪐': 'rocket',
+  '🧬': 'sparkles',
+  '🎬': 'popcorn',
+  '🍜': 'popcorn',
+  '⚽': 'game-die',
+  '🥇': 'crown',
+  '🥈': 'trophy',
+  '🥉': 'star',
 };
 
 // Aliases for string names passed to <FluentEmoji name="..." />
@@ -193,7 +207,9 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
   // 2. If valid assetKey and not failed, render official Windows 11 3D asset
   if (assetKey && HAS_3D.has(assetKey) && !loadFailed) {
     const is3D = variant === '3d';
-    const src = is3D ? `/emojis/${assetKey}-3d.png` : `/emojis/${assetKey}.svg`;
+    const base = import.meta.env.BASE_URL || '/';
+    const cleanBase = base.endsWith('/') ? base : `${base}/`;
+    const src = is3D ? `${cleanBase}emojis/${assetKey}-3d.png` : `${cleanBase}emojis/${assetKey}.svg`;
 
     return (
       <img

@@ -18,7 +18,6 @@ export default function G5Results() {
   const navigate = useNavigate();
   const { players, g5Teams, autoStartGame5 } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
-  const [selectedLoser, setSelectedLoser] = useState('');
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const winner = sortedPlayers[0];
@@ -28,6 +27,8 @@ export default function G5Results() {
   }, []);
 
   const failedTeams = g5Teams.filter((t) => t.isFailed);
+  const failingTeam = failedTeams[0] || g5Teams[g5Teams.length - 1];
+  const losingTeamMembers = failingTeam ? players.filter((p) => failingTeam.memberIds.includes(p.id)) : [];
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between relative overflow-hidden">
@@ -159,21 +160,37 @@ export default function G5Results() {
           <ScoreBoard players={players} title="Papan Skor Pemain Room" highlightId={winner?.id} />
         </div>
 
-        {/* Punishment Card Button for Lost Teams */}
-        {failedTeams.length > 0 && (
+        {/* Punishment Card for Lost Team */}
+        {failingTeam && (
           <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                const randomFailed = failedTeams[Math.floor(Math.random() * failedTeams.length)];
-                setSelectedLoser(randomFailed.name);
-                setShowPunishment(true);
-              }}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#FFF7ED] to-[#FFEDD5] border-2 border-[#EA580C] text-[#C2410C] hover:bg-[#FED7AA] font-display text-sm font-black flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-[0.98]"
-            >
-              <FluentEmoji name="joker" variant="3d" size={24} />
-              <span>Acak Kartu Hukuman untuk Tim yang Gagal!</span>
-            </button>
+            <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EA580C] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#EA580C] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
+                  <FluentEmoji name="fire" variant="3d" size={14} />
+                  <span>HUKUMAN: 1 TIM GUGUR ({failingTeam.name})</span>
+                </span>
+                <p className="text-xs text-[#64616C] font-semibold mb-2">
+                  Seluruh anggota {failingTeam.name} ({losingTeamMembers.length} orang) wajib jalani hukuman bersama:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {losingTeamMembers.map((p) => (
+                    <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EA580C]/20 shadow-2xs">
+                      <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
+                      <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowPunishment(true)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#EA580C] text-white font-display text-xs font-bold hover:bg-[#C2410C] cursor-pointer shadow-xs transition flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <FluentEmoji name="joker" variant="3d" size={18} />
+                <span>Shuffle Hukuman Tim</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -211,7 +228,9 @@ export default function G5Results() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={selectedLoser}
+        targetType="team"
+        targetTeamName={failingTeam?.name}
+        targetPlayers={losingTeamMembers}
       />
 
       <HostUtilityBar />

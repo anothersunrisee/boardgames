@@ -20,7 +20,7 @@ export default function G1Results() {
 
   const sorted = [...players].sort((a, b) => b.score - a.score)
   const winner = sorted[0]
-  const loser = sorted[sorted.length - 1]
+  const bottom3 = sorted.length <= 3 ? sorted : sorted.slice(-3)
 
   useEffect(() => {
     sfx.playFanfare()
@@ -92,33 +92,37 @@ export default function G1Results() {
           <ScoreBoard players={players} highlightId={winner?.id} />
         </div>
 
-        {/* Bottom Loser Punishment Card Trigger */}
-        {loser && players.length > 1 && (
+        {/* Bottom Loser Punishment Card Trigger: 3 Pemain Terbawah */}
+        {bottom3.length > 0 && players.length > 1 && (
           <div className="mb-6">
-            <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex items-center justify-between gap-3 shadow-xs">
-              <div className="flex items-center gap-2.5">
-                <PlayerProfileAvatar
-                  character={getCharacterById(loser.avatarId || 'c11')}
-                  size={42}
-                  mood="dizzy"
-                />
-                <div>
-                  <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2 py-0.5 rounded-full bg-[#EC5A29]/15">
-                    💀 KENA HUKUMAN
-                  </span>
-                  <p className="font-display text-sm font-bold text-[#1E1E24]">
-                    {loser.name} ({loser.score} pts)
-                  </p>
+            <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
+                  <Flame className="w-3 h-3 text-[#EC5A29]" />
+                  <span>3 PEMAIN TERBAWAH KENA HUKUMAN</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {bottom3.map((p) => {
+                    const rank = sorted.indexOf(p) + 1;
+                    return (
+                      <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EC5A29]/20 shadow-2xs">
+                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                        <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
+                        <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowPunishment(true)}
-                className="px-3.5 py-2 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shadow-xs transition flex items-center gap-1.5"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shadow-xs transition flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Flame className="w-3.5 h-3.5" />
-                <span>Shuffle Hukuman</span>
+                <span>Shuffle Hukuman 3 Terbawah</span>
               </button>
             </div>
           </div>
@@ -159,7 +163,8 @@ export default function G1Results() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={loser?.name}
+        targetType="bottom3"
+        targetPlayers={bottom3}
       />
 
       <HostUtilityBar />

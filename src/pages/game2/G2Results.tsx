@@ -31,7 +31,10 @@ export default function G2Results() {
       : 'Hasil Kelompok Seri!'
 
   const losingTeamName =
-    g2GirlWins > g2BoyWins ? 'Tim Cowok' : g2BoyWins > g2GirlWins ? 'Tim Cewek' : 'Tim yang Kalah Poin'
+    g2GirlWins > g2BoyWins ? 'Tim Cowok' : g2BoyWins > g2GirlWins ? 'Tim Cewek' : 'Tim yang Kalah Poin';
+
+  const losingTeamGender = g2GirlWins > g2BoyWins ? 'cowok' : 'cewek';
+  const losingMembers = players.filter((p) => p.gender === losingTeamGender);
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between relative overflow-hidden">
@@ -135,23 +138,32 @@ export default function G2Results() {
 
         {/* Losing Team Punishment Box */}
         <div className="mb-6">
-          <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex items-center justify-between gap-3 shadow-xs">
+          <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
             <div>
-              <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2 py-0.5 rounded-full bg-[#EC5A29]/15">
-                💀 HUKUMAN TIM KALAH
+              <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
+                <Flame className="w-3 h-3 text-[#EC5A29]" />
+                <span>HUKUMAN: 1 TIM KALAH ({losingTeamName})</span>
               </span>
-              <p className="font-display text-sm font-bold text-[#1E1E24] mt-0.5">
-                {losingTeamName} wajib jalani hukuman kocak!
+              <p className="text-xs text-[#64616C] font-semibold mb-2">
+                Seluruh anggota {losingTeamName} ({losingMembers.length} orang) wajib jalani hukuman bersama:
               </p>
+              <div className="flex flex-wrap gap-1.5">
+                {losingMembers.map((p) => (
+                  <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EC5A29]/20 shadow-2xs">
+                    <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
+                    <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button
               type="button"
               onClick={() => setShowPunishment(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shadow-xs transition flex items-center gap-1.5 shrink-0"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shadow-xs transition flex items-center justify-center gap-1.5 shrink-0"
             >
               <Flame className="w-3.5 h-3.5" />
-              <span>Shuffle Hukuman</span>
+              <span>Shuffle Hukuman Tim</span>
             </button>
           </div>
         </div>
@@ -194,7 +206,9 @@ export default function G2Results() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={losingTeamName}
+        targetType="team"
+        targetTeamName={losingTeamName}
+        targetPlayers={losingMembers}
       />
 
       <HostUtilityBar />

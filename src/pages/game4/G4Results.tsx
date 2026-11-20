@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { RotateCcw, Home, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { RotateCcw, Home, ArrowLeft, Flame } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -17,11 +17,10 @@ export default function G4Results() {
   const navigate = useNavigate()
   const { players, g4Matches, autoStartGame4 } = useGameStore()
   const [showPunishment, setShowPunishment] = useState(false)
-  const [selectedLoser, setSelectedLoser] = useState('')
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const supremeAdvocate = sortedPlayers[0]
-  const lowestScorer = sortedPlayers[sortedPlayers.length - 1]
+  const bottom3 = sortedPlayers.length <= 3 ? sortedPlayers : sortedPlayers.slice(-3)
 
   useEffect(() => {
     sfx.playFanfare()
@@ -92,23 +91,6 @@ export default function G4Results() {
           <ScoreBoard players={players} highlightId={supremeAdvocate?.id} />
         </div>
 
-        {/* Punishment Card Button */}
-        {lowestScorer && lowestScorer.id !== supremeAdvocate?.id && (
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedLoser(lowestScorer.name)
-                setShowPunishment(true)
-              }}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
-            >
-              <AlertTriangle className="w-4 h-4" />
-              <span>🃏 Acak Kartu Hukuman untuk Debater Terbawah ({lowestScorer.name})!</span>
-            </button>
-          </div>
-        )}
-
         {/* Match History */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -162,6 +144,42 @@ export default function G4Results() {
           </Card>
         </motion.div>
 
+        {/* Zona Hukuman: 3 Pemain Terbawah */}
+        {bottom3.length > 0 && players.length > 1 && (
+          <div className="mb-6">
+            <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
+                  <Flame className="w-3 h-3 text-[#EC5A29]" />
+                  <span>3 PEMAIN TERBAWAH KENA HUKUMAN</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {bottom3.map((p) => {
+                    const rank = sortedPlayers.indexOf(p) + 1;
+                    return (
+                      <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EC5A29]/20 shadow-2xs">
+                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                        <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
+                        <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowPunishment(true)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shadow-xs transition flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <Flame className="w-3.5 h-3.5" />
+                <span>Shuffle Hukuman 3 Terbawah</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="space-y-3 mt-auto">
           <Button
@@ -196,7 +214,8 @@ export default function G4Results() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={selectedLoser || lowestScorer?.name}
+        targetType="bottom3"
+        targetPlayers={bottom3}
       />
 
       <HostUtilityBar />

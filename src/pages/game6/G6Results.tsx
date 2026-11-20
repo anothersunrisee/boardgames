@@ -18,10 +18,10 @@ export default function G6Results() {
   const navigate = useNavigate();
   const { players, g6Matches, autoStartGame6 } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
-  const [selectedLoser, setSelectedLoser] = useState('');
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const winner = sortedPlayers[0];
+  const bottom3 = sortedPlayers.length <= 3 ? sortedPlayers : sortedPlayers.slice(-3);
 
   useEffect(() => {
     sfx.playFanfare();
@@ -166,21 +166,42 @@ export default function G6Results() {
           <ScoreBoard players={players} title="Papan Skor Sales Absurd" highlightId={winner?.id} />
         </div>
 
-        {/* Punishment Card Button for Losers */}
-        {loserNames.length > 0 && (
+        {/* Zona Hukuman: 3 Pemain Terbawah */}
+        {bottom3.length > 0 && players.length > 1 && (
           <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                const randomLoser = loserNames[Math.floor(Math.random() * loserNames.length)];
-                setSelectedLoser(randomLoser);
-                setShowPunishment(true);
-              }}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#FFF7ED] to-[#FFEDD5] border-2 border-[#EA580C] text-[#C2410C] hover:bg-[#FED7AA] font-display text-sm font-black flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-[0.98]"
-            >
-              <FluentEmoji name="joker" variant="3d" size={24} />
-              <span>Acak Kartu Hukuman untuk Sales yang Kalah Duel!</span>
-            </button>
+            <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EA580C] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#EA580C] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
+                  <FluentEmoji name="fire" variant="3d" size={14} />
+                  <span>3 PEMAIN TERBAWAH KENA HUKUMAN</span>
+                </span>
+                <p className="text-xs text-[#64616C] font-semibold mb-2">
+                  3 sales dengan skor terendah wajib menerima kartu promosi absurd:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {bottom3.map((p) => {
+                    const rank = sortedPlayers.indexOf(p) + 1;
+                    return (
+                      <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EA580C]/20 shadow-2xs">
+                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                        <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
+                        <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowPunishment(true)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#EA580C] text-white font-display text-xs font-bold hover:bg-[#C2410C] cursor-pointer shadow-xs transition flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <FluentEmoji name="joker" variant="3d" size={18} />
+                <span>Shuffle Hukuman 3 Terbawah</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -222,7 +243,8 @@ export default function G6Results() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={selectedLoser}
+        targetType="bottom3"
+        targetPlayers={bottom3}
       />
 
       <HostUtilityBar />

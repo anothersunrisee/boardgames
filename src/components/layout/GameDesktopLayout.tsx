@@ -41,8 +41,9 @@ export interface GameDesktopLayoutProps {
 const FullPodiumAndPunishmentModal: React.FC<{
   open: boolean;
   players: Player[];
+  gameId?: GameId;
   onClose: () => void;
-}> = ({ open, players, onClose }) => {
+}> = ({ open, players, gameId, onClose }) => {
   const [activePunishment, setActivePunishment] = useState<PunishmentCardDef>(PUNISHMENT_CARDS[0]);
   const [isShuffling, setIsShuffling] = useState(false);
 
@@ -51,7 +52,30 @@ const FullPodiumAndPunishmentModal: React.FC<{
     [players]
   );
 
-  const bottomPlayer = sorted[sorted.length - 1];
+  const isTeamGame = gameId === 'game2' || gameId === 'game3' || gameId === 'game5';
+
+  // Compute team standings for team games
+  const teamScores = useMemo(() => {
+    const map: Record<string, { name: string; score: number; count: number }> = {};
+    players.forEach((p) => {
+      const k = p.kubu?.trim() || 'Tim Santai';
+      if (!map[k]) map[k] = { name: k, score: 0, count: 0 };
+      map[k].score += p.score;
+      map[k].count += 1;
+    });
+    return Object.values(map).sort((a, b) => b.score - a.score);
+  }, [players]);
+
+  const losingTeam = teamScores[teamScores.length - 1];
+  const losingTeamMembers = losingTeam
+    ? players.filter((p) => (p.kubu?.trim() || 'Tim Santai') === losingTeam.name)
+    : [];
+
+  // Bottom 3 players for individual games & final standings
+  const bottom3Players = useMemo(() => {
+    if (sorted.length <= 3) return sorted;
+    return sorted.slice(-3);
+  }, [sorted]);
 
   const shuffleCard = () => {
     if (isShuffling) return;
@@ -196,13 +220,17 @@ const FullPodiumAndPunishmentModal: React.FC<{
                 </div>
               </div>
 
-              {/* PUNISHMENT CARD SECTION */}
+              {/* PUNISHMENT CARD SECTION (1 Tim Kalah untuk game tim, 3 Terbawah untuk game individu & skor akhir) */}
               <div className="rounded-[24px] bg-white border-2 border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)] p-4 sm:p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] text-[#B42318] text-[11px] font-black uppercase">
                       <Flame className="w-3.5 h-3.5 text-[#DC2626]" />
-                      Target Hukuman: {bottomPlayer ? `${bottomPlayer.name} (${bottomPlayer.kubu})` : 'Pemain Kalah'}
+                      {isTeamGame ? (
+                        <span>Target Hukuman: 1 Tim Kalah ({losingTeam?.name || 'Tim Kalah'})</span>
+                      ) : (
+                        <span>Target Hukuman: 3 Pemain Terbawah ({bottom3Players.length} Orang)</span>
+                      )}
                     </span>
                     <h4 className="font-display text-lg sm:text-xl font-bold text-[#1E1E24] mt-1">
                       Acak Kartu Hukuman Game Berikutnya
@@ -219,6 +247,48 @@ const FullPodiumAndPunishmentModal: React.FC<{
                     <span>{isShuffling ? 'Mengocok...' : 'Acak Kartu Hukuman'}</span>
                   </button>
                 </div>
+
+                {/* Chips of Target Players */}
+                {isTeamGame ? (
+                  <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 space-y-1.5">
+                    <p className="text-[11px] font-bold text-[#64616C]">
+                      Seluruh {losingTeamMembers.length} anggota <strong>{losingTeam?.name}</strong> wajib menjalani hukuman:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {losingTeamMembers.map((p) => (
+                        <div
+                          key={p.id}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#1E1E24]/15 shadow-2xs"
+                        >
+                          <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
+                          <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 space-y-1.5">
+                    <p className="text-[11px] font-bold text-[#64616C]">
+                      3 pemain di posisi klasemen terbawah wajib menjalani kartu hukuman:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {bottom3Players.map((p) => {
+                        const rank = sorted.indexOf(p) + 1;
+                        return (
+                          <div
+                            key={p.id}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FEE2E2] border border-[#DC2626]/20 shadow-2xs"
+                          >
+                            <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                            <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
+                            <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                            <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Animated Active Punishment Card */}
                 <motion.div
@@ -652,6 +722,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
       <FullPodiumAndPunishmentModal
         open={showPodiumModal}
         players={players}
+        gameId={gameId}
         onClose={() => setShowPodiumModal(false)}
       />
     </div>

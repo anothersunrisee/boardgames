@@ -29,7 +29,7 @@ export default function RoomPodium() {
   const winner = sortedPlayers[0];
   const second = sortedPlayers[1];
   const third = sortedPlayers[2];
-  const juruKunci = sortedPlayers[sortedPlayers.length - 1];
+  const bottom3 = sortedPlayers.length <= 3 ? sortedPlayers : sortedPlayers.slice(-3);
 
   const handleResetScores = () => {
     sfx.playPop();
@@ -298,37 +298,46 @@ export default function RoomPodium() {
           </div>
         </Card>
 
-        {/* 🃏 Hukuman Si Juru Kunci (Pemain Terbawah) */}
-        {juruKunci && players.length > 1 && (
+        {/* 🃏 Zona Hukuman 3 Pemain Terbawah di Room */}
+        {bottom3.length > 0 && players.length > 1 && (
           <div className="mb-6">
-            <div className="p-4 rounded-[28px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-              <div className="flex items-center gap-3">
-                <PlayerProfileAvatar
-                  character={getCharacterById(juruKunci.avatarId || 'c11')}
-                  size={46}
-                  mood="dizzy"
-                />
-                <div>
-                  <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1">
-                    <FluentEmoji name="collision" variant="3d" size={14} />
-                    <span>SI JURU KUNCI</span>
-                  </span>
-                  <p className="font-display text-base font-bold text-[#1E1E24] mt-0.5">
-                    {juruKunci.name} ({juruKunci.score} pts)
-                  </p>
-                  <p className="text-xs text-[#64616C] font-semibold">
-                    Poin paling rendah di room malam ini! Wajib dapat kartu hukuman:
-                  </p>
+            <div className="p-4 sm:p-5 rounded-[28px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+              <div className="w-full sm:w-auto">
+                <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1.5 mb-2">
+                  <FluentEmoji name="fire" variant="3d" size={14} />
+                  <span>ZONA HUKUMAN: 3 PEMAIN TERBAWAH</span>
+                </span>
+                <p className="text-xs text-[#64616C] font-semibold mb-2.5">
+                  3 pemain dengan perolehan skor terendah di room wajib menerima kartu hukuman:
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {bottom3.map((p) => {
+                    const rank = sortedPlayers.indexOf(p) + 1;
+                    return (
+                      <div
+                        key={p.id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white border border-[#EC5A29]/30 shadow-2xs"
+                      >
+                        <span className="font-display font-black text-xs text-[#DC2626]">#{rank}</span>
+                        <PlayerProfileAvatar characterId={p.avatarId} size={28} name={p.name} />
+                        <div>
+                          <p className="font-display font-bold text-xs text-[#1E1E24] leading-tight">{p.name}</p>
+                          <span className="text-[10px] font-bold text-[#64616C]">{p.score} pts</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowPunishment(true)}
-                className="px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shrink-0 shadow-xs transition flex items-center gap-1.5"
+                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#EC5A29] text-white font-display text-xs sm:text-sm font-bold hover:bg-[#D44A1D] cursor-pointer shrink-0 shadow-md transition flex items-center justify-center gap-2 active:scale-95"
               >
-                <FluentEmoji name="joker" variant="3d" size={18} />
-                <span>Acak Kartu Hukuman</span>
+                <FluentEmoji name="joker" variant="3d" size={20} />
+                <span>Acak Hukuman 3 Terbawah</span>
               </button>
             </div>
           </div>
@@ -380,7 +389,8 @@ export default function RoomPodium() {
       <PunishmentModal
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
-        loserName={juruKunci?.name}
+        targetType="bottom3"
+        targetPlayers={bottom3}
       />
 
       {/* Reset Confirmation Modal */}

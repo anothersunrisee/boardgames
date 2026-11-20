@@ -5,20 +5,27 @@ import { PUNISHMENT_CARDS } from '../assets-library/punishments';
 import type { PunishmentCardDef } from '../assets-library/types';
 import { GameMascotBot } from './characters/GameMascotBot';
 import { CHARACTER_PACK } from '../assets-library/characters';
+import { PlayerProfileAvatar } from './characters/PlayerProfileAvatar';
 import { TactileButton } from './ui/TactileElements';
-import { FluentEmoji } from './ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
+import type { Player } from '../store/useGameStore';
 
-interface PunishmentModalProps {
+export interface PunishmentModalProps {
   open: boolean;
   onClose: () => void;
   loserName?: string;
+  targetType?: 'team' | 'bottom3' | 'individual';
+  targetTeamName?: string;
+  targetPlayers?: Player[];
 }
 
 export const PunishmentModal: React.FC<PunishmentModalProps> = ({
   open,
   onClose,
   loserName,
+  targetType = 'individual',
+  targetTeamName,
+  targetPlayers,
 }) => {
   const [activeCard, setActiveCard] = useState<PunishmentCardDef>(PUNISHMENT_CARDS[0]);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -60,16 +67,19 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
     }, 750);
   };
 
+  const isTeam = targetType === 'team' || Boolean(targetTeamName);
+  const isBottom3 = targetType === 'bottom3' || (targetPlayers && targetPlayers.length > 1 && !isTeam);
+
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-xs">
           <motion.div
             initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 20 }}
             transition={{ type: 'spring', damping: 22 }}
-            className="w-full max-w-md rounded-[36px] bg-[#FAF7F2] border-[3px] border-[#1E1E24] p-6 text-center text-[#1E1E24] shadow-2xl relative overflow-hidden"
+            className="w-full max-w-lg rounded-[36px] bg-[#FAF7F2] border-[3px] border-[#1E1E24] p-5 sm:p-6 text-center text-[#1E1E24] shadow-2xl relative overflow-hidden max-h-[92vh] flex flex-col justify-between"
           >
             {/* Close Button */}
             <button
@@ -81,17 +91,68 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
             </button>
 
             {/* Header Mascot Bot */}
-            <div className="flex justify-center mb-2">
-              <GameMascotBot character={CHARACTER_PACK[14]} size={76} mood="shocked" />
+            <div className="flex justify-center mb-1">
+              <GameMascotBot character={CHARACTER_PACK[14]} size={68} mood="shocked" />
             </div>
 
             {/* Title & Target */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FFE4E2] text-[#B42318] text-xs font-black uppercase tracking-wider mb-2">
-              <Flame className="w-3.5 h-3.5" />
-              <span>SHUFFLE KARTU HUKUMAN</span>
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FFE4E2] text-[#B42318] text-xs font-black uppercase tracking-wider mb-2 self-center">
+              <Flame className="w-3.5 h-3.5 text-[#DC2626]" />
+              <span>
+                {isTeam
+                  ? `HUKUMAN: 1 TIM KALAH (${targetTeamName || loserName || 'Tim Kalah'})`
+                  : isBottom3
+                  ? 'HUKUMAN: 3 PEMAIN TERBAWAH'
+                  : `HUKUMAN UNTUK: ${loserName || 'Pemain Kalah'}`}
+              </span>
             </div>
 
-            {loserName && (
+            {/* Target Description & Member Chips */}
+            {isTeam && (
+              <div className="mb-3">
+                <p className="text-xs font-semibold text-[#64616C] mb-2">
+                  Seluruh anggota tim wajib menjalani hukuman ini bersama-sama:
+                </p>
+                {targetPlayers && targetPlayers.length > 0 && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 max-h-24 overflow-y-auto">
+                    {targetPlayers.map((p) => (
+                      <div
+                        key={p.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#1E1E24]/15 shadow-2xs"
+                      >
+                        <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
+                        <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isBottom3 && (
+              <div className="mb-3">
+                <p className="text-xs font-semibold text-[#64616C] mb-2">
+                  3 pemain di posisi terbawah wajib menerima kartu hukuman malam ini:
+                </p>
+                {targetPlayers && targetPlayers.length > 0 && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 max-h-24 overflow-y-auto">
+                    {targetPlayers.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FEE2E2] border border-[#DC2626]/20 shadow-2xs"
+                      >
+                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{idx + 1}</span>
+                        <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
+                        <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
+                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isTeam && !isBottom3 && loserName && (
               <p className="text-xs font-bold text-[#64616C] mb-2">
                 Hukuman khusus untuk:{' '}
                 <span className="text-[#EC5A29] font-black underline">{loserName}</span>
@@ -119,96 +180,51 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
               ))}
             </div>
 
-            {/* 3D Flip Card Shuffle Stage */}
-            <div className="relative min-h-[220px] flex items-center justify-center my-2 [perspective:1000px]">
-              {/* Flying Stack Background Cards during shuffle */}
-              {[0, 1, 2].map((idx) => (
-                <motion.div
-                  key={idx}
-                  animate={
-                    isShuffling
-                      ? {
-                          x: [0, (idx % 2 === 0 ? -1 : 1) * (50 + idx * 16), 0],
-                          y: [0, (idx - 1) * 20, 0],
-                          rotate: [0, (idx % 2 === 0 ? -16 : 16), (idx - 1) * 3],
-                          scale: [0.94, 1.02, 0.94],
-                        }
-                      : {
-                          x: (idx - 1) * 4,
-                          y: idx * 2.5,
-                          rotate: (idx - 1) * 2,
-                          scale: 0.96,
-                        }
-                  }
-                  transition={{
-                    duration: isShuffling ? 0.35 : 0.3,
-                    repeat: isShuffling ? 2 : 0,
-                    ease: 'easeInOut',
-                  }}
-                  style={{
-                    backgroundColor: ['#1E1E24', '#EC5A29', '#C82373'][idx],
-                  }}
-                  className="absolute inset-0 rounded-[28px] border-[3px] border-[#1E1E24] opacity-80 shadow-md"
-                />
-              ))}
-
-              {/* Front Active Punishment Card (3D Flip) */}
+            {/* Flippable 3D Punishment Card */}
+            <div className="perspective-1000 mb-4">
               <motion.div
-                key={activeCard.id + String(isShuffling)}
-                initial={{ rotateY: 180, scale: 0.9 }}
-                animate={{
-                  rotateY: cardFlipped && !isShuffling ? 0 : 180,
-                  scale: isShuffling ? 0.9 : 1,
-                }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                animate={{ rotateY: cardFlipped ? 0 : 180 }}
+                transition={{ duration: 0.4 }}
                 style={{ backgroundColor: activeCard.color }}
-                className="relative z-10 w-full min-h-[220px] rounded-[28px] border-[3.5px] border-[#1E1E24] shadow-[0_8px_0_#1E1E24] p-5 text-white flex flex-col justify-between [transform-style:preserve-3d]"
+                className="w-full rounded-2xl p-4 sm:p-5 text-white border-2 border-[#1E1E24] shadow-[0_6px_0_#1E1E24] text-left relative overflow-hidden"
               >
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-extrabold uppercase">
-                    {activeCard.intensity} • {activeCard.duration}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-black uppercase tracking-wider">
+                    {activeCard.intensity}
                   </span>
-                  <FluentEmoji emoji={activeCard.emoji} size={28} />
+                  <span className="text-xs font-bold text-white/85">
+                    Durasi: {activeCard.duration}
+                  </span>
                 </div>
 
-                <div className="my-2">
-                  <h4 className="font-display text-xl sm:text-2xl font-bold leading-tight mb-2">
-                    {activeCard.title}
-                  </h4>
-                  <p className="text-xs sm:text-sm font-bold leading-relaxed bg-black/25 rounded-2xl p-3 border border-white/15">
-                    “{activeCard.text}”
-                  </p>
-                </div>
-
-                <div className="text-[10px] font-bold opacity-85 text-right">
-                  #{activeCard.id.toUpperCase()}
-                </div>
+                <h3 className="font-display text-xl sm:text-2xl font-bold mb-2">
+                  {activeCard.title}
+                </h3>
+                <p className="text-xs sm:text-sm font-semibold bg-black/20 rounded-xl p-3 border border-white/15 leading-relaxed">
+                  “{activeCard.text}”
+                </p>
               </motion.div>
             </div>
 
-            {/* Buttons */}
-            <div className="space-y-2 mt-4">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
               <TactileButton
                 variant="sunny"
-                size="md"
                 fullWidth
-                disabled={isShuffling}
+                size="md"
                 onClick={handleShuffle}
+                disabled={isShuffling}
               >
-                <Shuffle className={`w-4 h-4 text-[#1E1E24] ${isShuffling ? 'animate-spin' : ''}`} />
-                <span>{isShuffling ? 'Mengocok Kartu...' : 'Acak Hukuman Lain!'}</span>
+                <Shuffle className={`w-4 h-4 ${isShuffling ? 'animate-spin' : ''}`} />
+                <span>{isShuffling ? 'Mengocok...' : 'Acak Hukuman Lain'}</span>
               </TactileButton>
 
               <TactileButton
                 variant="ink"
                 size="md"
-                fullWidth
                 onClick={onClose}
               >
-                <span className="flex items-center justify-center gap-1.5">
-                  <span>Siap Jalani Hukuman!</span>
-                  <FluentEmoji name="fire" variant="3d" size={18} />
-                </span>
+                <span>Siap Jalankan!</span>
               </TactileButton>
             </div>
           </motion.div>
