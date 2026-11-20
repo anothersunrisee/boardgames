@@ -203,6 +203,18 @@ export const Home: React.FC = () => {
               type="button"
               onClick={() => {
                 sfx.playPop();
+                navigate('/studio');
+              }}
+              className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#E0EBFF] text-[#2568EF] hover:bg-[#CCE0FF] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#2568EF]" />
+              <span>🎨 Studio</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                sfx.playPop();
                 navigate('/room');
               }}
               className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#FAF7F2] text-[#1E1E24] hover:bg-black/5 border border-[#1E1E24]/10 flex items-center gap-1.5 cursor-pointer shadow-xs transition"

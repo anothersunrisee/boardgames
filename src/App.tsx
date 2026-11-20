@@ -26,11 +26,13 @@ import G5Play from './pages/game5/G5Play'
 import G5Results from './pages/game5/G5Results'
 import G6Match from './pages/game6/G6Match'
 import G6Results from './pages/game6/G6Results'
+import StudioAssetPack from './pages/StudioAssetPack'
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/studio" element={<StudioAssetPack />} />
       <Route path="/room" element={<RoomSetup />} />
       <Route path="/room/podium" element={<RoomPodium />} />
 
