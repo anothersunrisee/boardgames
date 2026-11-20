@@ -103,6 +103,7 @@ export default function G1Round() {
 
   return (
     <GameDesktopLayout
+      gameId="game1"
       gameTitle="Same Brain? No!"
       badge="GAME 01 • SAME BRAIN"
       badgeColor="#158467"

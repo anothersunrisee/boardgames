@@ -61,6 +61,7 @@ export default function G3Guess() {
 
   return (
     <GameDesktopLayout
+      gameId="game3"
       gameTitle="Boys Stuff"
       badge="GAME 03 • BOYS STUFF"
       badgeColor="#2568EF"

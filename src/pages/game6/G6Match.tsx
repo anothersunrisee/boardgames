@@ -148,6 +148,7 @@ export default function G6Match() {
 
   return (
     <GameDesktopLayout
+      gameId="game6"
       gameTitle="Sell Me This Trash!"
       badge="GAME 06 • PITCH DUEL"
       badgeColor="#65A30D"

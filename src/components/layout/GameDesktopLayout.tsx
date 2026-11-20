@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Sparkles, BookOpen } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { PlayerProfileAvatar } from '../characters/PlayerProfileAvatar';
 import { FluentEmoji } from '../ui/FluentEmoji';
+import { GameOnboardingModal, type GameId } from '../modals/GameOnboardingModal';
 import { sfx } from '../../utils/sound';
 
 export interface GameDesktopLayoutProps {
   children: React.ReactNode;
+  gameId?: GameId;
   gameTitle?: string;
   badge?: string;
   badgeColor?: string;
@@ -18,11 +20,12 @@ export interface GameDesktopLayoutProps {
 
 /**
  * 80:20 Responsive Layout for Party Games
- * - Mobile: 1-Column streamlined game view
- * - Desktop (lg+): 80% Main Game Stage + 20% Right Sidebar (Host Tools + Live Real-Time Room Leaderboard)
+ * - Mobile: 1-Column streamlined game view with quick rule button
+ * - Desktop (lg+): 80% Main Game Stage + 20% Right Sidebar (Host Tools + Cara Main + Live Real-Time Room Leaderboard)
  */
 export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
   children,
+  gameId,
   gameTitle,
   badge,
   badgeColor = '#7C3AED',
@@ -33,6 +36,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
   const navigate = useNavigate();
   const { players, roomName } = useGameStore();
   const [muted, setMuted] = useState(sfx.muted);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
@@ -105,6 +109,20 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Pilih Game Lain</span>
               </button>
+
+              {gameId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playPop();
+                    setShowOnboarding(true);
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-[#FFF7ED] hover:bg-[#FFEDD5] border border-[#F97316]/30 text-[#C2410C] text-xs font-extrabold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-[#EA580C]" />
+                  <span>Cara Main & Hukuman</span>
+                </button>
+              )}
 
               {sidebarActions}
 
@@ -205,6 +223,31 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
           </div>
         </aside>
       </div>
+
+      {/* Floating Rule & Punishment Button on Mobile */}
+      {gameId && (
+        <button
+          type="button"
+          onClick={() => {
+            sfx.playPop();
+            setShowOnboarding(true);
+          }}
+          className="lg:hidden fixed bottom-4 left-4 z-40 py-2 px-3.5 rounded-full bg-[#1E1E24] text-white border-2 border-white/20 shadow-lg text-xs font-bold flex items-center gap-1.5 active:scale-95 transition"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-[#FBBF24]" />
+          <span>Cara Main & Hukuman</span>
+        </button>
+      )}
+
+      {/* Game Onboarding Rules & Punishment Modal */}
+      {gameId && (
+        <GameOnboardingModal
+          open={showOnboarding}
+          gameId={gameId}
+          onClose={() => setShowOnboarding(false)}
+          onStartGame={() => setShowOnboarding(false)}
+        />
+      )}
     </div>
   );
 };

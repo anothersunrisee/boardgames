@@ -71,6 +71,7 @@ export default function G5Play() {
 
   return (
     <GameDesktopLayout
+      gameId="game5"
       gameTitle="Cerdas Cermat Berantai"
       badge="GAME 05 • RELAY"
       badgeColor="#7C3AED"

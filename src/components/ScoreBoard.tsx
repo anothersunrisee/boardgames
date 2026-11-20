@@ -87,9 +87,9 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
         </div>
       </div>
 
-      {/* Stacked Leaderboard Rows (Responsive: 1-col on mobile, 2-cols on desktop) */}
+      {/* Stacked Leaderboard Rows (Responsive: 1-col on mobile, 2-cols on tablet & desktop) */}
       {tab === 'individu' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1.5 custom-scroll">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[44vh] overflow-y-auto pr-1.5 custom-scroll">
           {sortedPlayers.map((player, idx) => {
             const isWinner = player.id === highlightId;
             const rowStyle =
@@ -99,22 +99,22 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
             return (
               <div
                 key={player.id}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-[20px] font-bold shadow-xs transition-transform ${
+                className={`flex items-center justify-between px-3 py-2 rounded-[18px] font-bold shadow-xs transition-transform ${
                   isWinner ? 'ring-3 ring-amber-300 scale-[1.01]' : ''
                 } ${rowStyle}`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="font-display text-base w-6 text-center flex items-center justify-center shrink-0">
-                    {idx === 0 ? <FluentEmoji name="crown" variant="3d" size={20} /> : `#${idx + 1}`}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-display text-sm w-5 text-center flex items-center justify-center shrink-0">
+                    {idx === 0 ? <FluentEmoji name="crown" variant="3d" size={18} /> : `#${idx + 1}`}
                   </span>
                   <PlayerProfileAvatar
                     character={char}
-                    size={38}
+                    size={34}
                     mood={idx === 0 ? 'winner' : 'idle'}
                   />
-                  <div className="truncate">
-                    <p className="text-sm font-bold leading-tight truncate">{player.name}</p>
-                    <p className="text-[11px] opacity-75 font-semibold truncate">
+                  <div className="truncate min-w-0">
+                    <p className="text-xs font-bold leading-tight truncate">{player.name}</p>
+                    <p className="text-[10px] opacity-75 font-semibold truncate">
                       {player.kubu || player.team}
                     </p>
                   </div>
@@ -122,7 +122,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
 
                 {/* Score Pill */}
                 <div
-                  className={`px-3 py-1 rounded-full font-display text-sm shadow-xs shrink-0 ml-2 ${
+                  className={`px-2.5 py-0.5 rounded-full font-display text-xs shadow-xs shrink-0 ml-1.5 ${
                     player.score < 0
                       ? 'bg-[#FEE2E2] text-[#DC2626] border border-[#FCA5A5]'
                       : 'bg-white text-[#1E1E24]'
@@ -135,21 +135,21 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[52vh] overflow-y-auto pr-1.5 custom-scroll">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[44vh] overflow-y-auto pr-1.5 custom-scroll">
           {sortedTeams.map((item, idx) => (
             <div
               key={item.team}
-              className={`flex items-center justify-between px-4 py-3 rounded-[20px] font-bold ${
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-[18px] font-bold ${
                 RANK_STYLES[idx] || 'bg-[#356B5A] text-white border border-white/15'
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <Users className="w-4 h-4 shrink-0" />
-                <span className="font-display text-base truncate">
+                <span className="font-display text-sm truncate">
                   #{idx + 1} {item.team}
                 </span>
               </div>
-              <span className="px-3.5 py-1 rounded-full bg-white text-[#1E1E24] font-display text-sm shadow-xs shrink-0 ml-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-white text-[#1E1E24] font-display text-xs shadow-xs shrink-0 ml-1.5">
                 {item.score} pts
               </span>
             </div>

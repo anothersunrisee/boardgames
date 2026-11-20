@@ -69,6 +69,7 @@ export default function G2Guess() {
 
   return (
     <GameDesktopLayout
+      gameId="game2"
       gameTitle="Beauty Expert"
       badge="GAME 02 • BEAUTY"
       badgeColor="#D8317E"

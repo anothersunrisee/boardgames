@@ -191,6 +191,7 @@ export default function G4Match() {
 
   return (
     <GameDesktopLayout
+      gameId="game4"
       gameTitle="The Devil's Advocate"
       badge="GAME 04 • DEBAT"
       badgeColor="#EC5A29"

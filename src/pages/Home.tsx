@@ -7,12 +7,16 @@ import { GameMascotBot } from '../components/characters/GameMascotBot';
 import { PlayerProfileAvatar } from '../components/characters/PlayerProfileAvatar';
 import { ConcentricRoomTransition } from '../components/motion/ConcentricRoomTransition';
 import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
-import { HostUtilityBar } from '../components/HostUtilityBar';
 import { ScoreBoard } from '../components/ScoreBoard';
+import { GameOnboardingModal, type GameId } from '../components/modals/GameOnboardingModal';
+import {
+  PlayfulPartyFooter,
+  DeveloperCornerButton,
+  DeveloperInfoModal,
+  QrisCoffeeModal,
+} from '../components/PlayfulPartyFooter';
 import { useGameStore } from '../store/useGameStore';
 import { sfx } from '../assets-library/soundEngine';
-
-type GameId = 'game1' | 'game2' | 'game3' | 'game4' | 'game5' | 'game6';
 
 interface GameItem extends Omit<GameCardProps, 'onSelect'> {
   id: GameId;
@@ -117,6 +121,11 @@ export const Home: React.FC = () => {
 
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [transitionData, setTransitionData] = useState<{ active: boolean; title: string; route: string } | null>(null);
+  const [onboardingGameId, setOnboardingGameId] = useState<GameId | null>(null);
+  const [devModalOpen, setDevModalOpen] = useState(false);
+  const [devModalTab, setDevModalTab] = useState<'features' | 'limits'>('features');
+  const [qrisModalOpen, setQrisModalOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(sfx.muted);
 
   // If room has not been created or player list is empty, redirect to room registration
   useEffect(() => {
@@ -127,6 +136,32 @@ export const Home: React.FC = () => {
 
   const cewekCount = players.filter((p) => p.gender === 'cewek').length;
   const cowokCount = players.filter((p) => p.gender === 'cowok').length;
+
+  const handleGameCardClick = (gameId: GameId) => {
+    sfx.playPop();
+    setOnboardingGameId(gameId);
+  };
+
+  const handleConfirmStartGame = (gameId: GameId) => {
+    setOnboardingGameId(null);
+    handleSelectGame(gameId);
+  };
+
+  const handleToggleMute = () => {
+    sfx.muted = !isMuted;
+    setIsMuted(sfx.muted);
+    if (!sfx.muted) sfx.playPop();
+  };
+
+  const openDevModal = (tab: 'features' | 'limits' = 'features') => {
+    setDevModalTab(tab);
+    setDevModalOpen(true);
+  };
+
+  const openQrisModal = () => {
+    setDevModalOpen(false);
+    setQrisModalOpen(true);
+  };
 
   const handleSelectGame = (gameId: GameId) => {
     sfx.playWhoosh();
@@ -312,21 +347,21 @@ export const Home: React.FC = () => {
                 visible: { opacity: 1, y: 0 },
               }}
             >
-              <GameCard {...game} onSelect={() => handleSelectGame(game.id)} />
+              <GameCard {...game} onSelect={() => handleGameCardClick(game.id)} />
             </motion.div>
           ))}
         </motion.div>
       </div>
 
-      {/* Cumulative Scoreboard Modal */}
+      {/* Cumulative Scoreboard Modal (Refined Responsive Width & Height) */}
       <AnimatePresence>
         {showScoreModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-md md:max-w-4xl bg-[#488B76] rounded-[36px] p-5 md:p-7 text-white shadow-2xl relative max-h-[92vh] flex flex-col justify-between overflow-hidden border-[3px] border-[#1E1E24]/10"
+              className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl bg-[#488B76] rounded-[36px] p-5 md:p-6 text-white shadow-2xl relative max-h-[84vh] flex flex-col justify-between overflow-hidden border-[3px] border-[#1E1E24]/10"
             >
               <button
                 type="button"
@@ -340,7 +375,7 @@ export const Home: React.FC = () => {
                 <ScoreBoard players={players} title="Akumulasi Skor Room" transparent />
               </div>
 
-              <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
+              <div className="flex items-center justify-between pt-2 flex-wrap gap-2 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => {
@@ -380,7 +415,42 @@ export const Home: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <HostUtilityBar />
+      {/* Game Onboarding Rules, Scoring & Punishment Modal */}
+      <GameOnboardingModal
+        open={!!onboardingGameId}
+        gameId={onboardingGameId}
+        onClose={() => setOnboardingGameId(null)}
+        onStartGame={handleConfirmStartGame}
+      />
+
+      {/* Playful Scalloped Footer with Interactive Mascot Playground */}
+      <div className="mt-12 -mx-4 -mb-8 md:-mb-12">
+        <PlayfulPartyFooter
+          muted={isMuted}
+          onToggleMute={handleToggleMute}
+          onOpenDevModal={openDevModal}
+          onOpenQrisModal={openQrisModal}
+          onSelectGame={(gId) => handleGameCardClick(gId as GameId)}
+        />
+      </div>
+
+      {/* Floating Developer Pill on Bottom-Right */}
+      <DeveloperCornerButton onClick={() => openDevModal('features')} />
+
+      {/* Developer Bio & Features / Limitations Modal */}
+      <DeveloperInfoModal
+        open={devModalOpen}
+        initialTab={devModalTab}
+        onClose={() => setDevModalOpen(false)}
+        onOpenQris={openQrisModal}
+      />
+
+      {/* Indonesian QRIS Coffee Support Modal with Dynamic Coffee Tiers */}
+      <QrisCoffeeModal
+        open={qrisModalOpen}
+        onClose={() => setQrisModalOpen(false)}
+        onBackToDev={() => openDevModal('features')}
+      />
     </div>
   );
 };
