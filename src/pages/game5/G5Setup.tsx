@@ -91,8 +91,8 @@ export const G5Setup: React.FC = () => {
             Pembagian Kelompok Estafet
           </h1>
           <p className="text-xs sm:text-sm text-[#64616C] font-semibold mt-1 max-w-lg mx-auto">
-            1 Tim akan maju satu per satu ke depan layar untuk menjawab <strong>4 Seri Soal Berantai</strong>.
-            Satu orang salah = rantai putus!
+            1 Tim akan maju satu per satu ke depan layar untuk menyelesaikan <strong>4 Ronde Beruntun (Total 16 Soal Estafet)</strong>.
+            Satu orang salah = kena penalti -2 pts dan kartu tantangan!
           </p>
         </motion.div>
 
@@ -183,8 +183,8 @@ export const G5Setup: React.FC = () => {
 
                 {/* Team Footer Note */}
                 <div className="pt-3 border-t border-[#1E1E24]/8 text-[11px] text-[#64616C] font-semibold flex items-center justify-between">
-                  <span>Target: 4 Seri Berantai</span>
-                  <span className="text-[#158467] font-bold">+10 Poin Tim</span>
+                  <span>Target: 4 Ronde (16 Soal)</span>
+                  <span className="text-[#158467] font-bold">+10 Poin Jackpot</span>
                 </div>
               </motion.div>
             );
@@ -202,10 +202,10 @@ export const G5Setup: React.FC = () => {
                 Cara Kerja Turnamen Chain Quiz Relay:
               </h4>
               <ul className="text-xs text-[#92400E] font-medium space-y-1 list-disc list-inside">
-                <li>1 Tim akan dipanggil ke depan panggung untuk menyelesaikan <strong>4 soal langsung</strong>.</li>
-                <li>Pemain menjawab secara estafet sesuai urutan (#1 &rarr; #2 &rarr; #3 &rarr; #4).</li>
-                <li>Jika 1 orang salah, rantai putus dan tim gugur (-2 poin per anggota).</li>
-                <li>Setelah 1 tim selesai, giliran tim berikutnya yang maju ke panggung!</li>
+                <li>1 Tim maju menyelesaikan <strong>4 Ronde Beruntun (1 Ronde = 4 Soal Estafet, Total 16 Soal)</strong>.</li>
+                <li>Pemain menjawab secara estafet bergiliran sesuai urutan anggota tim.</li>
+                <li>Jika salah jawab: pemain terkena <strong>-2 Poin</strong> dan mendapat <strong>Kartu Tantangan Konyol</strong> yang wajib dijalankan terus sampai Ronde ke-4 selesai!</li>
+                <li>Setiap 1 ronde tuntas: tim dapat <strong>+2 Poin</strong>. Jika babat habis 4/4 ronde bersih = <strong>Jackpot 10 Poin</strong> masing-masing!</li>
               </ul>
             </div>
           </div>

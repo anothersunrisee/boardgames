@@ -127,7 +127,7 @@ export default function G5Results() {
                 <div
                   key={team.id}
                   className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                    (team.correctCount || 0) >= 3
+                    (team.successfulRoundsCount || 0) >= 3
                       ? 'bg-[#ECFDF5] border-[#12B76A]/40 shadow-xs'
                       : 'bg-[#FFF1F2] border-[#F04438]/30 shadow-xs'
                   }`}
@@ -135,10 +135,10 @@ export default function G5Results() {
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs ${
-                        (team.correctCount || 0) >= 3 ? 'bg-[#12B76A]' : 'bg-[#F04438]'
+                        (team.successfulRoundsCount || 0) >= 3 ? 'bg-[#12B76A]' : 'bg-[#F04438]'
                       }`}
                     >
-                      {(team.correctCount || 0) >= 3 ? (
+                      {(team.successfulRoundsCount || 0) >= 3 ? (
                         <Check className="w-4 h-4 stroke-[3]" />
                       ) : (
                         <X className="w-4 h-4 stroke-[3]" />
@@ -153,15 +153,15 @@ export default function G5Results() {
                   <div className="text-right">
                     <span
                       className={`font-display text-xs font-black px-3 py-1 rounded-full inline-flex items-center gap-1 ${
-                        (team.correctCount || 0) >= 3
+                        (team.successfulRoundsCount || 0) >= 3
                           ? 'bg-[#12B76A] text-white'
                           : 'bg-[#F04438] text-white'
                       }`}
                     >
-                      {team.correctCount || 0}/4 Benar
+                      {team.successfulRoundsCount || 0}/4 Ronde ({team.correctCount || 0}/16 Soal)
                     </span>
                     <p className="text-[10px] font-bold text-[#64616C] mt-0.5">
-                      {team.teamScore || (team.correctCount || 0) * 3} Poin Tim
+                      {team.teamScore || 0} Poin Tim
                     </p>
                   </div>
                 </div>

@@ -87,7 +87,9 @@ export type DebateMatch = {
 // ─── Game 5 Types (Cerdas Cermat Berantai) ───────────────────────────────────
 
 export type G5RoundHistory = {
-  roundIdx: number;
+  roundIdx: number; // 0..3 (Ronde 1..4)
+  questionInRoundIdx: number; // 0..3 (Soal 1..4 di dalam ronde)
+  globalQuestionIdx: number; // 0..15
   memberId: string;
   isCorrect: boolean;
   question: TriviaQuestion;
@@ -96,7 +98,8 @@ export type G5RoundHistory = {
 export type G5ActiveChallenge = {
   memberId: string;
   challenge: string;
-  assignedAtRound: number;
+  assignedAtRound: number; // 1..4
+  assignedAtQuestionInRound?: number; // 1..4
 };
 
 export const G5_CHALLENGE_LIST = [
@@ -116,16 +119,20 @@ export type G5Team = {
   id: string;
   name: string;
   memberIds: string[];
-  questions: TriviaQuestion[];
-  currentMemberIdx: number;
+  questions: TriviaQuestion[]; // 16 pertanyaan (4 ronde x 4 soal)
+  currentGlobalQuestionIdx: number; // 0..15
+  currentRoundIdx: number; // 0..3
+  currentQuestionInRound: number; // 0..3
   roundHistory: G5RoundHistory[];
   punishedMemberIds: string[];
   activeChallenges?: G5ActiveChallenge[];
-  correctCount: number;
+  correctCount: number; // total soal terjawab benar (0..16)
+  successfulRoundsCount: number; // total ronde berhasil (0..4)
   isPassed: boolean;
   isFailed: boolean;
-  isTeamFinished: boolean;
+  isTeamFinished: boolean; // true setelah 16 soal selesai
   teamScore?: number;
+  currentMemberIdx: number; // backward compatibility
 };
 
 // ─── Game 6 Types (Sell Me This Trash 2v2) ───────────────────────────────────
@@ -247,10 +254,14 @@ interface GameStore {
   g5CurrentTeamIndex: number;
   g5UsedQuestionIds: number[];
   g5RecordMemberAnswer: (isCorrect: boolean) => {
+    isRoundFinished: boolean;
     isTeamFinished: boolean;
     isCorrect: boolean;
     roundNum: number;
+    questionInRoundNum: number;
+    globalQuestionNum: number;
     memberId: string;
+    roundCorrectCount: number;
     challengeAssigned?: string;
   };
   g5UndoAnswer: () => boolean;
@@ -578,8 +589,8 @@ export const useGameStore = create<GameStore>()(
       const members = shuffled.slice(cursor, cursor + size);
       cursor += size;
 
-      // Setiap tim WAJIB mendapatkan 4 series pertanyaan langsung!
-      const questions = getRandomTriviaChain(4, usedIds);
+      // Setiap tim WAJIB mendapatkan 16 pertanyaan (4 ronde x 4 soal)!
+      const questions = getRandomTriviaChain(16, usedIds);
       usedIds = [...usedIds, ...questions.map((q) => q.id)];
 
       teams.push({
@@ -587,11 +598,15 @@ export const useGameStore = create<GameStore>()(
         name: TEAM_NAMES[idx % TEAM_NAMES.length],
         memberIds: members.map((m) => m.id),
         questions,
+        currentGlobalQuestionIdx: 0,
+        currentRoundIdx: 0,
+        currentQuestionInRound: 0,
         currentMemberIdx: 0,
         roundHistory: [],
         punishedMemberIds: [],
         activeChallenges: [],
         correctCount: 0,
+        successfulRoundsCount: 0,
         isPassed: false,
         isFailed: false,
         isTeamFinished: false,
@@ -612,16 +627,20 @@ export const useGameStore = create<GameStore>()(
     const { g5Teams, g5UsedQuestionIds } = get();
     let usedIds = [...g5UsedQuestionIds];
     const updatedTeams = g5Teams.map((team) => {
-      const questions = getRandomTriviaChain(4, usedIds);
+      const questions = getRandomTriviaChain(16, usedIds);
       usedIds = [...usedIds, ...questions.map((q) => q.id)];
       return {
         ...team,
         questions,
+        currentGlobalQuestionIdx: 0,
+        currentRoundIdx: 0,
+        currentQuestionInRound: 0,
         currentMemberIdx: 0,
         roundHistory: [],
         punishedMemberIds: [],
         activeChallenges: [],
         correctCount: 0,
+        successfulRoundsCount: 0,
         isPassed: false,
         isFailed: false,
         isTeamFinished: false,
@@ -1002,52 +1021,60 @@ export const useGameStore = create<GameStore>()(
     }),
 
   // ── Game 5 Handlers (Cerdas Cermat Berantai) ──
-  // Aturan baru: 4 ronde beruntun per tim. Tiap ronde benar = +2 poin per anggota. 4/4 terjawab = bonus sehingga masing-masing dapat total 10 poin (+2 bonus).
-  // Salah = individu -2 poin + kartu tantangan yang berlaku sampai ronde ke-4 selesai!
+  // Format Baru: 1 tim bermain 4 Ronde Beruntun (1 Ronde = 4 Soal Estafet, Total 16 Soal).
+  // Tiap 1 ronde (4 soal) terjawab benar = +2 poin ke setiap anggota tim.
+  // 4 ronde bersih (16/16) = bonus jackpot +2 poin tambahan (total 10 poin masing-masing).
+  // Jika ada anggota yang salah jawab: orang tersebut -2 poin & kena kartu tantangan yang aktif sampai ronde 4 selesai!
   g5RecordMemberAnswer: (isCorrect: boolean) => {
     const { g5Teams, g5CurrentTeamIndex, addScore } = get();
     const currentTeam = g5Teams[g5CurrentTeamIndex];
     if (!currentTeam) {
-      return { isTeamFinished: false, isCorrect: false, roundNum: 0, memberId: '' };
+      return {
+        isRoundFinished: false,
+        isTeamFinished: false,
+        isCorrect: false,
+        roundNum: 1,
+        questionInRoundNum: 1,
+        globalQuestionNum: 1,
+        memberId: '',
+        roundCorrectCount: 0,
+      };
     }
 
-    const roundIdx = currentTeam.currentMemberIdx;
-    const memberIndexInTeam = roundIdx % currentTeam.memberIds.length;
+    const globalIdx = currentTeam.currentGlobalQuestionIdx ?? currentTeam.currentMemberIdx ?? 0;
+    const roundIdx = Math.min(3, Math.floor(globalIdx / 4));
+    const questionInRoundIdx = globalIdx % 4;
+
+    const memberIndexInTeam = globalIdx % currentTeam.memberIds.length;
     const memberId = currentTeam.memberIds[memberIndexInTeam];
-    const question = currentTeam.questions[roundIdx] || currentTeam.questions[0];
+    const question = currentTeam.questions[globalIdx] || currentTeam.questions[0];
 
     const updatedHistory: G5RoundHistory = {
       roundIdx,
+      questionInRoundIdx,
+      globalQuestionIdx: globalIdx,
       memberId,
       isCorrect,
       question,
     };
 
-    let nextCorrectCount = currentTeam.correctCount || 0;
+    let nextCorrectCount = (currentTeam.correctCount || 0) + (isCorrect ? 1 : 0);
     const nextPunishedMemberIds = [...(currentTeam.punishedMemberIds || [])];
     const nextActiveChallenges = [...(currentTeam.activeChallenges || [])];
     let challengeAssigned: string | undefined = undefined;
 
-    if (isCorrect) {
-      nextCorrectCount += 1;
-      // Tiap 1 ronde terjawab: +2 poin ke setiap anggota tim
-      currentTeam.memberIds.forEach((mId) => addScore(mId, 2));
-
-      // Jika ini ronde ke-4 dan berhasil 4/4 benar sempurna: jackpot bonus +2 tambahan (total 10 poin per orang)
-      if (roundIdx === 3 && nextCorrectCount === 4) {
-        currentTeam.memberIds.forEach((mId) => addScore(mId, 2));
-      }
-    } else {
-      // Salah: orang tersebut -2 poin
+    if (!isCorrect) {
+      // Salah jawab: orang tersebut -2 poin
       addScore(memberId, -2);
 
-      // Kartu tantangan aktif yang berlaku sampai ronde tim selesai!
+      // Kartu tantangan aktif yang berlaku sampai seluruh 4 ronde tim ini selesai!
       const randomChallenge = G5_CHALLENGE_LIST[Math.floor(Math.random() * G5_CHALLENGE_LIST.length)];
       challengeAssigned = randomChallenge;
       nextActiveChallenges.push({
         memberId,
         challenge: randomChallenge,
         assignedAtRound: roundIdx + 1,
+        assignedAtQuestionInRound: questionInRoundIdx + 1,
       });
 
       if (!nextPunishedMemberIds.includes(memberId)) {
@@ -1055,30 +1082,69 @@ export const useGameStore = create<GameStore>()(
       }
     }
 
-    const nextIdx = roundIdx + 1;
-    const isTeamFinished = nextIdx >= 4;
+    const nextGlobalIdx = globalIdx + 1;
+    const isRoundFinished = questionInRoundIdx === 3; // Soal ke-4 dalam ronde ini
+    const isTeamFinished = nextGlobalIdx >= 16; // Semua 16 soal selesai
+
+    const allHistory = [...(currentTeam.roundHistory || []), updatedHistory];
+    const currentRoundCorrectCount = allHistory.filter(
+      (h) => h.roundIdx === roundIdx && h.isCorrect
+    ).length;
+
+    let nextSuccessfulRounds = currentTeam.successfulRoundsCount || 0;
+    let nextTeamScore = currentTeam.teamScore || 0;
+
+    // Evaluasi jika 1 ronde (4 soal) selesai:
+    if (isRoundFinished) {
+      // Ronde berhasil jika minimal 3 dari 4 soal terjawab benar
+      const isRoundPassed = currentRoundCorrectCount >= 3;
+      if (isRoundPassed) {
+        nextSuccessfulRounds += 1;
+        // Setiap 1 ronde terjawab: +2 poin ke setiap anggota tim
+        currentTeam.memberIds.forEach((mId) => addScore(mId, 2));
+        nextTeamScore += 2;
+      }
+
+      // Jika ke-4 ronde sudah selesai (16 soal) dan semua 4 ronde berhasil (4/4):
+      if (isTeamFinished && nextSuccessfulRounds === 4) {
+        // Jackpot bonus +2 tambahan (total 10 poin masing-masing)
+        currentTeam.memberIds.forEach((mId) => addScore(mId, 2));
+        nextTeamScore += 2;
+      }
+    }
+
+    const nextRoundIdx = Math.min(3, Math.floor(nextGlobalIdx / 4));
+    const nextQuestionInRoundIdx = nextGlobalIdx % 4;
 
     const updatedTeams = [...g5Teams];
     updatedTeams[g5CurrentTeamIndex] = {
       ...currentTeam,
-      currentMemberIdx: nextIdx,
-      roundHistory: [...(currentTeam.roundHistory || []), updatedHistory],
+      currentGlobalQuestionIdx: nextGlobalIdx,
+      currentRoundIdx: nextRoundIdx,
+      currentQuestionInRound: nextQuestionInRoundIdx,
+      currentMemberIdx: nextGlobalIdx, // backward compatibility
+      roundHistory: allHistory,
       punishedMemberIds: nextPunishedMemberIds,
       activeChallenges: nextActiveChallenges,
       correctCount: nextCorrectCount,
+      successfulRoundsCount: nextSuccessfulRounds,
       isTeamFinished,
-      isPassed: isTeamFinished && nextCorrectCount >= 3,
-      isFailed: isTeamFinished && nextCorrectCount < 3,
-      teamScore: nextCorrectCount * 2 + (isTeamFinished && nextCorrectCount === 4 ? 2 : 0),
+      isPassed: isTeamFinished && nextSuccessfulRounds >= 2,
+      isFailed: isTeamFinished && nextSuccessfulRounds < 2,
+      teamScore: nextTeamScore,
     };
 
     set({ g5Teams: updatedTeams });
 
     return {
+      isRoundFinished,
       isTeamFinished,
       isCorrect,
       roundNum: roundIdx + 1,
+      questionInRoundNum: questionInRoundIdx + 1,
+      globalQuestionNum: globalIdx + 1,
       memberId,
+      roundCorrectCount: currentRoundCorrectCount,
       challengeAssigned,
     };
   },
@@ -1096,23 +1162,24 @@ export const useGameStore = create<GameStore>()(
     let nextCorrectCount = currentTeam.correctCount || 0;
     let nextPunishedMemberIds = [...(currentTeam.punishedMemberIds || [])];
     let nextActiveChallenges = [...(currentTeam.activeChallenges || [])];
+    let nextSuccessfulRounds = currentTeam.successfulRoundsCount || 0;
+    let nextTeamScore = currentTeam.teamScore || 0;
 
     if (last.isCorrect) {
-      // Rollback bonus jackpot jika sebelumnya 4/4
-      if (last.roundIdx === 3 && nextCorrectCount === 4) {
-        currentTeam.memberIds.forEach((mId) => addScore(mId, -2));
-      }
-      // Rollback +2 poin dari semua anggota
-      currentTeam.memberIds.forEach((mId) => addScore(mId, -2));
       nextCorrectCount = Math.max(0, nextCorrectCount - 1);
     } else {
       // Rollback -2 poin: kembalikan +2 poin ke orang yang salah
       addScore(last.memberId, 2);
 
-      // Hapus tantangan yang diberikan pada ronde ini
-      nextActiveChallenges = nextActiveChallenges.filter(
-        (c) => !(c.memberId === last.memberId && c.assignedAtRound === last.roundIdx + 1)
-      );
+      // Hapus tantangan yang diberikan pada soal ini
+      if (nextActiveChallenges.length > 0) {
+        const lastChalIdx = nextActiveChallenges
+          .map((c) => c.memberId)
+          .lastIndexOf(last.memberId);
+        if (lastChalIdx !== -1) {
+          nextActiveChallenges.splice(lastChalIdx, 1);
+        }
+      }
 
       // Rollback punishment jika member tidak punya kesalahan lain
       const hasOtherWrong = newHistory.some((h) => !h.isCorrect && h.memberId === last.memberId);
@@ -1121,20 +1188,43 @@ export const useGameStore = create<GameStore>()(
       }
     }
 
-    const prevIdx = Math.max(0, currentTeam.currentMemberIdx - 1);
+    // Jika yang di-undo adalah soal ke-4 dari ronde:
+    if (last.questionInRoundIdx === 3) {
+      const roundCorrectBefore = currentTeam.roundHistory
+        .filter((h) => h.roundIdx === last.roundIdx && h.isCorrect).length;
+      if (roundCorrectBefore >= 3) {
+        nextSuccessfulRounds = Math.max(0, nextSuccessfulRounds - 1);
+        currentTeam.memberIds.forEach((mId) => addScore(mId, -2));
+        nextTeamScore = Math.max(0, nextTeamScore - 2);
+
+        // Jika sebelumnya dapat jackpot bonus 4/4 ronde:
+        if (currentTeam.isTeamFinished && currentTeam.successfulRoundsCount === 4) {
+          currentTeam.memberIds.forEach((mId) => addScore(mId, -2));
+          nextTeamScore = Math.max(0, nextTeamScore - 2);
+        }
+      }
+    }
+
+    const prevGlobalIdx = Math.max(0, (currentTeam.currentGlobalQuestionIdx ?? 1) - 1);
+    const prevRoundIdx = Math.min(3, Math.floor(prevGlobalIdx / 4));
+    const prevQuestionInRoundIdx = prevGlobalIdx % 4;
 
     const updatedTeams = [...g5Teams];
     updatedTeams[g5CurrentTeamIndex] = {
       ...currentTeam,
-      currentMemberIdx: prevIdx,
+      currentGlobalQuestionIdx: prevGlobalIdx,
+      currentRoundIdx: prevRoundIdx,
+      currentQuestionInRound: prevQuestionInRoundIdx,
+      currentMemberIdx: prevGlobalIdx,
       roundHistory: newHistory,
       punishedMemberIds: nextPunishedMemberIds,
       activeChallenges: nextActiveChallenges,
       correctCount: nextCorrectCount,
+      successfulRoundsCount: nextSuccessfulRounds,
       isTeamFinished: false,
       isPassed: false,
       isFailed: false,
-      teamScore: nextCorrectCount * 2,
+      teamScore: nextTeamScore,
     };
 
     set({ g5Teams: updatedTeams });
@@ -1144,15 +1234,18 @@ export const useGameStore = create<GameStore>()(
   g5ShuffleCurrentQuestion: () => {
     const { g5Teams, g5CurrentTeamIndex, g5UsedQuestionIds } = get();
     const currentTeam = g5Teams[g5CurrentTeamIndex];
-    if (!currentTeam) return null;
+    if (!currentTeam || !currentTeam.questions) return null;
 
-    const roundIdx = Math.min(currentTeam.currentMemberIdx, 3);
+    const globalIdx = currentTeam.currentGlobalQuestionIdx ?? currentTeam.currentMemberIdx ?? 0;
+    const currentQ = currentTeam.questions[globalIdx];
+    if (!currentQ) return null;
+
     const newQuestions = getRandomTriviaChain(1, g5UsedQuestionIds);
     if (!newQuestions || newQuestions.length === 0) return null;
 
     const newQuestion = newQuestions[0];
     const updatedQuestions = [...currentTeam.questions];
-    updatedQuestions[roundIdx] = newQuestion;
+    updatedQuestions[globalIdx] = newQuestion;
 
     const updatedTeams = [...g5Teams];
     updatedTeams[g5CurrentTeamIndex] = {

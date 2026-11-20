@@ -39,14 +39,20 @@ export default function G5Play() {
     g5NextTeam,
   } = useGameStore();
 
-  // 3 Tahap Alur Bermain:
-  // 1. 'team_ready': Host memanggil tim ke depan & menunjukkan lineup 4 ronde berurutan
-  // 2. 'chain_quiz': 1 tim memainkan 4 ronde berurutan tanpa swap tim
-  // 3. 'team_summary': Rekapitulasi setelah tim menyelesaikan 4 ronde beruntun
-  const [stage, setStage] = useState<'team_ready' | 'chain_quiz' | 'team_summary'>('team_ready');
+  // 4 Tahap Alur Bermain:
+  // 1. 'team_ready': Host memanggil tim ke depan & menunjukkan alur 4 ronde berurutan (1 ronde = 4 soal estafet, total 16 soal)
+  // 2. 'chain_quiz': Tim memainkan 4 soal di dalam ronde aktif
+  // 3. 'round_summary': Rekap tiap 1 ronde (4 soal) selesai -> evaluasi ronde, +2 pts tim, & hukuman/kartu tantangan
+  // 4. 'team_summary': Rekapitulasi setelah tim menyelesaikan seluruh 4 ronde (16 soal)
+  const [stage, setStage] = useState<'team_ready' | 'chain_quiz' | 'round_summary' | 'team_summary'>('team_ready');
   const [showAnswer, setShowAnswer] = useState(false);
   const [punishmentModalOpen, setPunishmentModalOpen] = useState(false);
   const [lastPunishedPlayer, setLastPunishedPlayer] = useState<Player | null>(null);
+  const [completedRoundData, setCompletedRoundData] = useState<{
+    roundNum: number;
+    roundCorrectCount: number;
+    isRoundPassed: boolean;
+  } | null>(null);
 
   const currentTeam = g5Teams[g5CurrentTeamIndex];
 
@@ -56,11 +62,14 @@ export default function G5Play() {
   }
 
   const isLastTeam = g5CurrentTeamIndex >= g5Teams.length - 1;
-  const currentRoundIdx = Math.min(currentTeam.currentMemberIdx, 3);
-  const currentMemberIndexInTeam = currentRoundIdx % currentTeam.memberIds.length;
+  const currentGlobalIdx = Math.min(15, currentTeam.currentGlobalQuestionIdx ?? currentTeam.currentMemberIdx ?? 0);
+  const currentRoundIdx = Math.min(3, Math.floor(currentGlobalIdx / 4));
+  const currentQuestionInRound = currentGlobalIdx % 4;
+
+  const currentMemberIndexInTeam = currentGlobalIdx % currentTeam.memberIds.length;
   const currentMemberId = currentTeam.memberIds[currentMemberIndexInTeam];
   const currentMember = players.find((p) => p.id === currentMemberId);
-  const currentQuestion = currentTeam.questions[currentRoundIdx] || currentTeam.questions[0];
+  const currentQuestion = currentTeam.questions[currentGlobalIdx] || currentTeam.questions[0];
 
   const canUndo = (currentTeam.roundHistory && currentTeam.roundHistory.length > 0);
 
@@ -75,22 +84,30 @@ export default function G5Play() {
   const handleAnswer = (isCorrect: boolean) => {
     setShowAnswer(false);
 
+    const result = g5RecordMemberAnswer(isCorrect);
+
     if (isCorrect) {
       sfx.playSuccess();
-      const result = g5RecordMemberAnswer(true);
-      if (result.isTeamFinished) {
-        sfx.playFanfare();
-        setStage('team_summary');
-      }
     } else {
       sfx.playBuzzer();
       if (currentMember) {
         setLastPunishedPlayer(currentMember);
         setPunishmentModalOpen(true);
       }
-      const result = g5RecordMemberAnswer(false);
-      if (result.isTeamFinished) {
-        // Jika ronde 4 salah, modal hukuman muncul dulu; setelah ditutup masuk summary
+    }
+
+    if (result.isTeamFinished) {
+      sfx.playFanfare();
+      setStage('team_summary');
+    } else if (result.isRoundFinished) {
+      setCompletedRoundData({
+        roundNum: result.roundNum,
+        roundCorrectCount: result.roundCorrectCount,
+        isRoundPassed: result.roundCorrectCount >= 3,
+      });
+      // Jika benar di soal ke-4, langsung buka ringkasan ronde
+      if (isCorrect) {
+        setStage('round_summary');
       }
     }
   };
@@ -101,7 +118,8 @@ export default function G5Play() {
     if (success) {
       sfx.playPop();
       setShowAnswer(false);
-      if (stage === 'team_summary') {
+      setCompletedRoundData(null);
+      if (stage === 'round_summary' || stage === 'team_summary') {
         setStage('chain_quiz');
       }
     }
@@ -122,10 +140,20 @@ export default function G5Play() {
     const updatedTeam = useGameStore.getState().g5Teams[g5CurrentTeamIndex];
     if (updatedTeam?.isTeamFinished) {
       setStage('team_summary');
+    } else if (completedRoundData) {
+      setStage('round_summary');
     }
   };
 
-  // 6. Lanjut ke Tim Berikutnya (Setelah 4 Ronde Beruntun Selesai)
+  // 6. Host Lanjut ke Ronde Berikutnya (setelah ringkasan ronde)
+  const handleStartNextRound = () => {
+    sfx.playSuccess();
+    setCompletedRoundData(null);
+    setShowAnswer(false);
+    setStage('chain_quiz');
+  };
+
+  // 7. Lanjut ke Tim Berikutnya (Setelah seluruh 4 Ronde / 16 Soal Selesai)
   const handleNextTeam = () => {
     sfx.playPop();
     if (isLastTeam) {
@@ -134,6 +162,7 @@ export default function G5Play() {
       g5NextTeam();
       setStage('team_ready');
       setShowAnswer(false);
+      setCompletedRoundData(null);
     }
   };
 
@@ -148,13 +177,13 @@ export default function G5Play() {
       gameTitle="Cerdas Cermat Berantai"
       badge="GAME 05 • RELAY"
       badgeColor="#7C3AED"
-      activeRoundLabel={`${currentTeam.name} • Ronde ${stage === 'chain_quiz' ? currentRoundIdx + 1 : 4}/4`}
+      activeRoundLabel={`${currentTeam.name} • Ronde ${currentRoundIdx + 1}/4 (Soal ${currentQuestionInRound + 1}/4)`}
       onUndo={canUndo ? handleUndo : undefined}
       undoLabel="Undo Ronde (Batal)"
       onShuffle={stage === 'chain_quiz' ? handleShuffleQuestion : undefined}
       shuffleLabel="Ganti Soal"
     >
-      {stage === 'team_summary' && currentTeam.correctCount >= 3 && (
+      {stage === 'team_summary' && (currentTeam.successfulRoundsCount || 0) >= 3 && (
         <ConfettiShower particleCount={50} />
       )}
 
@@ -192,45 +221,44 @@ export default function G5Play() {
               <h1 className="font-display text-3xl md:text-5xl font-bold text-[#1E1E24]">
                 {currentTeam.name}
               </h1>
-              <p className="text-xs sm:text-sm text-[#64616C] font-semibold mt-1.5 max-w-md mx-auto">
-                Silakan seluruh anggota tim maju ke depan layar! Tim ini akan menjawab{' '}
-                <strong>4 ronde soal berturut-turut</strong> secara estafet. Jika salah,{' '}
-                <strong>1 orang yang salah</strong> langsung mendapat kartu hukuman!
+              <p className="text-xs sm:text-sm text-[#64616C] font-semibold mt-1.5 max-w-lg mx-auto">
+                Silakan seluruh anggota tim maju ke depan layar! Tim ini akan memainkan{' '}
+                <strong>4 Ronde Beruntun (1 Ronde = 4 Soal Estafet, Total 16 Soal)</strong>.
+                Jika ada 1 orang salah, pemain tersebut langsung <strong>-2 Poin</strong> dan mendapat{' '}
+                <strong>Kartu Tantangan yang WAJIB dijalankan terus sampai ronde 4 selesai!</strong>
               </p>
             </div>
 
-            {/* Lineup 4 Ronde Anggota */}
+            {/* Lineup 4 Ronde Pipeline Card */}
             <div className="mb-6 p-5 rounded-3xl bg-white border-2 border-[#1E1E24]/10 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-[#1E1E24]/10 mb-4">
                 <span className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-[#7C3AED]" />
-                  <span>Urutan Penjawab 4 Ronde Beruntun:</span>
+                  <span>Target Sesi: 4 Ronde (16 Soal Estafet)</span>
                 </span>
                 <span className="text-[11px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full">
-                  Target: 4/4 Sempurna
+                  +2 Pts/Ronde • 10 Pts Jackpot (4/4)
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {Array.from({ length: 4 }).map((_, qIdx) => {
-                  const mId = currentTeam.memberIds[qIdx % currentTeam.memberIds.length];
-                  const member = players.find((p) => p.id === mId);
-                  const isRepeat = qIdx >= currentTeam.memberIds.length;
-
+                {Array.from({ length: 4 }).map((_, rIdx) => {
                   return (
                     <div
-                      key={`ready-slot-${qIdx}`}
+                      key={`ready-round-${rIdx}`}
                       className="p-3.5 rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/8 text-center flex flex-col items-center justify-between shadow-2xs hover:border-[#7C3AED]/30 transition"
                     >
-                      <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-display font-black text-xs mb-2">
-                        R#{qIdx + 1}
+                      <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-display font-black text-xs mb-1.5">
+                        R{rIdx + 1}
                       </span>
-                      <PlayerProfileAvatar characterId={member?.avatarId} size={42} name={member?.name} />
-                      <p className="font-display text-xs font-bold text-[#1E1E24] mt-2 truncate w-full">
-                        {member?.name}
+                      <p className="font-display text-sm font-bold text-[#1E1E24]">
+                        Ronde #{rIdx + 1}
                       </p>
-                      <span className="text-[10px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2 py-0.5 rounded-lg mt-1">
-                        {isRepeat ? 'Ronde 4 (Relay)' : `Ronde ${qIdx + 1}`}
+                      <p className="text-[11px] text-[#64616C] font-medium mt-0.5">
+                        4 Soal Estafet
+                      </p>
+                      <span className="text-[10px] font-extrabold text-[#158467] bg-[#ECFDF5] px-2 py-0.5 rounded-lg mt-2">
+                        +2 Poin Tim
                       </span>
                     </div>
                   );
@@ -255,36 +283,70 @@ export default function G5Play() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAHAP 2: 4 RONDE BERUNTUN UNTUK 1 TIM                                      */}
+        {/* TAHAP 2: 4 SOAL DI DALAM RONDE AKTIF (4 RONDE X 4 SOAL = 16 SOAL)           */}
         {/* ========================================================================= */}
         {stage === 'chain_quiz' && (
           <div className="flex-1 flex flex-col justify-between">
             {/* Header Mini Mascot & Active Status */}
-            <div className="text-center mb-3">
+            <div className="text-center mb-2">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>{currentTeam.name}</span>
                 </span>
                 <span className="text-xs font-extrabold text-[#1E1E24] bg-white border border-[#1E1E24]/10 px-3 py-0.5 rounded-full shadow-2xs">
-                  Ronde <strong>{currentRoundIdx + 1}</strong> dari 4
+                  Ronde <strong>{currentRoundIdx + 1}</strong> dari 4 • Soal <strong>{currentQuestionInRound + 1}</strong>/4
+                </span>
+                <span className="text-xs font-bold text-[#64616C] bg-white border border-[#1E1E24]/10 px-2.5 py-0.5 rounded-full shadow-2xs">
+                  #{currentGlobalIdx + 1}/16
                 </span>
               </div>
             </div>
 
-            {/* Visual 4-Round Pipeline Status */}
-            <div className="mb-4 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
+            {/* Top 4-Round Pipeline Stepper */}
+            <div className="mb-2 p-2.5 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
               <div className="flex items-center justify-between gap-1.5">
-                {Array.from({ length: 4 }).map((_, idx) => {
-                  const historyItem = currentTeam.roundHistory?.find((h) => h.roundIdx === idx);
+                {Array.from({ length: 4 }).map((_, rIdx) => {
+                  const isDone = rIdx < currentRoundIdx;
+                  const isCurrent = rIdx === currentRoundIdx;
+                  return (
+                    <div
+                      key={`round-pill-${rIdx}`}
+                      className={`flex-1 py-1 px-2 rounded-xl text-center text-xs transition-all ${
+                        isDone
+                          ? 'bg-[#ECFDF5] text-[#065F46] font-bold border border-[#12B76A]/30'
+                          : isCurrent
+                          ? 'bg-[#7C3AED] text-white font-black shadow-xs ring-2 ring-[#7C3AED]/30'
+                          : 'bg-[#F9FAFB] text-[#9CA3AF] font-medium border border-[#E5E7EB]'
+                      }`}
+                    >
+                      <span>{isDone ? `✓ Ronde ${rIdx + 1}` : isCurrent ? `▶ Ronde ${rIdx + 1}` : `Ronde ${rIdx + 1}`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Visual 4-Question Relay Stepper for the CURRENT Round */}
+            <div className="mb-3.5 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
+              <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#1E1E24]/8 text-[11px] font-extrabold text-[#64616C]">
+                <span>Estafet Soal Ronde #{currentRoundIdx + 1}:</span>
+                <span className="text-[#7C3AED]">Minimal 3 Benar = Poin Ronde</span>
+              </div>
+              <div className="flex items-center justify-between gap-1.5">
+                {Array.from({ length: 4 }).map((_, qInRoundIdx) => {
+                  const qGlobalIndex = currentRoundIdx * 4 + qInRoundIdx;
+                  const historyItem = currentTeam.roundHistory?.find(
+                    (h) => h.globalQuestionIdx === qGlobalIndex
+                  );
                   const isDone = Boolean(historyItem);
                   const isCorrect = historyItem?.isCorrect;
-                  const isCurrent = idx === currentRoundIdx && !isDone;
-                  const memberId = currentTeam.memberIds[idx % currentTeam.memberIds.length];
+                  const isCurrent = qInRoundIdx === currentQuestionInRound;
+                  const memberId = currentTeam.memberIds[qGlobalIndex % currentTeam.memberIds.length];
                   const mem = players.find((p) => p.id === memberId);
 
                   return (
-                    <React.Fragment key={`chain-step-${idx}`}>
+                    <React.Fragment key={`chain-step-${qInRoundIdx}`}>
                       <div
                         className={`flex-1 py-1.5 px-2 rounded-xl text-center flex items-center justify-center gap-1.5 transition-all ${
                           isDone && isCorrect
@@ -303,11 +365,11 @@ export default function G5Play() {
                               ? `✓ ${mem?.name}`
                               : `❌ ${mem?.name}`
                             : isCurrent
-                            ? `▶ R${idx + 1}: ${mem?.name}`
-                            : `R${idx + 1}: ${mem?.name}`}
+                            ? `▶ S${qInRoundIdx + 1}: ${mem?.name}`
+                            : `S${qInRoundIdx + 1}: ${mem?.name}`}
                         </span>
                       </div>
-                      {idx < 3 && (
+                      {qInRoundIdx < 3 && (
                         <ArrowRight
                           className={`w-3.5 h-3.5 shrink-0 ${
                             isDone
@@ -326,7 +388,7 @@ export default function G5Play() {
 
             {/* Active Challenges Banner (Stays active across remaining rounds for this team) */}
             {currentTeam.activeChallenges && currentTeam.activeChallenges.length > 0 && (
-              <div className="mb-4 p-3.5 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B] shadow-xs">
+              <div className="mb-3.5 p-3 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B] shadow-xs">
                 <div className="flex items-center gap-1.5 text-xs font-black text-[#B45309] uppercase tracking-wider mb-2">
                   <Flame className="w-4 h-4 text-[#EA580C] animate-pulse" />
                   <span>⚠️ KARTU TANTANGAN AKTIF (BERLAKU SAMPAI RONDE 4 SELESAI):</span>
@@ -357,14 +419,14 @@ export default function G5Play() {
 
             {/* Active Question Card */}
             <motion.div
-              key={`q-${currentRoundIdx}-${currentQuestion?.id}`}
+              key={`q-${currentRoundIdx}-${currentQuestionInRound}-${currentQuestion?.id}`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-3.5 my-auto"
+              className="space-y-3 my-auto"
             >
-              <div className="rounded-[32px] bg-gradient-to-b from-[#7C3AED] to-[#6D28D9] text-white p-6 md:p-8 shadow-lg border-2 border-[#5B21B6]/30 text-center relative overflow-hidden">
+              <div className="rounded-[32px] bg-gradient-to-b from-[#7C3AED] to-[#6D28D9] text-white p-5 md:p-7 shadow-lg border-2 border-[#5B21B6]/30 text-center relative overflow-hidden">
                 {/* Category & Inline Shuffle Button */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2.5">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider shadow-xs">
                     <FluentEmoji emoji={currentQuestion?.categoryEmoji} size={18} />
                     <span>Kategori: {currentQuestion?.category}</span>
@@ -382,21 +444,21 @@ export default function G5Play() {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-center gap-2.5 mb-3 bg-white/10 py-1.5 px-4 rounded-full max-w-fit mx-auto">
-                  <PlayerProfileAvatar characterId={currentMember?.avatarId} size={28} name={currentMember?.name} />
+                <div className="flex items-center justify-center gap-2 mb-2 bg-white/10 py-1.5 px-4 rounded-full max-w-fit mx-auto">
+                  <PlayerProfileAvatar characterId={currentMember?.avatarId} size={26} name={currentMember?.name} />
                   <p className="text-xs text-white/95 font-bold">
-                    Penjawab Ronde #{currentRoundIdx + 1}:{' '}
+                    Penjawab Soal #{currentQuestionInRound + 1}:{' '}
                     <span className="font-display font-black text-white underline">{currentMember?.name}</span>
                   </p>
                 </div>
 
-                <h2 className="font-display text-xl md:text-2xl font-bold leading-snug my-2">
+                <h2 className="font-display text-lg md:text-2xl font-bold leading-snug my-2">
                   "{currentQuestion?.question}"
                 </h2>
               </div>
 
               {/* Host Answer Clue Spoiler Box */}
-              <Card className="p-4 bg-white shadow-xs border border-[#1E1E24]/10 text-center">
+              <Card className="p-3.5 bg-white shadow-xs border border-[#1E1E24]/10 text-center">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#64616C] flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
@@ -419,7 +481,7 @@ export default function G5Play() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mt-2.5 p-3 rounded-xl bg-[#EDE9FE] text-[#7C3AED] font-display font-bold text-base border border-[#7C3AED]/20"
+                    className="mt-2.5 p-2.5 rounded-xl bg-[#EDE9FE] text-[#7C3AED] font-display font-bold text-sm md:text-base border border-[#7C3AED]/20"
                   >
                     {currentQuestion?.answer}
                   </motion.div>
@@ -431,7 +493,7 @@ export default function G5Play() {
               </Card>
 
               {/* Verdict Buttons */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 <Button
                   variant="primary"
                   size="lg"
@@ -441,7 +503,11 @@ export default function G5Play() {
                 >
                   <Check className="w-5 h-5 stroke-[3]" />
                   <span>
-                    {currentRoundIdx >= 3 ? 'BENAR! (+2 Poin • Selesai)' : 'BENAR! (+2 Poin • Lanjut)'}
+                    {currentQuestionInRound === 3
+                      ? currentRoundIdx === 3
+                        ? 'BENAR! (Turnamen Tuntas 🎉)'
+                        : 'BENAR! (Ronde Selesai ✓)'
+                      : 'BENAR! (Lanjut Soal ✓)'}
                   </span>
                 </Button>
 
@@ -453,7 +519,7 @@ export default function G5Play() {
                   className="shadow-sm hover:shadow-md py-3.5 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <X className="w-5 h-5 stroke-[3]" />
-                  <span>SALAH! (-2 Pts & Kartu Tantangan)</span>
+                  <span>SALAH! (-2 Pts & Tantangan)</span>
                 </Button>
               </div>
 
@@ -466,12 +532,135 @@ export default function G5Play() {
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] text-xs font-bold border border-[#DC2626]/20 transition cursor-pointer shadow-2xs"
                   >
                     <Undo2 className="w-3.5 h-3.5" />
-                    <span>Salah Pencet? Undo Jawaban Ronde Lalu</span>
+                    <span>Salah Pencet? Undo Jawaban Soal Lalu</span>
                   </button>
                 </div>
               )}
             </motion.div>
           </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAHAP 3: RINGKASAN SETIAP 1 RONDE (4 SOAL) SELESAI                        */}
+        {/* ========================================================================= */}
+        {stage === 'round_summary' && (
+          <motion.div
+            key="stage-round-summary"
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex-1 flex flex-col justify-between my-auto py-2"
+          >
+            <div className="p-6 md:p-8 rounded-[32px] bg-white border-2 border-[#1E1E24]/10 shadow-lg text-center relative overflow-hidden my-auto space-y-4">
+              <div className="relative inline-flex items-center justify-center">
+                <div
+                  className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-md border-2 ${
+                    completedRoundData?.isRoundPassed
+                      ? 'bg-gradient-to-tr from-[#D6F5EC] to-[#A7F3D0] border-[#12B76A]/20'
+                      : 'bg-gradient-to-tr from-[#FFE4E6] to-[#FECDD3] border-[#F43F5E]/20'
+                  }`}
+                >
+                  <FluentEmoji
+                    name={completedRoundData?.isRoundPassed ? 'trophy' : 'warning'}
+                    variant="3d"
+                    size={48}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>RONDE {completedRoundData?.roundNum || currentRoundIdx} DARI 4 SELESAI</span>
+                </span>
+                <h3 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24] mt-2">
+                  {completedRoundData?.isRoundPassed ? '🎉 Ronde Berhasil Dituntaskan!' : '⚠️ Ronde Belum Sempurna!'}
+                </h3>
+                <p className="text-sm font-semibold text-[#64616C] mt-1">
+                  Skor Ronde Ini: <strong className="text-[#158467] font-black">{completedRoundData?.roundCorrectCount || 0} dari 4 Soal Terjawab Benar</strong>
+                </p>
+                {completedRoundData?.isRoundPassed ? (
+                  <p className="text-xs font-black text-[#158467] bg-[#ECFDF5] border border-[#12B76A]/30 py-1.5 px-3.5 rounded-full inline-block mt-2">
+                    ✓ +2 Poin Ditambahkan untuk Seluruh Anggota Tim {currentTeam.name}!
+                  </p>
+                ) : (
+                  <p className="text-xs font-black text-[#B45309] bg-[#FFFBEB] border border-[#F59E0B]/30 py-1.5 px-3.5 rounded-full inline-block mt-2">
+                    Minimal butuh 3 jawaban benar untuk mendapatkan +2 Poin ronde.
+                  </p>
+                )}
+              </div>
+
+              {/* Status Hukuman / Tantangan yang Didapat */}
+              {currentTeam.activeChallenges && currentTeam.activeChallenges.length > 0 ? (
+                <div className="p-4 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B]/40 text-left">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-[#B45309] flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 text-[#EA580C] animate-pulse" />
+                      <span>KARTU TANTANGAN AKTIF (WAJIB DIJALANKAN SAMPAI RONDE 4):</span>
+                    </span>
+                    <span className="text-[10px] font-bold bg-[#EA580C] text-white px-2 py-0.5 rounded-full">
+                      Tetap Berlaku
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {currentTeam.activeChallenges.map((c, cIdx) => {
+                      const mem = players.find((p) => p.id === c.memberId);
+                      return (
+                        <div
+                          key={`chal-summary-${cIdx}`}
+                          className="p-2.5 rounded-xl bg-white border border-[#F59E0B]/30 flex items-center gap-2 shadow-2xs"
+                        >
+                          <PlayerProfileAvatar characterId={mem?.avatarId} size={26} name={mem?.name} />
+                          <div className="min-w-0">
+                            <span className="font-display text-xs font-bold text-[#1E1E24]">{mem?.name}</span>
+                            <span className="text-[10px] text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
+                            <p className="text-xs font-extrabold text-[#B45309]">"{c.challenge}"</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-[#ECFDF5] border border-[#12B76A]/30 text-center">
+                  <p className="text-xs font-bold text-[#065F46] flex items-center justify-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#12B76A]" />
+                    <span>Luar biasa! Tidak ada yang salah di ronde ini, tim masih bersih tanpa tantangan!</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Undo if host misclicked 4th question */}
+              {canUndo && (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={handleUndo}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] hover:bg-[#F3EFE6] text-[#64616C] hover:text-[#1E1E24] text-xs font-bold border border-[#1E1E24]/15 transition cursor-pointer"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                    <span>Salah Pencet? Undo Soal Lalu</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Lanjut ke Ronde Berikutnya */}
+            <div className="mt-auto pt-4">
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={handleStartNextRound}
+                className="py-4 text-base md:text-lg bg-[#7C3AED] hover:bg-[#6D28D9] border-2 border-[#5B21B6] shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>
+                  Lanjut ke Ronde {(completedRoundData?.roundNum || currentRoundIdx) + 1} dari 4 (4 Soal Berikutnya) 🚀
+                </span>
+              </Button>
+            </div>
+          </motion.div>
         )}
 
         {/* ========================================================================= */}
@@ -489,15 +678,15 @@ export default function G5Play() {
               <div className="relative inline-flex items-center justify-center">
                 <div
                   className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-md border-2 ${
-                    currentTeam.correctCount === 4
+                    (currentTeam.successfulRoundsCount || 0) === 4
                       ? 'bg-gradient-to-tr from-[#D6F5EC] to-[#A7F3D0] border-[#12B76A]/20'
-                      : currentTeam.correctCount >= 2
+                      : (currentTeam.successfulRoundsCount || 0) >= 2
                       ? 'bg-gradient-to-tr from-[#EDE9FE] to-[#DDD6FE] border-[#7C3AED]/20'
                       : 'bg-gradient-to-tr from-[#FFE4E6] to-[#FECDD3] border-[#F43F5E]/20'
                   }`}
                 >
                   <FluentEmoji
-                    name={currentTeam.correctCount === 4 ? 'crown' : currentTeam.correctCount >= 2 ? 'party-popper' : 'dizzy-face'}
+                    name={(currentTeam.successfulRoundsCount || 0) === 4 ? 'crown' : (currentTeam.successfulRoundsCount || 0) >= 2 ? 'party-popper' : 'dizzy-face'}
                     variant="3d"
                     size={52}
                   />
@@ -507,18 +696,18 @@ export default function G5Play() {
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20">
                   <Award className="w-3.5 h-3.5" />
-                  <span>4 Ronde Beruntun Selesai</span>
+                  <span>4 Ronde Beruntun (16 Soal) Selesai</span>
                 </span>
                 <h3 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24] mt-2">
                   Hasil Tim: {currentTeam.name}
                 </h3>
                 <p className="text-sm font-semibold text-[#64616C] mt-1">
-                  Skor ronde: <strong className="text-[#158467]">{currentTeam.correctCount} dari 4 Soal Benar</strong>{' '}
-                  ({currentTeam.teamScore || (currentTeam.correctCount * 2)} Poin Terkumpul)
+                  Skor Performa: <strong className="text-[#158467] font-black">{currentTeam.successfulRoundsCount || 0} dari 4 Ronde Berhasil</strong>{' '}
+                  ({currentTeam.correctCount || 0} dari 16 Soal Terjawab Benar • {currentTeam.teamScore || 0} Poin Terkumpul)
                 </p>
-                {currentTeam.correctCount === 4 && (
-                  <p className="text-xs font-black text-[#158467] bg-[#ECFDF5] border border-[#12B76A]/30 py-1.5 px-3 rounded-full inline-block mt-2">
-                    🎉 JACKPOT 4/4 SEMPURNA! Seluruh anggota tim dapat 10 Poin masing-masing!
+                {(currentTeam.successfulRoundsCount || 0) === 4 && (
+                  <p className="text-xs font-black text-[#158467] bg-[#ECFDF5] border border-[#12B76A]/30 py-1.5 px-3.5 rounded-full inline-block mt-2">
+                    🎉 JACKPOT 4/4 RONDE SEMPURNA! Seluruh anggota tim dapat 10 Poin masing-masing!
                   </p>
                 )}
               </div>
