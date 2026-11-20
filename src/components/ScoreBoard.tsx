@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Trophy, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { PlayerProfileAvatar } from './characters/PlayerProfileAvatar';
 import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
+import { FluentEmoji } from './ui/FluentEmoji';
 
 export interface PlayerScoreItem {
   id: string;
@@ -48,7 +49,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
       {/* Header + Segmented Pill Switcher */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-2.5">
-          <Trophy className="w-6 h-6 text-[#FBBF24]" />
+          <FluentEmoji name="trophy" variant="3d" size={26} />
           <h2 className="font-display text-xl md:text-2xl font-bold">{title}</h2>
         </div>
 
@@ -95,8 +96,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 } ${rowStyle}`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="font-display text-base w-6 text-center">
-                    #{idx + 1}
+                  <span className="font-display text-base w-6 text-center flex items-center justify-center">
+                    {idx === 0 ? <FluentEmoji name="crown" variant="3d" size={20} /> : `#${idx + 1}`}
                   </span>
                   <PlayerProfileAvatar
                     character={char}

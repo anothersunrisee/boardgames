@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { RotateCcw, Home, ArrowLeft, AlertTriangle, Users } from 'lucide-react';
+import { RotateCcw, Home, ArrowLeft, Users, Trophy, Check, X } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -11,6 +11,7 @@ import { ConfettiShower } from '../../components/motion/ConfettiShower';
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar';
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
+import { FluentEmoji } from '../../components/ui/FluentEmoji';
 import { sfx } from '../../utils/sound';
 
 export default function G5Results() {
@@ -36,7 +37,7 @@ export default function G5Results() {
         <div className="flex items-center justify-between mb-6">
           <button
             type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
+            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
             onClick={() => {
               sfx.playPop();
               navigate('/hub');
@@ -45,19 +46,20 @@ export default function G5Results() {
             <ArrowLeft className="w-4 h-4" />
             <span>Pilih Game Lain</span>
           </button>
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#7C3AED] text-white font-bold tracking-wide">
-            Turnamen Selesai
+          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#7C3AED] text-white font-bold tracking-wide shadow-xs flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Turnamen Selesai</span>
           </span>
         </div>
 
         {/* Mascot Winner Banner */}
         <motion.div
           className="text-center mb-6 flex flex-col items-center"
-          initial={{ opacity: 0, scale: 0.85 }}
+          initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 15 }}
         >
-          <div className="mb-2">
+          <div className="mb-2 relative">
             <BlobMascot
               shape="pentagon"
               mood="excited"
@@ -68,27 +70,33 @@ export default function G5Results() {
             />
           </div>
 
-          <span className="inline-block px-4 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider mb-2">
-            CERDAS CERMAT BERANTAI SELESAI
+          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider mb-2 border border-[#7C3AED]/20 shadow-xs">
+            <FluentEmoji name="trophy" variant="3d" size={16} />
+            <span>CERDAS CERMAT BERANTAI SELESAI</span>
           </span>
 
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-[#1E1E24]">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
             Pemenang Tertinggi:
           </h1>
-          <div className="flex items-center justify-center gap-2.5 mt-1.5">
-            <PlayerProfileAvatar characterId={winner?.avatarId} size={48} name={winner?.name} />
-            <p className="font-display text-2xl md:text-3xl font-bold text-[#7C3AED]">
-              {winner?.name}! 👑
-            </p>
+          <div className="flex items-center justify-center gap-3 mt-2 bg-white px-5 py-2 rounded-2xl border border-[#1E1E24]/10 shadow-sm">
+            <PlayerProfileAvatar characterId={winner?.avatarId} size={44} name={winner?.name} />
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-2xl md:text-3xl font-black text-[#7C3AED]">
+                  {winner?.name}
+                </span>
+                <FluentEmoji name="crown" variant="3d" size={28} />
+              </div>
+              <p className="text-xs font-bold text-[#64616C]">
+                Total Skor: <span className="text-[#158467] font-black">{winner?.score} Poin</span>
+              </p>
+            </div>
           </div>
-          <p className="text-sm font-semibold text-[#64616C] mt-1">
-            Total Skor: {winner?.score} Poin Estafet
-          </p>
         </motion.div>
 
         {/* Team Performance Recap */}
-        <Card className="mb-6 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold text-[#1E1E24] mb-3 flex items-center gap-1.5">
+        <Card className="mb-6 p-5 bg-white shadow-xs border border-[#1E1E24]/10">
+          <p className="font-display text-base font-bold text-[#1E1E24] mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-[#7C3AED]" />
             <span>Hasil Rantai Tim:</span>
           </p>
@@ -102,19 +110,33 @@ export default function G5Results() {
               return (
                 <div
                   key={team.id}
-                  className={`p-3 rounded-2xl border-2 flex items-center justify-between ${
+                  className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all ${
                     team.isPassed
-                      ? 'bg-[#D6F5EC] border-[#12B76A]'
-                      : 'bg-[#FFE8DF] border-[#F04438]/40'
+                      ? 'bg-[#ECFDF5] border-[#12B76A]/40 shadow-xs'
+                      : 'bg-[#FFF1F2] border-[#F04438]/30 shadow-xs'
                   }`}
                 >
-                  <div>
-                    <p className="font-display text-sm font-bold text-[#1E1E24]">{team.name}</p>
-                    <p className="text-xs text-[#64616C]">{members}</p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${
+                        team.isPassed ? 'bg-[#12B76A]' : 'bg-[#F04438]'
+                      }`}
+                    >
+                      {team.isPassed ? (
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      ) : (
+                        <X className="w-4 h-4 stroke-[3]" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-display text-sm font-bold text-[#1E1E24]">{team.name}</p>
+                      <p className="text-xs text-[#64616C] font-semibold">{members}</p>
+                    </div>
                   </div>
+
                   <div className="text-right">
                     <span
-                      className={`font-display text-xs font-black px-3 py-1 rounded-full inline-block ${
+                      className={`font-display text-xs font-black px-3 py-1 rounded-full inline-flex items-center gap-1 ${
                         team.isPassed
                           ? 'bg-[#12B76A] text-white'
                           : 'bg-[#F04438] text-white'
@@ -134,7 +156,7 @@ export default function G5Results() {
 
         {/* Leaderboard */}
         <div className="mb-6">
-          <ScoreBoard players={players} title="Papan Skor Pemain" highlightId={winner?.id} />
+          <ScoreBoard players={players} title="Papan Skor Pemain Room" highlightId={winner?.id} />
         </div>
 
         {/* Punishment Card Button for Lost Teams */}
@@ -147,10 +169,10 @@ export default function G5Results() {
                 setSelectedLoser(randomFailed.name);
                 setShowPunishment(true);
               }}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#FFF7ED] to-[#FFEDD5] border-2 border-[#EA580C] text-[#C2410C] hover:bg-[#FED7AA] font-display text-sm font-black flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-[0.98]"
             >
-              <AlertTriangle className="w-4 h-4" />
-              <span>🃏 Acak Kartu Hukuman untuk Tim yang Gagal!</span>
+              <FluentEmoji name="joker" variant="3d" size={24} />
+              <span>Acak Kartu Hukuman untuk Tim yang Gagal!</span>
             </button>
           </div>
         )}

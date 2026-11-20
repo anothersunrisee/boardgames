@@ -11,6 +11,7 @@ import { ConfettiShower } from '../components/motion/ConfettiShower';
 import { HostUtilityBar } from '../components/HostUtilityBar';
 import { PunishmentModal } from '../components/PunishmentModal';
 import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
+import { FluentEmoji } from '../components/ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
 
 export default function RoomPodium() {
@@ -81,8 +82,9 @@ export default function RoomPodium() {
           <span className="text-xs font-black uppercase tracking-wider text-[#64616C]">
             HASIL AKHIR TOURNAMENT • {roomName}
           </span>
-          <h1 className="font-display text-3xl md:text-5xl font-bold text-[#1E1E24] mt-1">
-            Siapa Juara Party Malam Ini? 👑
+          <h1 className="font-display text-3xl md:text-5xl font-bold text-[#1E1E24] mt-1 flex items-center justify-center gap-2">
+            <span>Siapa Juara Party Malam Ini?</span>
+            <FluentEmoji name="crown" variant="3d" size={40} />
           </h1>
           <p className="text-xs sm:text-sm font-semibold text-[#64616C] mt-1">
             Skor kumulatif perorangan dari seluruh mini-game yang telah dimainkan
@@ -157,8 +159,9 @@ export default function RoomPodium() {
                       className="flex flex-col items-center mb-2 text-center"
                     >
                       <GameMascotBot character={char1} size={98} mood="winner" showCrown />
-                      <p className="font-display font-bold text-base sm:text-xl mt-1 text-[#FBBF24] leading-tight truncate w-full">
-                        {winner.name} 👑
+                      <p className="font-display font-bold text-base sm:text-xl mt-1 text-[#FBBF24] leading-tight truncate w-full flex items-center justify-center gap-1.5">
+                        <span>{winner.name}</span>
+                        <FluentEmoji name="crown" variant="3d" size={24} />
                       </p>
                       <span className="text-[11px] text-white/75 font-semibold truncate w-full">
                         {winner.kubu}
@@ -270,7 +273,7 @@ export default function RoomPodium() {
                     <div>
                       <p className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
                         <span>{player.name}</span>
-                        {isFirst && <span>👑</span>}
+                        {isFirst && <FluentEmoji name="crown" variant="3d" size={16} />}
                       </p>
                       <p className="text-[11px] text-[#64616C] font-semibold">
                         {player.gender === 'cewek' ? '👧 Cewek' : '👦 Cowok'} • {player.kubu}
@@ -306,8 +309,9 @@ export default function RoomPodium() {
                   mood="dizzy"
                 />
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2 py-0.5 rounded-full bg-[#EC5A29]/15">
-                    💀 SI JURU KUNCI
+                  <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1">
+                    <FluentEmoji name="collision" variant="3d" size={14} />
+                    <span>SI JURU KUNCI</span>
                   </span>
                   <p className="font-display text-base font-bold text-[#1E1E24] mt-0.5">
                     {juruKunci.name} ({juruKunci.score} pts)
@@ -321,9 +325,10 @@ export default function RoomPodium() {
               <button
                 type="button"
                 onClick={() => setShowPunishment(true)}
-                className="px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shrink-0 shadow-xs transition"
+                className="px-4 py-2.5 rounded-xl bg-[#EC5A29] text-white font-display text-xs font-bold hover:bg-[#D44A1D] cursor-pointer shrink-0 shadow-xs transition flex items-center gap-1.5"
               >
-                🃏 Acak Kartu Hukuman
+                <FluentEmoji name="joker" variant="3d" size={18} />
+                <span>Acak Kartu Hukuman</span>
               </button>
             </div>
           </div>

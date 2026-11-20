@@ -6,6 +6,7 @@ import type { PunishmentCardDef } from '../assets-library/types';
 import { GameMascotBot } from './characters/GameMascotBot';
 import { CHARACTER_PACK } from '../assets-library/characters';
 import { TactileButton } from './ui/TactileElements';
+import { FluentEmoji } from './ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
 
 interface PunishmentModalProps {
@@ -167,7 +168,7 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
                   <span className="px-3 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-extrabold uppercase">
                     {activeCard.intensity} • {activeCard.duration}
                   </span>
-                  <span className="text-2xl">{activeCard.emoji}</span>
+                  <FluentEmoji emoji={activeCard.emoji} size={28} />
                 </div>
 
                 <div className="my-2">
@@ -204,7 +205,10 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
                 fullWidth
                 onClick={onClose}
               >
-                <span>Siap Jalani Hukuman! 🔥</span>
+                <span className="flex items-center justify-center gap-1.5">
+                  <span>Siap Jalani Hukuman!</span>
+                  <FluentEmoji name="fire" variant="3d" size={18} />
+                </span>
               </TactileButton>
             </div>
           </motion.div>

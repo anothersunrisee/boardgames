@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { RotateCcw, Home, ArrowLeft, AlertTriangle, Sparkles } from 'lucide-react';
+import { RotateCcw, Home, ArrowLeft, Sparkles, Trophy } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -11,6 +11,7 @@ import { ConfettiShower } from '../../components/motion/ConfettiShower';
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar';
 import { HostUtilityBar } from '../../components/HostUtilityBar';
 import { PunishmentModal } from '../../components/PunishmentModal';
+import { FluentEmoji } from '../../components/ui/FluentEmoji';
 import { sfx } from '../../utils/sound';
 
 export default function G6Results() {
@@ -50,7 +51,7 @@ export default function G6Results() {
         <div className="flex items-center justify-between mb-6">
           <button
             type="button"
-            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
+            className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-full hover:bg-black/5 transition-colors border border-transparent hover:border-[#1E1E24]/10"
             onClick={() => {
               sfx.playPop();
               navigate('/hub');
@@ -59,15 +60,16 @@ export default function G6Results() {
             <ArrowLeft className="w-4 h-4" />
             <span>Pilih Game Lain</span>
           </button>
-          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#65A30D] text-white font-bold tracking-wide">
-            Pitch Duel Selesai
+          <span className="font-display text-xs px-3.5 py-1.5 rounded-full bg-[#65A30D] text-white font-bold tracking-wide shadow-xs flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Pitch Duel Selesai</span>
           </span>
         </div>
 
         {/* Mascot Winner Banner */}
         <motion.div
           className="text-center mb-6 flex flex-col items-center"
-          initial={{ opacity: 0, scale: 0.85 }}
+          initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 15 }}
         >
@@ -82,27 +84,33 @@ export default function G6Results() {
             />
           </div>
 
-          <span className="inline-block px-4 py-1 rounded-full bg-[#ECFCCB] text-[#65A30D] text-xs font-black uppercase tracking-wider mb-2">
-            SELL ME THIS TRASH SELESAI
+          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#ECFCCB] text-[#65A30D] text-xs font-black uppercase tracking-wider mb-2 border border-[#65A30D]/20 shadow-xs">
+            <FluentEmoji name="trophy" variant="3d" size={16} />
+            <span>SELL ME THIS TRASH SELESAI</span>
           </span>
 
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-[#1E1E24]">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
             Top Sales Absurd:
           </h1>
-          <div className="flex items-center justify-center gap-2.5 mt-1.5">
-            <PlayerProfileAvatar characterId={winner?.avatarId} size={48} name={winner?.name} />
-            <p className="font-display text-2xl md:text-3xl font-bold text-[#65A30D]">
-              {winner?.name}! 👑
-            </p>
+          <div className="flex items-center justify-center gap-3 mt-2 bg-white px-5 py-2.5 rounded-2xl border border-[#1E1E24]/10 shadow-sm">
+            <PlayerProfileAvatar characterId={winner?.avatarId} size={44} name={winner?.name} />
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-2xl md:text-3xl font-black text-[#65A30D]">
+                  {winner?.name}
+                </span>
+                <FluentEmoji name="crown" variant="3d" size={28} />
+              </div>
+              <p className="text-xs font-bold text-[#64616C]">
+                Total Skor: <span className="text-[#65A30D] font-black">{winner?.score} Poin Jualan</span>
+              </p>
+            </div>
           </div>
-          <p className="text-sm font-semibold text-[#64616C] mt-1">
-            Total Skor: {winner?.score} Poin Jualan
-          </p>
         </motion.div>
 
         {/* Match History Recap */}
-        <Card className="mb-6 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold text-[#1E1E24] mb-3 flex items-center gap-1.5">
+        <Card className="mb-6 p-5 bg-white shadow-xs border border-[#1E1E24]/10">
+          <p className="font-display text-base font-bold text-[#1E1E24] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#65A30D]" />
             <span>Rekap Duel Jualan:</span>
           </p>
@@ -122,14 +130,15 @@ export default function G6Results() {
               return (
                 <div
                   key={m.matchNumber}
-                  className="p-3.5 rounded-2xl border-2 border-[#1E1E24]/10 bg-[#FAF7F2]"
+                  className="p-3.5 rounded-2xl border-2 border-[#1E1E24]/10 bg-[#FAF7F2] shadow-xs"
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[11px] font-black uppercase text-[#65A30D]">
                       Match {m.matchNumber}
                     </span>
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#65A30D]/15 text-[#3F6212]">
-                      Menang: {winnerName}
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#65A30D]/15 text-[#3F6212] flex items-center gap-1">
+                      <span>Menang:</span>
+                      <strong className="font-black">{winnerName}</strong>
                     </span>
                   </div>
 
@@ -167,10 +176,10 @@ export default function G6Results() {
                 setSelectedLoser(randomLoser);
                 setShowPunishment(true);
               }}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#FFF7ED] to-[#FFEDD5] border-2 border-[#EA580C] text-[#C2410C] hover:bg-[#FED7AA] font-display text-sm font-black flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-[0.98]"
             >
-              <AlertTriangle className="w-4 h-4" />
-              <span>🃏 Acak Kartu Hukuman untuk Sales yang Kalah Duel!</span>
+              <FluentEmoji name="joker" variant="3d" size={24} />
+              <span>Acak Kartu Hukuman untuk Sales yang Kalah Duel!</span>
             </button>
           </div>
         )}
