@@ -130,13 +130,13 @@ export default function G3Setup() {
             <Sparkles className="w-4 h-4" />
             <span>Tim Cowok Pembawa Kata (3)</span>
           </p>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-x-hidden">
             {boyRows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center">
-                <span className="font-display text-xs w-6 text-center text-[#64616C]">{i + 1}</span>
-                <input className="input-field flex-1 text-sm py-2" placeholder={`Nama Cowok ${i + 1}`} value={row.name}
+              <div key={row.id} className="flex gap-2 items-center min-w-0">
+                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
+                <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cowok ${i + 1}`} value={row.name}
                   onChange={(e) => updateBoy(row.id, 'name', e.target.value)} maxLength={20} />
-                <input className="input-field text-sm py-2" style={{ width: '7rem' }} placeholder="Kubu" value={row.kubu}
+                <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
                   onChange={(e) => updateBoy(row.id, 'kubu', e.target.value)} maxLength={12} />
               </div>
             ))}
@@ -149,13 +149,13 @@ export default function G3Setup() {
             <Sparkles className="w-4 h-4" />
             <span>Tim Cewek Penebak (7)</span>
           </p>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-x-hidden">
             {girlRows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center">
-                <span className="font-display text-xs w-6 text-center text-[#64616C]">{i + 1}</span>
-                <input className="input-field flex-1 text-sm py-2" placeholder={`Nama Cewek ${i + 1}`} value={row.name}
+              <div key={row.id} className="flex gap-2 items-center min-w-0">
+                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
+                <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cewek ${i + 1}`} value={row.name}
                   onChange={(e) => updateGirl(row.id, 'name', e.target.value)} maxLength={20} />
-                <input className="input-field text-sm py-2" style={{ width: '7rem' }} placeholder="Kubu" value={row.kubu}
+                <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
                   onChange={(e) => updateGirl(row.id, 'kubu', e.target.value)} maxLength={12} />
               </div>
             ))}

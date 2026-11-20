@@ -109,21 +109,21 @@ export default function G1Setup() {
             </span>
           </div>
 
-          <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 overflow-x-hidden">
             {rows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center">
-                <span className="font-display text-xs w-6 text-center text-[#64616C]">
+              <div key={row.id} className="flex gap-2 items-center min-w-0">
+                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">
                   {i + 1}
                 </span>
                 <input
-                  className="input-field flex-1 text-sm py-2"
+                  className="input-field flex-1 text-sm py-2 min-w-0"
                   placeholder="Nama Pemain"
                   value={row.name}
                   onChange={(e) => updateRow(row.id, 'name', e.target.value)}
                   maxLength={20}
                 />
                 <input
-                  className="input-field text-sm py-2"
+                  className="input-field text-sm py-2 shrink-0"
                   style={{ width: '7.5rem' }}
                   placeholder="Kubu/Tim"
                   value={row.kubu}
@@ -134,7 +134,7 @@ export default function G1Setup() {
                   <button
                     type="button"
                     onClick={() => removeRow(row.id)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition cursor-pointer"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

@@ -79,12 +79,14 @@
 }
 
 .input-field {
+  box-sizing: border-box;
+  min-width: 0;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   border: 2px solid rgba(30, 30, 36, 0.12);
   border-radius: 16px;
   font-family: var(--font-sans);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   background: #FFFFFF;
   color: #1E1E24;
