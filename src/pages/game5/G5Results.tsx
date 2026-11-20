@@ -16,7 +16,7 @@ import { sfx } from '../../utils/sound';
 
 export default function G5Results() {
   const navigate = useNavigate();
-  const { players, g5Teams, autoStartGame5 } = useGameStore();
+  const { players, g5Teams, g5ReplaySameTeams, g5ReshuffleTeams } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
@@ -26,9 +26,10 @@ export default function G5Results() {
     sfx.playFanfare();
   }, []);
 
-  // Cari 1 tim terbawah untuk hukuman tim
-  const sortedTeams = [...g5Teams].sort((a, b) => (a.teamScore || 0) - (b.teamScore || 0));
-  const failingTeam = sortedTeams[0] || g5Teams[0];
+  // Tim Juara & Tim Kalah
+  const sortedTeamsByScore = [...g5Teams].sort((a, b) => (b.teamScore || 0) - (a.teamScore || 0));
+  const championTeam = sortedTeamsByScore[0];
+  const failingTeam = sortedTeamsByScore[sortedTeamsByScore.length - 1] || g5Teams[0];
   const losingTeamMembers = failingTeam ? players.filter((p) => failingTeam.memberIds.includes(p.id)) : [];
 
   return (
@@ -77,20 +78,33 @@ export default function G5Results() {
             <span>CERDAS CERMAT BERANTAI SELESAI</span>
           </span>
 
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
-            Pemenang Tertinggi:
-          </h1>
-          <div className="flex items-center justify-center gap-3 mt-2 bg-white px-5 py-2 rounded-2xl border border-[#1E1E24]/10 shadow-sm">
-            <PlayerProfileAvatar characterId={winner?.avatarId} size={44} name={winner?.name} />
-            <div className="text-left">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-2xl md:text-3xl font-black text-[#7C3AED]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-2">
+            {/* Champion Team Card */}
+            <div className="p-4 rounded-2xl bg-white border-2 border-[#7C3AED]/30 shadow-xs text-center flex flex-col items-center justify-between">
+              <span className="text-[10px] font-black uppercase text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full mb-1">
+                🏆 TIM JUARA 1
+              </span>
+              <p className="font-display text-xl font-black text-[#1E1E24]">
+                {championTeam?.name}
+              </p>
+              <p className="text-xs font-bold text-[#158467] mt-1">
+                Skor Tim: <strong className="font-black text-sm">{championTeam?.teamScore || 0} Pts</strong>
+              </p>
+            </div>
+
+            {/* Individual MVP Card */}
+            <div className="p-4 rounded-2xl bg-white border-2 border-[#F59E0B]/40 shadow-xs text-center flex flex-col items-center justify-between">
+              <span className="text-[10px] font-black uppercase text-[#B45309] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full mb-1">
+                👑 MVP PERORANGAN
+              </span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <PlayerProfileAvatar characterId={winner?.avatarId} size={30} name={winner?.name} />
+                <p className="font-display text-xl font-black text-[#7C3AED]">
                   {winner?.name}
-                </span>
-                <FluentEmoji name="crown" variant="3d" size={28} />
+                </p>
               </div>
-              <p className="text-xs font-bold text-[#64616C]">
-                Total Skor: <span className="text-[#158467] font-black">{winner?.score} Poin</span>
+              <p className="text-xs font-bold text-[#64616C] mt-1">
+                Saldo: <strong className="text-[#158467] font-black text-sm">{winner?.score} Poin</strong>
               </p>
             </div>
           </div>
@@ -195,7 +209,7 @@ export default function G5Results() {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons: Opsi Kelompok Sama atau Shuffle Tim */}
         <div className="space-y-3 mt-auto">
           <Button
             variant="primary"
@@ -203,12 +217,26 @@ export default function G5Results() {
             size="lg"
             onClick={() => {
               sfx.playPop();
-              autoStartGame5();
-              navigate('/game5/setup');
+              g5ReplaySameTeams();
+              navigate('/game5/play');
             }}
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Main Lagi (Acak Tim & Soal Baru)</span>
+            <span>Main Lagi (Kelompok Sama)</span>
+          </Button>
+
+          <Button
+            variant="cream"
+            fullWidth
+            size="lg"
+            onClick={() => {
+              sfx.playPop();
+              g5ReshuffleTeams();
+              navigate('/game5/play');
+            }}
+          >
+            <RotateCcw className="w-5 h-5 text-[#7C3AED]" />
+            <span>Main Lagi (Acak Ulang / Shuffle Tim)</span>
           </Button>
 
           <Button

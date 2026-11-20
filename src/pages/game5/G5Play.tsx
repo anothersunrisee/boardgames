@@ -324,6 +324,37 @@ export default function G5Play() {
               </div>
             </div>
 
+            {/* Active Challenges Banner (Stays active across remaining rounds for this team) */}
+            {currentTeam.activeChallenges && currentTeam.activeChallenges.length > 0 && (
+              <div className="mb-4 p-3.5 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B] shadow-xs">
+                <div className="flex items-center gap-1.5 text-xs font-black text-[#B45309] uppercase tracking-wider mb-2">
+                  <Flame className="w-4 h-4 text-[#EA580C] animate-pulse" />
+                  <span>⚠️ KARTU TANTANGAN AKTIF (BERLAKU SAMPAI RONDE 4 SELESAI):</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {currentTeam.activeChallenges.map((c, cIdx) => {
+                    const mem = players.find((p) => p.id === c.memberId);
+                    return (
+                      <div
+                        key={`challenge-item-${cIdx}`}
+                        className="p-2.5 rounded-xl bg-white border border-[#F59E0B]/30 flex items-center gap-2 shadow-2xs"
+                      >
+                        <PlayerProfileAvatar characterId={mem?.avatarId} size={26} name={mem?.name} />
+                        <div className="min-w-0">
+                          <p className="font-display text-xs font-bold text-[#1E1E24] truncate">
+                            {mem?.name} (Kena R#{c.assignedAtRound}):
+                          </p>
+                          <p className="text-xs font-extrabold text-[#B45309] leading-tight">
+                            "{c.challenge}"
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Active Question Card */}
             <motion.div
               key={`q-${currentRoundIdx}-${currentQuestion?.id}`}
@@ -410,7 +441,7 @@ export default function G5Play() {
                 >
                   <Check className="w-5 h-5 stroke-[3]" />
                   <span>
-                    {currentRoundIdx >= 3 ? 'BENAR! (+3 Poin • Selesai)' : 'BENAR! (+3 Poin • Lanjut)'}
+                    {currentRoundIdx >= 3 ? 'BENAR! (+2 Poin • Selesai)' : 'BENAR! (+2 Poin • Lanjut)'}
                   </span>
                 </Button>
 
@@ -422,7 +453,7 @@ export default function G5Play() {
                   className="shadow-sm hover:shadow-md py-3.5 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <X className="w-5 h-5 stroke-[3]" />
-                  <span>SALAH! (Kena Hukuman!)</span>
+                  <span>SALAH! (-2 Pts & Kartu Tantangan)</span>
                 </Button>
               </div>
 
@@ -458,8 +489,10 @@ export default function G5Play() {
               <div className="relative inline-flex items-center justify-center">
                 <div
                   className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-md border-2 ${
-                    currentTeam.correctCount >= 3
+                    currentTeam.correctCount === 4
                       ? 'bg-gradient-to-tr from-[#D6F5EC] to-[#A7F3D0] border-[#12B76A]/20'
+                      : currentTeam.correctCount >= 2
+                      ? 'bg-gradient-to-tr from-[#EDE9FE] to-[#DDD6FE] border-[#7C3AED]/20'
                       : 'bg-gradient-to-tr from-[#FFE4E6] to-[#FECDD3] border-[#F43F5E]/20'
                   }`}
                 >
@@ -481,41 +514,54 @@ export default function G5Play() {
                 </h3>
                 <p className="text-sm font-semibold text-[#64616C] mt-1">
                   Skor ronde: <strong className="text-[#158467]">{currentTeam.correctCount} dari 4 Soal Benar</strong>{' '}
-                  ({currentTeam.correctCount * 3} Poin Terkumpul)
+                  ({currentTeam.teamScore || (currentTeam.correctCount * 2)} Poin Terkumpul)
                 </p>
+                {currentTeam.correctCount === 4 && (
+                  <p className="text-xs font-black text-[#158467] bg-[#ECFDF5] border border-[#12B76A]/30 py-1.5 px-3 rounded-full inline-block mt-2">
+                    🎉 JACKPOT 4/4 SEMPURNA! Seluruh anggota tim dapat 10 Poin masing-masing!
+                  </p>
+                )}
               </div>
 
-              {/* Status Hukuman Perorangan yang Salah */}
+              {/* Status Hukuman & Tantangan Aktif */}
               {punishedPlayers.length > 0 ? (
                 <div className="p-4 rounded-2xl bg-[#FEF2F2] border-2 border-[#EF4444]/30 text-left">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-[#991B1B] flex items-center gap-1.5">
                       <Flame className="w-4 h-4 text-[#EF4444]" />
-                      <span>Pemain yang Kena Hukuman ({punishedPlayers.length} orang):</span>
+                      <span>Pemain yang Kena Penalti (-2 Pts) & Tantangan:</span>
                     </span>
                     <span className="text-[10px] font-bold bg-[#EF4444] text-white px-2 py-0.5 rounded-full">
-                      Wajib Eksekusi
+                      Tantangan Tuntas
                     </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {punishedPlayers.map((p) => (
-                      <div
-                        key={p.id}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#EF4444]/30 shadow-2xs"
-                      >
-                        <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
-                        <span className="font-display text-xs font-bold text-[#1E1E24]">{p.name}</span>
-                        <span className="text-[10px] text-[#DC2626] font-bold">❌ Salah Soal</span>
-                      </div>
-                    ))}
+                    {punishedPlayers.map((p) => {
+                      const chal = currentTeam.activeChallenges?.find((c) => c.memberId === p.id);
+                      return (
+                        <div
+                          key={p.id}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#EF4444]/30 shadow-2xs"
+                        >
+                          <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
+                          <div>
+                            <span className="font-display text-xs font-bold text-[#1E1E24]">{p.name}</span>
+                            <span className="text-[10px] text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
+                            {chal && (
+                              <p className="text-[10px] text-[#B45309] font-semibold italic">"{chal.challenge}"</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-[#ECFDF5] border-2 border-[#12B76A]/30 text-center">
                   <p className="text-sm font-bold text-[#065F46] flex items-center justify-center gap-2">
                     <Sparkles className="w-4 h-4 text-[#12B76A]" />
-                    <span>Luar Biasa! Rantai Sempurna Tanpa Ada yang Salah! (+4 Poin Bonus Tim)</span>
+                    <span>Luar Biasa! Rantai Sempurna Tanpa Ada yang Salah! (+10 Pts Penuh Tiap Orang)</span>
                   </p>
                 </div>
               )}

@@ -16,22 +16,33 @@ type PlayerRow = { id: string; name: string; kubu: string }
 
 export default function G2Setup() {
   const navigate = useNavigate()
-  const { setPlayers, g2SetPlayers, g2SetSlots, g2Reset } = useGameStore()
+  const { players, setPlayers, g2SetPlayers, g2SetSlots, g2Reset } = useGameStore()
 
-  const [girlRows, setGirlRows] = useState<PlayerRow[]>([
-    { id: genId(), name: 'Alya', kubu: 'Cewek' },
-    { id: genId(), name: 'Bella', kubu: 'Cewek' },
-    { id: genId(), name: 'Caca', kubu: 'Cewek' },
-    { id: genId(), name: 'Dara', kubu: 'Cewek' },
-    { id: genId(), name: 'Elsa', kubu: 'Cewek' },
-    { id: genId(), name: 'Fani', kubu: 'Cewek' },
-    { id: genId(), name: 'Gaby', kubu: 'Cewek' },
-  ])
-  const [boyRows, setBoyRows] = useState<PlayerRow[]>([
-    { id: genId(), name: 'Dimas', kubu: 'Cowok' },
-    { id: genId(), name: 'Kevin', kubu: 'Cowok' },
-    { id: genId(), name: 'Reno', kubu: 'Cowok' },
-  ])
+  const initialGirls = players.filter((p) => p.gender === 'cewek')
+  const initialBoys = players.filter((p) => p.gender === 'cowok')
+
+  const [girlRows, setGirlRows] = useState<PlayerRow[]>(() => {
+    if (initialGirls.length > 0) {
+      return initialGirls.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim Cewek' }))
+    }
+    return [
+      { id: genId(), name: 'Alya', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Bella', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Caca', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Dara', kubu: 'Tim Cewek' },
+    ]
+  })
+  const [boyRows, setBoyRows] = useState<PlayerRow[]>(() => {
+    if (initialBoys.length > 0) {
+      return initialBoys.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim Cowok' }))
+    }
+    return [
+      { id: genId(), name: 'Dimas', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Kevin', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Reno', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Farhan', kubu: 'Tim Cowok' },
+    ]
+  })
 
   const updateGirl = (id: string, field: 'name' | 'kubu', val: string) =>
     setGirlRows((r) => r.map((x) => (x.id === id ? { ...x, [field]: val } : x)))
@@ -46,8 +57,28 @@ export default function G2Setup() {
   const handleStart = () => {
     if (!isValid) return
     sfx.playSuccess()
-    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cewek' as const, kubu: r.kubu.trim() || 'Cewek', score: 0 }))
-    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cowok' as const, kubu: r.kubu.trim() || 'Cowok', score: 0 }))
+    const girls: Player[] = girlRows.map((r) => {
+      const existing = players.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: 'cewek' as const,
+        kubu: r.kubu.trim() || 'Tim Cewek',
+        score: existing?.score || 0,
+        avatarId: existing?.avatarId || 'c01',
+      }
+    })
+    const boys: Player[] = boyRows.map((r) => {
+      const existing = players.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: 'cowok' as const,
+        kubu: r.kubu.trim() || 'Tim Cowok',
+        score: existing?.score || 0,
+        avatarId: existing?.avatarId || 'c05',
+      }
+    })
     const allPlayers = [...girls, ...boys]
 
     const items = getRandomItems(girls.length)
@@ -105,7 +136,7 @@ export default function G2Setup() {
         <Card className="mb-4 p-5 bg-white shadow-xs">
           <p className="font-display text-base font-bold mb-3 text-[#D8317E] flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
-            <span>Tim Cewek (7 Pemain)</span>
+            <span>Tim Cewek ({girlRows.length} Pemain)</span>
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {girlRows.map((row, i) => (
@@ -124,7 +155,7 @@ export default function G2Setup() {
         <Card className="mb-5 p-5 bg-white shadow-xs">
           <p className="font-display text-base font-bold mb-3 text-[#2568EF] flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
-            <span>Tim Cowok Penebak (3 Pemain)</span>
+            <span>Tim Cowok Penebak ({boyRows.length} Pemain)</span>
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {boyRows.map((row, i) => (

@@ -93,8 +93,16 @@ export default function G4Match() {
 
   const match: DebateMatch | undefined = g4Matches[g4CurrentMatchIndex]
 
-  const playerA = g4Players.find((p) => p.id === match?.playerAId)
-  const playerB = g4Players.find((p) => p.id === match?.playerBId)
+  const playerA = g4Players.find((p) => p.id === match?.playerAId) || g4Players[0]
+  const playerB = g4Players.find((p) => p.id === match?.playerBId) || g4Players[1]
+
+  const teamAPlayers = (match?.teamAIds && match.teamAIds.length > 0)
+    ? g4Players.filter((p) => match.teamAIds.includes(p.id))
+    : [playerA]
+
+  const teamBPlayers = (match?.teamBIds && match.teamBIds.length > 0)
+    ? g4Players.filter((p) => match.teamBIds.includes(p.id))
+    : [playerB]
 
   const [stageIndex, setStageIndex] = useState(0)
   const currentStage = STAGE_ORDER[stageIndex]
@@ -155,13 +163,13 @@ export default function G4Match() {
     }
   }, [isRunning, timeLeft])
 
-  if (!match || !playerA || !playerB) {
+  if (!match) {
     navigate('/game4/setup')
     return null
   }
 
   const totalMatches = g4Matches.length
-  const audienceCount = Math.max(0, g4Players.length - 2)
+  const audienceCount = Math.max(0, g4Players.length - 4)
 
   const handleNextStage = () => {
     sfx.playPop()
@@ -172,37 +180,31 @@ export default function G4Match() {
 
   const handleFinalizeVotes = () => {
     sfx.playSuccess()
-    let winnerId: string | 'tie' = 'tie'
-    let scoreA = 0
-    let scoreB = 0
+    let winnerTeam: 'A' | 'B' | 'tie' = 'tie'
 
-    // Poin Kesulitan Tinggi (Adu Debat 1v1): Menang +4 pt, Kalah -2 pt, Seri +2 pt
+    // Aturan 2v2: Menang +8 pt per anggota, Kalah +2 pt per anggota, Seri +4 pt
     if (votesA > votesB) {
-      winnerId = playerA.id
-      scoreA += 4
-      scoreB -= 2
+      winnerTeam = 'A'
+      teamAPlayers.forEach((p) => addScore(p.id, 8))
+      teamBPlayers.forEach((p) => addScore(p.id, 2))
     } else if (votesB > votesA) {
-      winnerId = playerB.id
-      scoreB += 4
-      scoreA -= 2
+      winnerTeam = 'B'
+      teamBPlayers.forEach((p) => addScore(p.id, 8))
+      teamAPlayers.forEach((p) => addScore(p.id, 2))
     } else {
-      winnerId = 'tie'
-      scoreA += 2
-      scoreB += 2
+      winnerTeam = 'tie'
+      ;[...teamAPlayers, ...teamBPlayers].forEach((p) => addScore(p.id, 4))
     }
 
-    if (bestPerf === 'A') scoreA += 1
-    if (bestPerf === 'B') scoreB += 1
-
-    addScore(playerA.id, scoreA)
-    addScore(playerB.id, scoreB)
+    if (bestPerf === 'A') teamAPlayers.forEach((p) => addScore(p.id, 1))
+    if (bestPerf === 'B') teamBPlayers.forEach((p) => addScore(p.id, 1))
 
     const updatedMatch: DebateMatch = {
       ...match,
       votesA,
       votesB,
-      bestPerformanceId: bestPerf === 'A' ? playerA.id : bestPerf === 'B' ? playerB.id : undefined,
-      winnerId,
+      winnerTeam,
+      winnerId: winnerTeam === 'A' ? teamAPlayers[0]?.id : winnerTeam === 'B' ? teamBPlayers[0]?.id : undefined,
       isCompleted: true,
     }
 
@@ -243,18 +245,22 @@ export default function G4Match() {
             "{match.topic.topic}"
           </h2>
 
-          {/* Combatants Dual Cards */}
+          {/* Combatants Dual Cards (2v2 Tim) */}
           <div className="grid grid-cols-2 gap-3 mt-5">
             <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
-                  PRO (Setuju)
+                  TIM PRO (Duo)
                 </span>
-                <div className="flex items-center gap-2.5 mt-2">
-                  <PlayerProfileAvatar characterId={playerA.avatarId} size={42} name={playerA.name} />
-                  <p className="font-display text-lg font-bold text-white truncate">
-                    {playerA.name}
-                  </p>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {teamAPlayers.map((p) => (
+                    <div key={p.id} className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-xl">
+                      <PlayerProfileAvatar characterId={p.avatarId} size={28} name={p.name} />
+                      <span className="font-display text-sm font-bold text-white truncate max-w-[90px]">
+                        {p.name}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <p className="text-xs text-white/80 italic mt-2 leading-snug">
@@ -265,13 +271,17 @@ export default function G4Match() {
             <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
-                  KONTRA (Tolak)
+                  TIM KONTRA (Duo)
                 </span>
-                <div className="flex items-center gap-2.5 mt-2">
-                  <PlayerProfileAvatar characterId={playerB.avatarId} size={42} name={playerB.name} />
-                  <p className="font-display text-lg font-bold text-white truncate">
-                    {playerB.name}
-                  </p>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {teamBPlayers.map((p) => (
+                    <div key={p.id} className="flex items-center gap-1.5 bg-black/20 px-2.5 py-1 rounded-xl">
+                      <PlayerProfileAvatar characterId={p.avatarId} size={28} name={p.name} />
+                      <span className="font-display text-sm font-bold text-white truncate max-w-[90px]">
+                        {p.name}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <p className="text-xs text-white/80 italic mt-2 leading-snug">
@@ -287,7 +297,7 @@ export default function G4Match() {
             <div className="flex items-center justify-between">
               <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-[#7E22CE]">
                 <Flame className="w-4 h-4 text-[#EC5A29]" />
-                <span>Gangguan Chaos Card Aktif!</span>
+                <span>Gangguan Chaos Card Tim Aktif!</span>
               </div>
               <button
                 type="button"
@@ -302,12 +312,12 @@ export default function G4Match() {
 
             {match.chaosCardA && (
               <p className="text-xs font-semibold text-purple-950">
-                🟢 <strong>{playerA.name} (PRO):</strong> {match.chaosCardA}
+                🟢 <strong>Tim PRO ({teamAPlayers.map((p) => p.name).join(' & ')}):</strong> {match.chaosCardA}
               </p>
             )}
             {match.chaosCardB && (
               <p className="text-xs font-semibold text-purple-950">
-                🔴 <strong>{playerB.name} (KONTRA):</strong> {match.chaosCardB}
+                🔴 <strong>Tim KONTRA ({teamBPlayers.map((p) => p.name).join(' & ')}):</strong> {match.chaosCardB}
               </p>
             )}
           </div>
@@ -415,13 +425,17 @@ export default function G4Match() {
                 </p>
               </div>
 
-              {/* Counters */}
+              {/* Counters (2v2 Tim PRO vs Tim KONTRA) */}
               <div className="grid grid-cols-2 gap-4 mb-5">
-                {/* Player A */}
+                {/* Tim PRO */}
                 <div className="p-4 rounded-2xl border-2 border-[#12B76A] bg-[#D6F5EC]/50 text-center flex flex-col items-center">
-                  <PlayerProfileAvatar characterId={playerA.avatarId} size={48} name={playerA.name} />
+                  <div className="flex -space-x-2 mb-1">
+                    {teamAPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={40} name={p.name} />
+                    ))}
+                  </div>
                   <p className="font-display text-sm font-bold text-[#158467] truncate mt-1">
-                    {playerA.name} (PRO)
+                    TIM PRO ({teamAPlayers.map((p) => p.name).join(' & ')})
                   </p>
                   <div className="flex items-center justify-center gap-3 my-2.5">
                     <button
@@ -448,14 +462,18 @@ export default function G4Match() {
                       +
                     </button>
                   </div>
-                  <span className="text-[11px] font-bold text-[#158467]">Suara Audiens</span>
+                  <span className="text-[11px] font-bold text-[#158467]">Suara Tim PRO</span>
                 </div>
 
-                {/* Player B */}
+                {/* Tim KONTRA */}
                 <div className="p-4 rounded-2xl border-2 border-[#F04438] bg-[#FFE8DF]/50 text-center flex flex-col items-center">
-                  <PlayerProfileAvatar characterId={playerB.avatarId} size={48} name={playerB.name} />
+                  <div className="flex -space-x-2 mb-1">
+                    {teamBPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={40} name={p.name} />
+                    ))}
+                  </div>
                   <p className="font-display text-sm font-bold text-[#B42318] truncate mt-1">
-                    {playerB.name} (KONTRA)
+                    TIM KONTRA ({teamBPlayers.map((p) => p.name).join(' & ')})
                   </p>
                   <div className="flex items-center justify-center gap-3 my-2.5">
                     <button
@@ -482,7 +500,7 @@ export default function G4Match() {
                       +
                     </button>
                   </div>
-                  <span className="text-[11px] font-bold text-[#B42318]">Suara Audiens</span>
+                  <span className="text-[11px] font-bold text-[#B42318]">Suara Tim KONTRA</span>
                 </div>
               </div>
 

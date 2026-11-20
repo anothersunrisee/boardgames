@@ -3,72 +3,75 @@ export type Category = {
   prompt: string;
 };
 
+/**
+ * 50 Pertanyaan Relate Keseharian Indonesia (Anti-AI Slop)
+ * Memiliki cakupan jawaban yang cukup sempit, memicu adu tebak yang seru,
+ * dan sangat familiar bagi semua kalangan (tongkrongan, kosan, kantor, keluarga).
+ */
 export const CATEGORIES: Category[] = [
-  { id: 1,  prompt: "Sayuran berwarna hijau" },
-  { id: 2,  prompt: "Merek sepatu yang populer" },
-  { id: 3,  prompt: "Makanan yang enak dimakan pas hujan" },
-  { id: 4,  prompt: "Hal yang ada di dalam tas perempuan" },
-  { id: 5,  prompt: "Aplikasi yang paling sering dibuka" },
-  { id: 6,  prompt: "Artis Indonesia yang suaranya bagus" },
-  { id: 7,  prompt: "Minuman dingin favorit" },
-  { id: 8,  prompt: "Hewan peliharaan yang umum" },
-  { id: 9,  prompt: "Warna yang sering dipakai untuk baju" },
-  { id: 10, prompt: "Makanan pedas yang terkenal" },
-  { id: 11, prompt: "Buah tropis yang ada di Indonesia" },
-  { id: 12, prompt: "Tempat liburan dalam negeri" },
-  { id: 13, prompt: "Makanan khas Jawa" },
-  { id: 14, prompt: "Pelajaran yang paling dibenci di sekolah" },
-  { id: 15, prompt: "Hal pertama yang dilakukan setelah bangun tidur" },
-  { id: 16, prompt: "Merk HP yang paling populer" },
-  { id: 17, prompt: "Lagu Indonesia yang semua orang hafal" },
-  { id: 18, prompt: "Olahraga yang sering dimainkan di Indonesia" },
-  { id: 19, prompt: "Jajanan pinggir jalan yang enak" },
-  { id: 20, prompt: "Hal yang dilakukan saat bosan" },
-  { id: 21, prompt: "Film Indonesia yang terkenal" },
-  { id: 22, prompt: "Alasan telat masuk kerja/sekolah" },
-  { id: 23, prompt: "Sesuatu yang ada di dapur" },
-  { id: 24, prompt: "Hal yang orang beli saat ke minimarket" },
-  { id: 25, prompt: "Merek kopi kekinian" },
-  { id: 26, prompt: "Makanan yang dimakan saat ulang tahun" },
-  { id: 27, prompt: "Platform streaming yang sering dipakai" },
-  { id: 28, prompt: "Hal yang bikin malas kerja/belajar" },
-  { id: 29, prompt: "Kata yang sering dipakai anak muda zaman sekarang" },
-  { id: 30, prompt: "Merek indomie rasa yang paling populer" },
-  { id: 31, prompt: "Artis yang sering masuk FYP TikTok" },
-  { id: 32, prompt: "Hal yang dilakukan saat overthinking" },
-  { id: 33, prompt: "Makanan yang paling enak di mall" },
-  { id: 34, prompt: "Sesuatu yang ada di kamar tidur" },
-  { id: 35, prompt: "Alasan tidak mau keluar rumah" },
-  { id: 36, prompt: "Pekerjaan yang kelihatannya enak" },
-  { id: 37, prompt: "Hal yang orang bawa ke pantai" },
-  { id: 38, prompt: "Jenis musik yang paling banyak didengar" },
-  { id: 39, prompt: "Konten yang paling banyak ditonton di YouTube" },
-  { id: 40, prompt: "Makanan yang enak tapi bikin gemuk" },
-  { id: 41, prompt: "Alasan nggak mau pacaran" },
-  { id: 42, prompt: "Hal yang bikin pusing saat traveling" },
-  { id: 43, prompt: "Makanan yang ada di warteg" },
-  { id: 44, prompt: "Hal yang dilakukan saat weekend" },
-  { id: 45, prompt: "Sesuatu yang selalu ada di kantor" },
-  { id: 46, prompt: "Alasan nggak tidur sampai larut malam" },
-  { id: 47, prompt: "Merk skincare yang populer" },
-  { id: 48, prompt: "Hal yang orang beli online tapi nggak dipakai" },
-  { id: 49, prompt: "Profesi yang banyak diminati anak muda sekarang" },
-  { id: 50, prompt: "Tempat nongkrong yang hits" },
-  { id: 51, prompt: "Makanan sarapan yang umum" },
-  { id: 52, prompt: "Genre film yang paling banyak ditonton" },
-  { id: 53, prompt: "Hal yang ada di loker/tas sekolah" },
-  { id: 54, prompt: "Merek baju yang populer di Indonesia" },
-  { id: 55, prompt: "Kata pertama yang terlintas saat dengar kata 'pantai'" },
-  { id: 56, prompt: "Hal yang dilakukan pas macet" },
-  { id: 57, prompt: "Makanan yang sering dipesan via ojek online" },
-  { id: 58, prompt: "Alasan baterai HP cepat habis" },
-  { id: 59, prompt: "Hal yang ada di foto profil WhatsApp orang" },
-  { id: 60, prompt: "Merek minuman energi yang populer" },
+  { id: 1,  prompt: "Menu lauk yang hampir selalu kamu pilih pas makan di Warteg" },
+  { id: 2,  prompt: "Gorengan abang-abang pinggir jalan yang paling cepat ludes dibeli" },
+  { id: 3,  prompt: "Barang di kamar kosan yang sering dipinjem temen terus gak balik-balik" },
+  { id: 4,  prompt: "Toping tambahan paling nikmat pas masak mie instan di rumah" },
+  { id: 5,  prompt: "Alasan klasik paling sering dipake buat nolak ajakan nongkrong" },
+  { id: 6,  prompt: "Benda yang wajib ada di dalam jok atau bagasi motor" },
+  { id: 7,  prompt: "Kelakuan pengendara lain di jalan raya yang paling bikin emosi jiwa" },
+  { id: 8,  prompt: "Minuman sachet legendaris yang biasa dipesan di Warkop / Warmindo" },
+  { id: 9,  prompt: "Barang receh di depan meja kasir minimarket yang sering kepencet dibeli" },
+  { id: 10, prompt: "Hal canggung (awkward) yang sering terjadi pas papasan sama tetangga/rekan kerja" },
+  { id: 11, prompt: "Jajanan micin legendaris zaman SD yang dibungkus plastik" },
+  { id: 12, prompt: "Sesuatu yang sering bikin orang telat bangun di hari Senin" },
+  { id: 13, prompt: "Aktivitas pembunuh waktu pas lagi nunggu antrean yang kelamaan" },
+  { id: 14, prompt: "Barang bawaan yang paling bikin panik kalau ketinggalan pas keluar rumah" },
+  { id: 15, prompt: "Bumbu dapur yang wajib ada di kulkas atau rak bumbu rumah" },
+  { id: 16, prompt: "Posisi favorit pas naik mobil bareng keluarga atau teman" },
+  { id: 17, prompt: "Aroma khas yang langsung bikin kamu tahu kamu lagi di rumah sakit" },
+  { id: 18, prompt: "Pertanyaan klise basa-basi pas kumpul keluarga besar saat lebaran/liburan" },
+  { id: 19, prompt: "Tempat nongkrong murah meriah yang sering jadi pelarian anak muda akhir bulan" },
+  { id: 20, prompt: "Sesuatu yang selalu ada di atas meja makan rumah orang Indonesia" },
+  { id: 21, prompt: "Alasan orang pura-pura sibuk ngecek layar HP padahal gak ada chat masuk" },
+  { id: 22, prompt: "Hal yang sering bikin pengeluaran bulanan bocor alus tanpa disadari" },
+  { id: 23, prompt: "Jenis konten media sosial yang bikin orang tahan scrolling berjam-jam" },
+  { id: 24, prompt: "Makanan penyelamat anak kosan di tanggal tua saat dompet menipis" },
+  { id: 25, prompt: "Kelakuan teman di grup WhatsApp yang paling bikin gatel pengen left group" },
+  { id: 26, prompt: "Benda di dalam tas sekolah anak SMA yang sebenernya gak ada hubungannya sama pelajaran" },
+  { id: 27, prompt: "Hal pertama yang biasa dicek orang pas baru masuk kamar hotel" },
+  { id: 28, prompt: "Minuman dingin kemasan botol di kulkas minimarket yang paling segar pas haus berat" },
+  { id: 29, prompt: "Tanda-tanda motor atau mobil udah butuh banget dibawa ke bengkel" },
+  { id: 30, prompt: "Pekerjaan rumah tangga (beberes) yang paling males dilakuin di hari libur" },
+  { id: 31, prompt: "Peristiwa horor kecil yang sering terjadi di kamar mandi (misal: gayung licin)" },
+  { id: 32, prompt: "Topik gosip tongkrongan yang gak bakal ada habisnya dibahas semalaman" },
+  { id: 33, prompt: "Barang yang sering dibeli impulsif di e-commerce pas promo kembar (contoh: 11.11)" },
+  { id: 34, prompt: "Bagian tubuh ayam goreng yang paling sering jadi rebutan di meja makan" },
+  { id: 35, prompt: "Kelakuan emak-emak yang bikin anak geleng-geleng kepala (contoh: nyimpen kantong kresek)" },
+  { id: 36, prompt: "Hal yang paling bikin malas ikut reuni sekolah zaman dulu" },
+  { id: 37, prompt: "Benda yang wajib ada di meja kasir warung kelontong madura" },
+  { id: 38, prompt: "Oleh-oleh makanan khas daerah yang paling sering dititip temen kantor" },
+  { id: 39, prompt: "Hal yang bikin orang tiba-tiba batuk pas lagi makan keripik pedas" },
+  { id: 40, prompt: "Game jadul di HP jadul nokia yang bikin nostalgia zaman dulu" },
+  { id: 41, prompt: "Kegiatan yang paling enak dilakuin pas hujan deras di sore hari" },
+  { id: 42, prompt: "Makanan yang kalau dimakan bikin nafas auto bau tapi tetep dicari orang" },
+  { id: 43, prompt: "Kelakuan bapak-bapak di pos ronda atau grup WhatsApp keluarga" },
+  { id: 44, prompt: "Barang yang selalu dicari-cari pas mau berangkat kerja/kuliah karena sering nyelip" },
+  { id: 45, prompt: "Menu sarapan pagi gerobakan yang sering dibeli sebelum jam 8 pagi" },
+  { id: 46, prompt: "Tempat yang paling sering dikunjungi pas lagi gak punya tujuan jalan-jalan" },
+  { id: 47, prompt: "Hal yang bikin kaget setengah mati pas lagi asik santai di rumah" },
+  { id: 48, prompt: "Aktivitas wajib pas lagi liburan ke pantai selain berenang" },
+  { id: 49, prompt: "Pemberian gratisan dari toko yang biasanya langsung dibuang atau gak kepake" },
+  { id: 50, prompt: "Pertanyaan yang paling males dijawab pas ketemu teman lama di jalan" },
 ];
 
+/**
+ * Pengacak kategori dengan aturan anti-repeat:
+ * Soal yang sudah muncul tidak akan muncul lagi sampai seluruh 50 soal terpakai.
+ * Jika seluruh 50 soal sudah dimainkan, pool akan direset kembali.
+ */
 export function pickRandomCategories(count: number, exclude: number[] = []): Category[] {
-  const available = CATEGORIES.filter((c) => !exclude.includes(c.id));
+  let available = CATEGORIES.filter((c) => !exclude.includes(c.id));
+  if (available.length < count) {
+    // Jika semua 50 soal sudah pernah muncul, reset siklus
+    available = CATEGORIES;
+  }
   const shuffled = [...available].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
-

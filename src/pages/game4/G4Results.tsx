@@ -15,7 +15,7 @@ import { sfx } from '../../utils/sound'
 
 export default function G4Results() {
   const navigate = useNavigate()
-  const { players, g4Matches, autoStartGame4 } = useGameStore()
+  const { players, g4Matches, g4ReplaySameTeams, g4ReshuffleTeams } = useGameStore()
   const [showPunishment, setShowPunishment] = useState(false)
 
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
@@ -104,12 +104,22 @@ export default function G4Results() {
             </h3>
             <div className="space-y-2.5">
               {g4Matches.map((m) => {
-                const pA = players.find((p) => p.id === m.playerAId)
-                const pB = players.find((p) => p.id === m.playerBId)
-                const winner =
-                  m.winnerId === 'tie'
-                    ? 'Seri'
-                    : players.find((p) => p.id === m.winnerId)?.name
+                const teamA = (m.teamAIds && m.teamAIds.length > 0)
+                  ? players.filter((p) => m.teamAIds.includes(p.id))
+                  : [players.find((p) => p.id === m.playerAId)!]
+                const teamB = (m.teamBIds && m.teamBIds.length > 0)
+                  ? players.filter((p) => m.teamBIds.includes(p.id))
+                  : [players.find((p) => p.id === m.playerBId)!]
+
+                const nameA = teamA.map((p) => p?.name).filter(Boolean).join(' & ')
+                const nameB = teamB.map((p) => p?.name).filter(Boolean).join(' & ')
+
+                const isTie = m.winnerTeam === 'tie' || m.votesA === m.votesB
+                const winnerLabel = isTie
+                  ? 'Seri (Draw)'
+                  : (m.winnerTeam === 'A' || m.votesA > m.votesB)
+                  ? `Tim PRO (${nameA})`
+                  : `Tim KONTRA (${nameB})`
 
                 return (
                   <div
@@ -121,7 +131,7 @@ export default function G4Results() {
                         {m.isFinal ? '🔥 GRAND FINAL' : `Match #${m.matchNumber}`}
                       </span>
                       <span className="font-semibold text-[#64616C]">
-                        Pemenang: <strong className="text-[#12B76A]">{winner}</strong>
+                        Pemenang: <strong className="text-[#12B76A]">{winnerLabel}</strong>
                       </span>
                     </div>
 
@@ -131,10 +141,10 @@ export default function G4Results() {
 
                     <div className="flex items-center justify-between text-[11px] text-[#64616C] font-semibold">
                       <span>
-                        🟢 {pA?.name} (PRO): {m.votesA} suara
+                        🟢 Tim PRO ({nameA}): {m.votesA} suara
                       </span>
                       <span>
-                        🔴 {pB?.name} (KONTRA): {m.votesB} suara
+                        🔴 Tim KONTRA ({nameB}): {m.votesB} suara
                       </span>
                     </div>
                   </div>
@@ -180,7 +190,7 @@ export default function G4Results() {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons: Opsi Kelompok Sama atau Shuffle Tim */}
         <div className="space-y-3 mt-auto">
           <Button
             variant="tangerine"
@@ -188,12 +198,26 @@ export default function G4Results() {
             size="lg"
             onClick={() => {
               sfx.playPop()
-              autoStartGame4()
+              g4ReplaySameTeams()
               navigate('/game4/match')
             }}
           >
             <RotateCcw className="w-5 h-5" />
-            <span>Tanding Debat Lagi (Acak Ulang)</span>
+            <span>Main Lagi (Kelompok Sama)</span>
+          </Button>
+
+          <Button
+            variant="cream"
+            fullWidth
+            size="lg"
+            onClick={() => {
+              sfx.playPop()
+              g4ReshuffleTeams()
+              navigate('/game4/match')
+            }}
+          >
+            <RotateCcw className="w-5 h-5 text-[#EC5A29]" />
+            <span>Main Lagi (Acak Ulang / Shuffle Tim)</span>
           </Button>
 
           <Button

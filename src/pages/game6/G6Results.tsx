@@ -16,7 +16,7 @@ import { sfx } from '../../utils/sound';
 
 export default function G6Results() {
   const navigate = useNavigate();
-  const { players, g6Matches, autoStartGame6, g6UndoMatch } = useGameStore();
+  const { players, g6Matches, g6UndoMatch, g6ReplaySameTeams, g6ReshuffleTeams } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
 
   const handleUndo = () => {
@@ -35,19 +35,22 @@ export default function G6Results() {
     sfx.playFanfare();
   }, []);
 
-  // Kumpulkan semua nama pemain yang kalah duel
+  // Kumpulkan semua nama pemain yang kalah duel 2v2
   const loserNames: string[] = [];
   g6Matches.forEach((m) => {
-    const pA = players.find((p) => p.id === m.playerAId);
-    const pB = players.find((p) => p.id === m.playerBId);
-    if (!pA || !pB) return;
+    const teamAPlayers = (m.teamAIds && m.teamAIds.length > 0)
+      ? players.filter((p) => m.teamAIds.includes(p.id))
+      : players.filter((p) => p.id === m.playerAId);
+    const teamBPlayers = (m.teamBIds && m.teamBIds.length > 0)
+      ? players.filter((p) => m.teamBIds.includes(p.id))
+      : players.filter((p) => p.id === m.playerBId);
 
-    if (m.winnerId === m.playerAId) {
-      loserNames.push(pB.name);
-    } else if (m.winnerId === m.playerBId) {
-      loserNames.push(pA.name);
-    } else if (m.winnerId === 'tie') {
-      loserNames.push(pA.name, pB.name);
+    if (m.winnerTeam === 'A' || m.winnerId === m.playerAId) {
+      loserNames.push(...teamBPlayers.map((p) => p.name));
+    } else if (m.winnerTeam === 'B' || m.winnerId === m.playerBId) {
+      loserNames.push(...teamAPlayers.map((p) => p.name));
+    } else if (m.winnerTeam === 'tie' || m.winnerId === 'tie') {
+      loserNames.push(...teamAPlayers.map((p) => p.name), ...teamBPlayers.map((p) => p.name));
     }
   });
 
@@ -130,20 +133,26 @@ export default function G6Results() {
         <Card className="mb-6 p-5 bg-white shadow-xs border border-[#1E1E24]/10">
           <p className="font-display text-base font-bold text-[#1E1E24] mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#65A30D]" />
-            <span>Rekap Duel Jualan:</span>
+            <span>Rekap Duel Jualan (2v2 Duo Sales):</span>
           </p>
           <div className="space-y-3">
             {g6Matches.map((m) => {
-              const pA = players.find((p) => p.id === m.playerAId);
-              const pB = players.find((p) => p.id === m.playerBId);
-              if (!pA || !pB) return null;
+              const teamAPlayers = (m.teamAIds && m.teamAIds.length > 0)
+                ? players.filter((p) => m.teamAIds.includes(p.id))
+                : players.filter((p) => p.id === m.playerAId);
+              const teamBPlayers = (m.teamBIds && m.teamBIds.length > 0)
+                ? players.filter((p) => m.teamBIds.includes(p.id))
+                : players.filter((p) => p.id === m.playerBId);
 
-              const winnerName =
-                m.winnerId === 'tie'
-                  ? 'Seri (Draw)'
-                  : m.winnerId === m.playerAId
-                  ? pA.name
-                  : pB.name;
+              const isWinnerA = m.winnerTeam === 'A' || m.winnerId === m.playerAId;
+              const isWinnerB = m.winnerTeam === 'B' || m.winnerId === m.playerBId;
+              const isTie = m.winnerTeam === 'tie' || m.winnerId === 'tie';
+
+              const winnerLabel = isTie
+                ? 'Seri (Draw)'
+                : isWinnerA
+                ? `Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')})`
+                : `Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')})`;
 
               return (
                 <div
@@ -152,11 +161,11 @@ export default function G6Results() {
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[11px] font-black uppercase text-[#65A30D]">
-                      Match {m.matchNumber}
+                      Match {m.matchNumber} • 2v2
                     </span>
                     <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#65A30D]/15 text-[#3F6212] flex items-center gap-1">
                       <span>Menang:</span>
-                      <strong className="font-black">{winnerName}</strong>
+                      <strong className="font-black">{winnerLabel}</strong>
                     </span>
                   </div>
 
@@ -165,12 +174,12 @@ export default function G6Results() {
                   </p>
 
                   <div className="flex items-center justify-between text-xs font-semibold text-[#64616C] mt-2 pt-2 border-t border-[#1E1E24]/10">
-                    <span className={m.winnerId === m.playerAId ? 'font-bold text-[#65A30D]' : ''}>
-                      {pA.name}: {m.votesA} vote
+                    <span className={isWinnerA ? 'font-bold text-[#65A30D]' : ''}>
+                      Duo A ({teamAPlayers.map((p) => p.name).join(' & ')}): {m.votesA} vote
                     </span>
                     <span className="text-[10px] font-black uppercase text-[#64616C]/60">VS</span>
-                    <span className={m.winnerId === m.playerBId ? 'font-bold text-[#65A30D]' : ''}>
-                      {pB.name}: {m.votesB} vote
+                    <span className={isWinnerB ? 'font-bold text-[#65A30D]' : ''}>
+                      Duo B ({teamBPlayers.map((p) => p.name).join(' & ')}): {m.votesB} vote
                     </span>
                   </div>
                 </div>
@@ -223,25 +232,39 @@ export default function G6Results() {
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3 mt-auto">
-          <Button
-            variant="primary"
-            fullWidth
-            size="lg"
-            onClick={() => {
-              sfx.playPop();
-              const res = autoStartGame6();
-              if (res && !res.success) {
-                alert(res.message);
-                return;
-              }
-              navigate('/game6/match');
-            }}
-          >
-            <RotateCcw className="w-5 h-5" />
-            <span>Main Lagi (Acak Match & Barang Baru)</span>
-          </Button>
+        {/* Replay Action Buttons */}
+        <div className="space-y-2.5 mt-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <Button
+              variant="cream"
+              fullWidth
+              size="lg"
+              onClick={() => {
+                sfx.playPop();
+                g6ReplaySameTeams();
+                navigate('/game6/match');
+              }}
+              className="border-2 border-[#65A30D] text-[#3F6212] hover:bg-[#ECFCCB]"
+            >
+              <RotateCcw className="w-4 h-4 text-[#65A30D]" />
+              <span>Main Lagi (Kelompok Sama)</span>
+            </Button>
+
+            <Button
+              variant="primary"
+              fullWidth
+              size="lg"
+              onClick={() => {
+                sfx.playPop();
+                g6ReshuffleTeams();
+                navigate('/game6/match');
+              }}
+              className="bg-[#65A30D] hover:bg-[#4D7C0F]"
+            >
+              <Sparkles className="w-4 h-4 text-[#BEF264]" />
+              <span>Main Lagi (Acak Ulang Tim)</span>
+            </Button>
+          </div>
 
           <Button
             variant="ink"

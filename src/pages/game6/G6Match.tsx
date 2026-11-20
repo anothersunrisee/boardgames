@@ -52,8 +52,16 @@ export default function G6Match() {
     else if (stage === 'voting') setStage('pitchB');
   };
 
-  const playerA = players.find((p) => p.id === match?.playerAId);
-  const playerB = players.find((p) => p.id === match?.playerBId);
+  const playerA = players.find((p) => p.id === match?.playerAId) || players[0];
+  const playerB = players.find((p) => p.id === match?.playerBId) || players[1];
+
+  const teamAPlayers = (match?.teamAIds && match.teamAIds.length > 0)
+    ? players.filter((p) => match.teamAIds.includes(p.id))
+    : [playerA];
+
+  const teamBPlayers = (match?.teamBIds && match.teamBIds.length > 0)
+    ? players.filter((p) => match.teamBIds.includes(p.id))
+    : [playerB];
 
   // Setup initial stage
   useEffect(() => {
@@ -91,7 +99,7 @@ export default function G6Match() {
     };
   }, [isRunning, timeLeft, stage]);
 
-  if (!match || !playerA || !playerB) {
+  if (!match) {
     navigate('/hub');
     return null;
   }
@@ -102,11 +110,11 @@ export default function G6Match() {
     sfx.playPop();
     if (stage === 'prep') {
       setStage('pitchA');
-      setTimeLeft(35);
+      setTimeLeft(45);
       setIsRunning(true);
     } else if (stage === 'pitchA') {
       setStage('pitchB');
-      setTimeLeft(35);
+      setTimeLeft(45);
       setIsRunning(true);
     } else if (stage === 'pitchB') {
       setStage('voting');
@@ -126,31 +134,31 @@ export default function G6Match() {
 
   const handleFinishVoting = () => {
     sfx.playSuccess();
-    let winnerId: string | 'tie' = 'tie';
+    let winnerTeam: 'A' | 'B' | 'tie' = 'tie';
 
-    // Poin Kesulitan Tinggi (Pitching Duel 1v1): Menang +5 pt, Kalah -2 pt, Seri +2 pt
+    // Aturan 2v2 Sales: Menang +8 pt tiap anggota, Kalah +2 pt tiap anggota, Seri +4 pt
     if (votesA > votesB) {
-      winnerId = playerA.id;
-      addScore(playerA.id, 5);
-      addScore(playerB.id, -2);
-      setLoserName(playerB.name);
+      winnerTeam = 'A';
+      teamAPlayers.forEach((p) => addScore(p.id, 8));
+      teamBPlayers.forEach((p) => addScore(p.id, 2));
+      setLoserName(teamBPlayers.map((p) => p.name).join(' & '));
     } else if (votesB > votesA) {
-      winnerId = playerB.id;
-      addScore(playerB.id, 5);
-      addScore(playerA.id, -2);
-      setLoserName(playerA.name);
+      winnerTeam = 'B';
+      teamBPlayers.forEach((p) => addScore(p.id, 8));
+      teamAPlayers.forEach((p) => addScore(p.id, 2));
+      setLoserName(teamAPlayers.map((p) => p.name).join(' & '));
     } else {
-      winnerId = 'tie';
-      addScore(playerA.id, 2);
-      addScore(playerB.id, 2);
-      setLoserName(`${playerA.name} & ${playerB.name}`);
+      winnerTeam = 'tie';
+      [...teamAPlayers, ...teamBPlayers].forEach((p) => addScore(p.id, 4));
+      setLoserName(`${teamAPlayers.map((p) => p.name).join(' & ')} & ${teamBPlayers.map((p) => p.name).join(' & ')}`);
     }
 
     g6UpdateMatch(g6CurrentMatchIndex, {
       ...match,
       votesA,
       votesB,
-      winnerId,
+      winnerTeam,
+      winnerId: winnerTeam === 'A' ? teamAPlayers[0]?.id : winnerTeam === 'B' ? teamBPlayers[0]?.id : undefined,
       isCompleted: true,
     });
 
@@ -223,26 +231,30 @@ export default function G6Match() {
           </div>
         </div>
 
-        {/* Pitching Combatants Duel Cards */}
+        {/* Pitching Combatants Duel Cards (2v2 Duo Sales) */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div
-            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center ${
+            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-between ${
               stage === 'pitchA'
                 ? 'bg-[#ECFCCB] border-[#65A30D] ring-4 ring-[#65A30D]/20 shadow-md scale-102'
                 : 'bg-white border-[#1E1E24]/10 shadow-xs'
             }`}
           >
             <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#65A30D] text-white shadow-xs">
-              Sales 1
+              DUO SALES A
             </span>
-            <div className="flex items-center gap-2 mt-2">
-              <PlayerProfileAvatar characterId={playerA.avatarId} size={36} name={playerA.name} />
-              <p className="font-display text-base md:text-lg font-bold text-[#1E1E24] truncate">
-                {playerA.name}
-              </p>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
+              {teamAPlayers.map((p) => (
+                <div key={p.id} className="flex items-center gap-1 bg-[#F4F4F6] px-2 py-0.5 rounded-lg">
+                  <PlayerProfileAvatar characterId={p.avatarId} size={24} name={p.name} />
+                  <span className="font-display text-xs font-bold text-[#1E1E24] truncate max-w-[80px]">
+                    {p.name}
+                  </span>
+                </div>
+              ))}
             </div>
             {stage === 'pitchA' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-1.5 bg-white/80 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
                 <FluentEmoji name="microphone" variant="3d" size={14} />
                 <span>Sedang Presentasi!</span>
               </span>
@@ -250,23 +262,27 @@ export default function G6Match() {
           </div>
 
           <div
-            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center ${
+            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-between ${
               stage === 'pitchB'
                 ? 'bg-[#ECFCCB] border-[#65A30D] ring-4 ring-[#65A30D]/20 shadow-md scale-102'
                 : 'bg-white border-[#1E1E24]/10 shadow-xs'
             }`}
           >
             <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#3F6212] text-white shadow-xs">
-              Sales 2
+              DUO SALES B
             </span>
-            <div className="flex items-center gap-2 mt-2">
-              <PlayerProfileAvatar characterId={playerB.avatarId} size={36} name={playerB.name} />
-              <p className="font-display text-base md:text-lg font-bold text-[#1E1E24] truncate">
-                {playerB.name}
-              </p>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
+              {teamBPlayers.map((p) => (
+                <div key={p.id} className="flex items-center gap-1 bg-[#F4F4F6] px-2 py-0.5 rounded-lg">
+                  <PlayerProfileAvatar characterId={p.avatarId} size={24} name={p.name} />
+                  <span className="font-display text-xs font-bold text-[#1E1E24] truncate max-w-[80px]">
+                    {p.name}
+                  </span>
+                </div>
+              ))}
             </div>
             {stage === 'pitchB' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-1.5 bg-white/80 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
                 <FluentEmoji name="microphone" variant="3d" size={14} />
                 <span>Sedang Presentasi!</span>
               </span>
@@ -297,10 +313,10 @@ export default function G6Match() {
 
               <span className="font-display text-xs font-black uppercase tracking-wider text-[#65A30D] mb-1.5 bg-[#ECFCCB] px-3.5 py-1 rounded-full border border-[#65A30D]/20">
                 {stage === 'prep'
-                  ? 'Persiapan Ide Pitching (15s)'
+                  ? 'Persiapan Ide Duo Sales (15s)'
                   : stage === 'pitchA'
-                  ? `Giliran Pitching: ${playerA.name} (35s)`
-                  : `Giliran Pitching: ${playerB.name} (35s)`}
+                  ? `Giliran Pitching: Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')}) (45s)`
+                  : `Giliran Pitching: Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')}) (45s)`}
               </span>
 
               {/* Countdown Clock */}
@@ -346,7 +362,7 @@ export default function G6Match() {
                   className="px-3.5 py-1.5 rounded-xl bg-white border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer shadow-xs"
                   onClick={() => {
                     sfx.playPop();
-                    setTimeLeft(35);
+                    setTimeLeft(45);
                     setIsRunning(true);
                   }}
                 >
@@ -364,9 +380,9 @@ export default function G6Match() {
                   onClick={handleNextStage}
                 >
                   {stage === 'prep'
-                    ? `Mulai Pitching ${playerA.name} →`
+                    ? `Mulai Pitching Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')}) →`
                     : stage === 'pitchA'
-                    ? `Lanjut Pitching ${playerB.name} →`
+                    ? `Lanjut Pitching Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')}) →`
                     : 'Masuk ke Voting Audiens 🗳️ →'}
                 </Button>
               </div>
@@ -384,22 +400,28 @@ export default function G6Match() {
                   <span>Seluruh Audiens di Ruangan Memilih!</span>
                 </p>
                 <p className="text-xs text-[#64616C] font-semibold mt-1">
-                  Siapa yang argumen & bacotan jualan barang rusaknya paling meyakinkan? Klik untuk menambah suara:
+                  Siapa yang argumen & rayuan jualan barang rusaknya paling meyakinkan? Klik untuk menambah suara:
                 </p>
               </Card>
 
-              {/* Voting Counters */}
+              {/* Voting Counters (2v2) */}
               <div className="grid grid-cols-2 gap-4">
                 <div
                   onClick={handleVoteA}
                   className="p-5 rounded-2xl bg-white border-3 border-[#65A30D] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center active:scale-98"
                 >
-                  <PlayerProfileAvatar characterId={playerA.avatarId} size={44} name={playerA.name} />
-                  <p className="font-display text-base font-bold text-[#1E1E24] mt-2">{playerA.name}</p>
+                  <div className="flex -space-x-2 mb-1">
+                    {teamAPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
+                    ))}
+                  </div>
+                  <p className="font-display text-sm font-bold text-[#1E1E24] mt-2 truncate w-full">
+                    Duo Sales A ({teamAPlayers.map((p) => p.name).join(' & ')})
+                  </p>
                   <p className="font-display text-4xl font-bold text-[#65A30D] my-2">{votesA}</p>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#65A30D] text-white text-xs font-bold shadow-xs">
                     <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>+1 Vote</span>
+                    <span>+1 Vote Tim A</span>
                   </span>
                 </div>
 
@@ -407,12 +429,18 @@ export default function G6Match() {
                   onClick={handleVoteB}
                   className="p-5 rounded-2xl bg-white border-3 border-[#3F6212] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center active:scale-98"
                 >
-                  <PlayerProfileAvatar characterId={playerB.avatarId} size={44} name={playerB.name} />
-                  <p className="font-display text-base font-bold text-[#1E1E24] mt-2">{playerB.name}</p>
+                  <div className="flex -space-x-2 mb-1">
+                    {teamBPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
+                    ))}
+                  </div>
+                  <p className="font-display text-sm font-bold text-[#1E1E24] mt-2 truncate w-full">
+                    Duo Sales B ({teamBPlayers.map((p) => p.name).join(' & ')})
+                  </p>
                   <p className="font-display text-4xl font-bold text-[#3F6212] my-2">{votesB}</p>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3F6212] text-white text-xs font-bold shadow-xs">
                     <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>+1 Vote</span>
+                    <span>+1 Vote Tim B</span>
                   </span>
                 </div>
               </div>

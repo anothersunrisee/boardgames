@@ -1,18 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 /**
  * High-Visibility Playful Slicing Cursor Component
- * Provides an unmissable, vibrant Fruit-Ninja blade cursor with high-contrast outlines,
- * glowing ambient halo, and instant zero-latency tracking on desktop browsers.
+ * Active ONLY on Onboarding / Landing page where Fruit-Ninja slicing interaction occurs.
+ * Reverts to clean standard system cursor inside /room, /hub, and all games to prevent user fatigue.
  * Automatically disabled on touch-only mobile devices.
  */
 export const CustomGameCursor: React.FC = () => {
+  const location = useLocation();
+  const isOnboarding = location.pathname === '/' || location.pathname === '/onboarding';
+
   const cursorRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [isDown, setIsDown] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
+    if (!isOnboarding) return;
     // Detect touch-only devices to avoid showing custom desktop cursor
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
       setIsTouchDevice(true);
@@ -69,9 +74,9 @@ export const CustomGameCursor: React.FC = () => {
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [visible]);
+  }, [visible, isOnboarding]);
 
-  if (isTouchDevice || !visible) return null;
+  if (!isOnboarding || isTouchDevice || !visible) return null;
 
   return (
     <div

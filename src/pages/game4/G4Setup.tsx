@@ -70,21 +70,28 @@ export default function G4Setup() {
       score: 0,
     }))
 
-    // Shuffle players to form random pairings
+    // Shuffle players to form random 2v2 pairings
     const shuffled = [...players].sort(() => Math.random() - 0.5)
     const matches: DebateMatch[] = []
     const usedTopicIds: number[] = []
 
-    for (let i = 0; i < shuffled.length; i += 2) {
-      const pA = shuffled[i]
-      const pB = shuffled[i + 1]
+    const matchCount = Math.max(1, Math.floor(shuffled.length / 4))
+
+    for (let m = 0; m < matchCount; m++) {
+      const baseIdx = m * 4
+      const p1 = shuffled[baseIdx % shuffled.length]
+      const p2 = shuffled[(baseIdx + 1) % shuffled.length]
+      const p3 = shuffled[(baseIdx + 2) % shuffled.length]
+      const p4 = shuffled[(baseIdx + 3) % shuffled.length]
       const topic = getRandomTopic(usedTopicIds)
       usedTopicIds.push(topic.id)
 
       matches.push({
-        matchNumber: matches.length + 1,
-        playerAId: pA.id,
-        playerBId: pB.id,
+        matchNumber: m + 1,
+        teamAIds: [p1.id, p2.id],
+        teamBIds: [p3.id, p4.id],
+        playerAId: p1.id,
+        playerBId: p3.id,
         topic,
         chaosCardA: enableChaos ? getRandomChaosCard() : undefined,
         chaosCardB: enableChaos ? getRandomChaosCard() : undefined,

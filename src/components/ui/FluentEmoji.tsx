@@ -135,7 +135,6 @@ const HAS_3D = new Set([
   'joker',
   'thinking-face',
   'exploding-head',
-  'dizzy-face',
   'partying-face',
   'star',
   'glowing-star',
@@ -153,6 +152,40 @@ const HAS_3D = new Set([
   'artist-palette',
   'clown-face',
 ]);
+
+export const UNICODE_FALLBACKS: Record<string, string> = {
+  'party-popper': '🎉',
+  'high-voltage': '⚡',
+  'crown': '👑',
+  'trophy': '🏆',
+  'collision': '💥',
+  'chains': '⛓️',
+  'sparkles': '✨',
+  'fire': '🔥',
+  'check-mark': '✅',
+  'cross-mark': '❌',
+  'warning': '⚠️',
+  'joker': '🃏',
+  'thinking-face': '🤔',
+  'exploding-head': '🤯',
+  'dizzy-face': '😵',
+  'partying-face': '🥳',
+  'star': '⭐',
+  'glowing-star': '🌟',
+  'game-die': '🎲',
+  'bullseye': '🎯',
+  'hourglass': '⏳',
+  'rocket': '🚀',
+  'eyes': '👀',
+  'gem-stone': '💎',
+  'smirking-face': '😏',
+  'smiling-face-with-sunglasses': '😎',
+  'popcorn': '🍿',
+  'microphone': '🎤',
+  'megaphone': '📢',
+  'artist-palette': '🎨',
+  'clown-face': '🤡',
+};
 
 export interface FluentEmojiProps {
   emoji?: string;
@@ -199,12 +232,13 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
     assetKey = UNICODE_TO_ASSET[cleanEmoji] || UNICODE_TO_ASSET[cleanEmoji.replace(/\uFE0F/g, '')];
   }
 
-  // Fallback to sparkles if completely unknown but 3D requested
-  if (!assetKey && !emoji) {
-    assetKey = 'sparkles';
-  }
+  // 2. Resolved unicode symbol for resilience
+  const fallbackChar =
+    emoji ||
+    (assetKey ? UNICODE_FALLBACKS[assetKey] : undefined) ||
+    '✨';
 
-  // 2. If valid assetKey and not failed, render official Windows 11 3D asset
+  // 3. If valid assetKey and not failed, render official Windows 11 3D asset
   if (assetKey && HAS_3D.has(assetKey) && !loadFailed) {
     const is3D = variant === '3d';
     const base = import.meta.env.BASE_URL || '/';
@@ -212,15 +246,8 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
     const src = is3D ? `${cleanBase}emojis/${assetKey}-3d.png` : `${cleanBase}emojis/${assetKey}.svg`;
 
     return (
-      <img
-        src={src}
-        alt=""
-        role="presentation"
-        width={size}
-        height={size}
-        draggable={false}
-        onError={() => setLoadFailed(true)}
-        className={`inline-block select-none align-middle pointer-events-none object-contain ${className}`}
+      <span
+        className={`inline-flex items-center justify-center align-middle ${className}`}
         style={{
           width: size,
           height: size,
@@ -228,21 +255,35 @@ export const FluentEmoji: React.FC<FluentEmojiProps> = ({
           minHeight: size,
           ...style,
         }}
-        loading="eager"
-      />
+      >
+        <img
+          src={src}
+          alt={alt || ''}
+          role="presentation"
+          width={size}
+          height={size}
+          draggable={false}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+            setLoadFailed(true);
+          }}
+          className="select-none pointer-events-none object-contain w-full h-full"
+          loading="eager"
+        />
+      </span>
     );
   }
 
-  // 3. Resilient Fallback: Font-based or clean Unicode emoji with Windows 11 font stack
-  const fallbackChar = emoji || (assetKey ? '✨' : '🎮');
-
+  // 4. Resilient Fallback: Font-based or clean Unicode emoji with Windows 11 font stack
   return (
     <span
-      className={`inline-block select-none align-middle font-normal leading-none ${className}`}
+      className={`inline-flex items-center justify-center select-none align-middle font-normal leading-none ${className}`}
       style={{
         fontFamily: "'Fluent Emoji Color', 'Fluent Emoji Flat', 'Segoe UI Emoji', sans-serif",
-        fontSize: size,
+        fontSize: size * 0.9,
         lineHeight: 1,
+        width: size,
+        height: size,
         ...style,
       }}
       aria-label={alt || emoji || assetKey}

@@ -224,7 +224,7 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 mb-1">
-                          <FluentEmoji name={st.emoji} variant="3d" size={18} />
+                          <FluentEmoji name={st.emoji} emoji={st.unicode} variant="3d" size={18} />
                           <h4 className="font-display text-sm font-bold text-[#1E1E24]">
                             {st.title}
                           </h4>

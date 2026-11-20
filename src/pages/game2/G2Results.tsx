@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { RotateCcw, Home, ArrowLeft, Flame } from 'lucide-react'
+import { RotateCcw, Home, ArrowLeft, Flame, Sparkles } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 import { Button } from '../../components/ui/Button'
 import { ScoreBoard } from '../../components/ScoreBoard'
@@ -15,7 +15,7 @@ import { sfx } from '../../assets-library/soundEngine'
 
 export default function G2Results() {
   const navigate = useNavigate()
-  const { players, autoStartGame2, g2GirlWins, g2BoyWins } = useGameStore()
+  const { players, autoStartGame2, g2ReplaySameTeams, g2GirlWins, g2BoyWins } = useGameStore()
   const [showPunishment, setShowPunishment] = useState(false)
   const winner = [...players].sort((a, b) => b.score - a.score)[0]
 
@@ -172,20 +172,37 @@ export default function G2Results() {
           <ScoreBoard players={players} title="Papan Skor Perorangan Room" highlightId={winner?.id} />
         </div>
 
-        <div className="space-y-3 mt-auto">
-          <Button
-            variant="berry"
-            fullWidth
-            size="lg"
-            onClick={() => {
-              sfx.playPop()
-              autoStartGame2()
-              navigate('/game2/secret')
-            }}
-          >
-            <RotateCcw className="w-5 h-5" />
-            <span>Main Game Ini Lagi (Acak Ulang)</span>
-          </Button>
+        <div className="space-y-2.5 mt-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <Button
+              variant="cream"
+              fullWidth
+              size="lg"
+              onClick={() => {
+                sfx.playPop()
+                g2ReplaySameTeams()
+                navigate('/game2/secret')
+              }}
+              className="border-2 border-[#D8317E] text-[#D8317E] hover:bg-[#FCE4F0]"
+            >
+              <RotateCcw className="w-4 h-4 text-[#D8317E]" />
+              <span>Main Lagi (Kelompok Sama)</span>
+            </Button>
+
+            <Button
+              variant="berry"
+              fullWidth
+              size="lg"
+              onClick={() => {
+                sfx.playPop()
+                autoStartGame2()
+                navigate('/game2/secret')
+              }}
+            >
+              <Sparkles className="w-4 h-4 text-white" />
+              <span>Main Lagi (Acak Ulang Tim)</span>
+            </Button>
+          </div>
 
           <Button
             variant="ink"

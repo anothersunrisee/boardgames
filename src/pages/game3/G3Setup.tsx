@@ -15,22 +15,33 @@ type PlayerRow = { id: string; name: string; kubu: string }
 
 export default function G3Setup() {
   const navigate = useNavigate()
-  const { setPlayers, g3SetPlayers, g3SetSlots, g3Reset } = useGameStore()
+  const { players, setPlayers, g3SetPlayers, g3SetSlots, g3Reset } = useGameStore()
 
-  const [boyRows, setBoyRows] = useState<PlayerRow[]>([
-    { id: genId(), name: 'Bagas', kubu: 'Cowok' },
-    { id: genId(), name: 'Diki', kubu: 'Cowok' },
-    { id: genId(), name: 'Fikri', kubu: 'Cowok' },
-  ])
-  const [girlRows, setGirlRows] = useState<PlayerRow[]>([
-    { id: genId(), name: 'Nisa', kubu: 'Cewek' },
-    { id: genId(), name: 'Tiara', kubu: 'Cewek' },
-    { id: genId(), name: 'Maya', kubu: 'Cewek' },
-    { id: genId(), name: 'Vina', kubu: 'Cewek' },
-    { id: genId(), name: 'Kania', kubu: 'Cewek' },
-    { id: genId(), name: 'Laras', kubu: 'Cewek' },
-    { id: genId(), name: 'Sofi', kubu: 'Cewek' },
-  ])
+  const initialBoys = players.filter((p) => p.gender === 'cowok')
+  const initialGirls = players.filter((p) => p.gender === 'cewek')
+
+  const [boyRows, setBoyRows] = useState<PlayerRow[]>(() => {
+    if (initialBoys.length > 0) {
+      return initialBoys.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim Cowok' }))
+    }
+    return [
+      { id: genId(), name: 'Dimas', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Kevin', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Reno', kubu: 'Tim Cowok' },
+      { id: genId(), name: 'Farhan', kubu: 'Tim Cowok' },
+    ]
+  })
+  const [girlRows, setGirlRows] = useState<PlayerRow[]>(() => {
+    if (initialGirls.length > 0) {
+      return initialGirls.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim Cewek' }))
+    }
+    return [
+      { id: genId(), name: 'Alya', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Bella', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Caca', kubu: 'Tim Cewek' },
+      { id: genId(), name: 'Dara', kubu: 'Tim Cewek' },
+    ]
+  })
   const [selectedCategory, setSelectedCategory] = useState(WORD_CATEGORIES[0].label)
 
   const updateBoy = (id: string, field: 'name' | 'kubu', val: string) =>
@@ -43,8 +54,28 @@ export default function G3Setup() {
   const handleStart = () => {
     if (!isValid) return
     sfx.playSuccess()
-    const boys: Player[] = boyRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cowok' as const, kubu: r.kubu.trim() || 'Cowok', score: 0 }))
-    const girls: Player[] = girlRows.map((r) => ({ ...r, name: r.name.trim(), gender: 'cewek' as const, kubu: r.kubu.trim() || 'Cewek', score: 0 }))
+    const boys: Player[] = boyRows.map((r) => {
+      const existing = players.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: 'cowok' as const,
+        kubu: r.kubu.trim() || 'Tim Cowok',
+        score: existing?.score || 0,
+        avatarId: existing?.avatarId || 'c05',
+      }
+    })
+    const girls: Player[] = girlRows.map((r) => {
+      const existing = players.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: 'cewek' as const,
+        kubu: r.kubu.trim() || 'Tim Cewek',
+        score: existing?.score || 0,
+        avatarId: existing?.avatarId || 'c01',
+      }
+    })
 
     const cat = WORD_CATEGORIES.find((c) => c.label === selectedCategory)!
     const shuffledWords = [...cat.words].sort(() => Math.random() - 0.5)
@@ -128,7 +159,7 @@ export default function G3Setup() {
         <Card className="mb-4 p-5 bg-white shadow-xs">
           <p className="font-display text-base font-bold mb-3 text-[#2568EF] flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
-            <span>Tim Cowok Pembawa Kata (3)</span>
+            <span>Tim Cowok Pembawa Kata ({boyRows.length})</span>
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {boyRows.map((row, i) => (
@@ -147,7 +178,7 @@ export default function G3Setup() {
         <Card className="mb-5 p-5 bg-white shadow-xs">
           <p className="font-display text-base font-bold mb-3 text-[#D8317E] flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
-            <span>Tim Cewek Penebak (7)</span>
+            <span>Tim Cewek Penebak ({girlRows.length})</span>
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {girlRows.map((row, i) => (
