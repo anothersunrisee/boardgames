@@ -1,0 +1,18 @@
+{
+  "name": "PartyHub Indonesia — Game Pesta Seru",
+  "short_name": "PartyHub",
+  "description": "Platform web game pesta luring untuk 2–20 orang di 1 layar bersama.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FAF7F2",
+  "theme_color": "#1E1E24",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

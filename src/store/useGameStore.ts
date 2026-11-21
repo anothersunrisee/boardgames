@@ -15,6 +15,8 @@ import { getRandomPitchItem, type PitchItem } from '../data/game6-pitches';
 // ─── Shared Types ───────────────────────────────────────────────────────────
 
 export type Gender = 'cowok' | 'cewek';
+export type RoomVibe = 'family' | 'office' | 'tongkrongan';
+export type PlayerStatus = 'active' | 'inactive';
 
 export type Player = {
   id: string;
@@ -23,6 +25,8 @@ export type Player = {
   kubu: string;
   score: number;
   avatarId?: string;
+  status?: PlayerStatus;
+  joinedLate?: boolean;
 };
 
 // ─── Game 1 Types ────────────────────────────────────────────────────────────
@@ -46,21 +50,37 @@ export type QnAPair = {
   answer: string;
 };
 
+export type G2BoyGuess = {
+  boyId: string;
+  guess: string;
+  correct: boolean;
+  autoMatched?: boolean;
+  hostOverride?: boolean | null;
+};
+
 export type G2GirlSlot = {
   playerId: string;
   secretItem: string;
   qna: QnAPair[];
-  boyGuesses: { boyId: string; guess: string; correct: boolean }[];
+  boyGuesses: G2BoyGuess[];
 };
 
 // ─── Game 3 Types ────────────────────────────────────────────────────────────
+
+export type G3GirlGuess = {
+  girlId: string;
+  guess: string;
+  correct: boolean;
+  autoMatched?: boolean;
+  hostOverride?: boolean | null;
+};
 
 export type G3BoySlot = {
   playerId: string;
   secretWord: string;
   category: string;
   qna: QnAPair[];
-  girlGuesses: { girlId: string; guess: string; correct: boolean }[];
+  girlGuesses: G3GirlGuess[];
 };
 
 // ─── Game 4 Types ────────────────────────────────────────────────────────────
@@ -171,12 +191,16 @@ interface GameStore {
   // ── Room & Players ──
   roomCreated: boolean;
   roomName: string;
+  roomVibe: RoomVibe;
   players: Player[];
   setRoomCreated: (created: boolean) => void;
   setRoomName: (name: string) => void;
+  setRoomVibe: (vibe: RoomVibe) => void;
   setPlayers: (players: Player[]) => void;
   addScore: (playerId: string, points: number) => void;
   resetRoomScores: () => void;
+  addLatePlayer: (name: string, gender: Gender, kubu: string, startingScoreMode?: 'zero' | 'median' | 'lowest') => void;
+  deactivatePlayer: (playerId: string) => void;
 
   // ── Auto Game Launchers (Sistem Mengacak Otomatis) ──
   autoStartGame1: () => boolean;
@@ -212,6 +236,7 @@ interface GameStore {
   g2ShuffleItem: () => string | null;
   g2UndoDecision: () => boolean;
   g2ReplaySameTeams: () => void;
+  g2OverrideGuess: (slotIndex: number, boyId: string, isCorrect: boolean) => void;
   g2Reset: () => void;
 
   // ── Game 3 State ──
@@ -230,6 +255,7 @@ interface GameStore {
   g3ShuffleItem: () => string | null;
   g3UndoDecision: () => boolean;
   g3ReplaySameTeams: () => void;
+  g3OverrideGuess: (slotIndex: number, girlId: string, isCorrect: boolean) => void;
   g3Reset: () => void;
 
   // ── Game 4 State (2v2) ──
@@ -290,6 +316,7 @@ interface GameStore {
 const initialState = {
   roomCreated: false,
   roomName: 'Party Games Room',
+  roomVibe: 'tongkrongan' as RoomVibe,
   players: DEFAULT_ROOM_PLAYERS,
   g1Rounds: [],
   g1CurrentRound: 1,
@@ -326,6 +353,7 @@ export const useGameStore = create<GameStore>()(
   // ── Room & Players Actions ──
   setRoomCreated: (created) => set({ roomCreated: created }),
   setRoomName: (roomName) => set({ roomName }),
+  setRoomVibe: (roomVibe) => set({ roomVibe }),
   setPlayers: (players) => set({ players }),
   addScore: (playerId, points) =>
     set((state) => ({
@@ -337,6 +365,38 @@ export const useGameStore = create<GameStore>()(
     set((state) => ({
       players: state.players.map((p) => ({ ...p, score: 0 })),
     })),
+  addLatePlayer: (name, gender, kubu, startingScoreMode = 'zero') => {
+    const { players } = get();
+    let startingScore = 0;
+    const activeScores = players.filter((p) => p.status !== 'inactive').map((p) => p.score);
+    if (activeScores.length > 0) {
+      if (startingScoreMode === 'lowest') {
+        startingScore = Math.min(...activeScores);
+      } else if (startingScoreMode === 'median') {
+        const sorted = [...activeScores].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        startingScore =
+          sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+      }
+    }
+    const newPlayer: Player = {
+      id: `p_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      name: name.trim(),
+      gender,
+      kubu: kubu.trim() || (gender === 'cewek' ? 'Tim Cewek' : 'Tim Cowok'),
+      score: startingScore,
+      status: 'active',
+      joinedLate: true,
+    };
+    set({ players: [...players, newPlayer] });
+  },
+  deactivatePlayer: (playerId) => {
+    set((state) => ({
+      players: state.players.map((p) =>
+        p.id === playerId ? { ...p, status: 'inactive' } : p
+      ),
+    }));
+  },
 
   // ── Auto Game Launchers ──
 
@@ -840,6 +900,68 @@ export const useGameStore = create<GameStore>()(
   g2Reset: () =>
     set({ g2GirlPlayers: [], g2BoyPlayers: [], g2Slots: [], g2CurrentSlotIndex: 0, g2GirlWins: 0, g2BoyWins: 0 }),
 
+  g2OverrideGuess: (slotIndex: number, boyId: string, isCorrect: boolean) => {
+    const { g2Slots, addScore, g2GirlWins, g2BoyWins } = get();
+    const slot = g2Slots[slotIndex];
+    if (!slot) return;
+
+    const currentGuesses = [...(slot.boyGuesses || [])];
+    const existingIdx = currentGuesses.findIndex((g) => g.boyId === boyId);
+    const prevCorrect = existingIdx !== -1 ? currentGuesses[existingIdx].correct : false;
+
+    if (existingIdx !== -1 && prevCorrect === isCorrect) return;
+
+    if (existingIdx !== -1) {
+      currentGuesses[existingIdx] = {
+        ...currentGuesses[existingIdx],
+        correct: isCorrect,
+        hostOverride: isCorrect,
+      };
+    } else {
+      currentGuesses.push({
+        boyId,
+        guess: '(Lisan / TV Mode)',
+        correct: isCorrect,
+        hostOverride: isCorrect,
+      });
+    }
+
+    // Poin penebak (+3 jika benar, rollback -3 jika dibatalkan)
+    if (isCorrect) {
+      addScore(boyId, 3);
+    } else if (prevCorrect) {
+      addScore(boyId, -3);
+    }
+
+    const anyBoyCorrectNow = currentGuesses.some((g) => g.correct);
+    const updatedSlots = [...g2Slots];
+    updatedSlots[slotIndex] = { ...slot, boyGuesses: currentGuesses };
+
+    let nextGirlWins = g2GirlWins;
+    let nextBoyWins = g2BoyWins;
+
+    if (anyBoyCorrectNow && !prevCorrect) {
+      // Ada cowok yang benar. Jika sebelumnya cewek penjaga menang karena tak ada cowok benar:
+      const previouslyNoBoysCorrect = !slot.boyGuesses.some((g) => g.correct);
+      if (previouslyNoBoysCorrect) {
+        addScore(slot.playerId, -4);
+        nextGirlWins = Math.max(0, nextGirlWins - 1);
+        nextBoyWins += 1;
+      }
+    } else if (!anyBoyCorrectNow && prevCorrect) {
+      // Sekarang tidak ada cowok yang benar -> cewek penjaga menang rahasia (+4)
+      addScore(slot.playerId, 4);
+      nextGirlWins += 1;
+      nextBoyWins = Math.max(0, nextBoyWins - 1);
+    }
+
+    set({
+      g2Slots: updatedSlots,
+      g2GirlWins: nextGirlWins,
+      g2BoyWins: nextBoyWins,
+    });
+  },
+
   // ── Game 3 State Handlers ──
   g3SetPlayers: (boys, girls) =>
     set({ g3BoyPlayers: boys, g3GirlPlayers: girls }),
@@ -919,6 +1041,65 @@ export const useGameStore = create<GameStore>()(
   },
   g3Reset: () =>
     set({ g3BoyPlayers: [], g3GirlPlayers: [], g3Slots: [], g3CurrentSlotIndex: 0, g3BoyWins: 0, g3GirlWins: 0 }),
+
+  g3OverrideGuess: (slotIndex: number, girlId: string, isCorrect: boolean) => {
+    const { g3Slots, addScore, g3BoyWins, g3GirlWins } = get();
+    const slot = g3Slots[slotIndex];
+    if (!slot) return;
+
+    const currentGuesses = [...(slot.girlGuesses || [])];
+    const existingIdx = currentGuesses.findIndex((g) => g.girlId === girlId);
+    const prevCorrect = existingIdx !== -1 ? currentGuesses[existingIdx].correct : false;
+
+    if (existingIdx !== -1 && prevCorrect === isCorrect) return;
+
+    if (existingIdx !== -1) {
+      currentGuesses[existingIdx] = {
+        ...currentGuesses[existingIdx],
+        correct: isCorrect,
+        hostOverride: isCorrect,
+      };
+    } else {
+      currentGuesses.push({
+        girlId,
+        guess: '(Lisan / TV Mode)',
+        correct: isCorrect,
+        hostOverride: isCorrect,
+      });
+    }
+
+    if (isCorrect) {
+      addScore(girlId, 3);
+    } else if (prevCorrect) {
+      addScore(girlId, -3);
+    }
+
+    const anyGirlCorrectNow = currentGuesses.some((g) => g.correct);
+    const updatedSlots = [...g3Slots];
+    updatedSlots[slotIndex] = { ...slot, girlGuesses: currentGuesses };
+
+    let nextBoyWins = g3BoyWins;
+    let nextGirlWins = g3GirlWins;
+
+    if (anyGirlCorrectNow && !prevCorrect) {
+      const previouslyNoGirlsCorrect = !slot.girlGuesses.some((g) => g.correct);
+      if (previouslyNoGirlsCorrect) {
+        addScore(slot.playerId, -4);
+        nextBoyWins = Math.max(0, nextBoyWins - 1);
+        nextGirlWins += 1;
+      }
+    } else if (!anyGirlCorrectNow && prevCorrect) {
+      addScore(slot.playerId, 4);
+      nextBoyWins += 1;
+      nextGirlWins = Math.max(0, nextGirlWins - 1);
+    }
+
+    set({
+      g3Slots: updatedSlots,
+      g3BoyWins: nextBoyWins,
+      g3GirlWins: nextGirlWins,
+    });
+  },
 
   // ── Game 4 State Handlers ──
   g4SetSetup: (players, matches, enableChaos) =>

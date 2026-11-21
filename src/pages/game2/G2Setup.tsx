@@ -58,25 +58,27 @@ export default function G2Setup() {
     if (!isValid) return
     sfx.playSuccess()
     const girls: Player[] = girlRows.map((r) => {
-      const existing = players.find((p) => p.id === r.id)
+      const existing = players.find((p) => p.id === r.id || p.name.toLowerCase() === r.name.trim().toLowerCase())
       return {
-        id: r.id,
+        id: existing?.id || r.id,
         name: r.name.trim(),
         gender: 'cewek' as const,
         kubu: r.kubu.trim() || 'Tim Cewek',
-        score: existing?.score || 0,
+        score: existing?.score ?? 0,
         avatarId: existing?.avatarId || 'c01',
+        status: existing?.status || 'active',
       }
     })
     const boys: Player[] = boyRows.map((r) => {
-      const existing = players.find((p) => p.id === r.id)
+      const existing = players.find((p) => p.id === r.id || p.name.toLowerCase() === r.name.trim().toLowerCase())
       return {
-        id: r.id,
+        id: existing?.id || r.id,
         name: r.name.trim(),
         gender: 'cowok' as const,
         kubu: r.kubu.trim() || 'Tim Cowok',
-        score: existing?.score || 0,
+        score: existing?.score ?? 0,
         avatarId: existing?.avatarId || 'c05',
+        status: existing?.status || 'active',
       }
     })
     const allPlayers = [...girls, ...boys]

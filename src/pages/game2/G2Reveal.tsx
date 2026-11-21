@@ -13,7 +13,18 @@ import { sfx } from '../../utils/sound'
 
 export default function G2Reveal() {
   const navigate = useNavigate()
-  const { g2BoyPlayers, g2GirlPlayers, g2Slots, g2CurrentSlotIndex, g2NextSlot, addScore, players } = useGameStore()
+  const {
+    g2BoyPlayers,
+    g2GirlPlayers,
+    g2Slots,
+    g2CurrentSlotIndex,
+    g2NextSlot,
+    addScore,
+    incrementG2BoyWins,
+    incrementG2GirlWins,
+    g2OverrideGuess,
+    players,
+  } = useGameStore()
   const scored = useRef(false)
 
   const slot = g2Slots[g2CurrentSlotIndex]
@@ -23,9 +34,18 @@ export default function G2Reveal() {
     if (!slot || scored.current) return
     scored.current = true
     sfx.playSuccess()
-    slot.boyGuesses.forEach((bg) => {
-      if (bg.correct) addScore(bg.boyId, 1)
-    })
+
+    const hasAnyBoyCorrect = slot.boyGuesses.some((bg) => bg.correct)
+    if (hasAnyBoyCorrect) {
+      incrementG2BoyWins()
+      slot.boyGuesses.forEach((bg) => {
+        if (bg.correct) addScore(bg.boyId, 3)
+      })
+    } else {
+      // Cewek berhasil menjaga rahasia!
+      incrementG2GirlWins()
+      addScore(slot.playerId, 4)
+    }
   }, [])
 
   if (!slot || !girl) { navigate('/game2/setup'); return null }
@@ -82,9 +102,29 @@ export default function G2Reveal() {
           </div>
         </motion.div>
 
+        {/* Keeper Outcome Banner */}
+        {slot.boyGuesses.some((bg) => bg.correct) ? (
+          <div className="mb-4 p-3 rounded-2xl bg-[#FFE8DF] border border-[#F04438]/30 text-center">
+            <span className="text-xs font-black text-[#D92D20]">
+              💥 RAHASIA TERBONGKAR! Cowok yang berhasil menebak dapat +3 Poin masing-masing.
+            </span>
+          </div>
+        ) : (
+          <div className="mb-4 p-3 rounded-2xl bg-[#D6F5EC] border border-[#12B76A]/40 text-center">
+            <span className="text-xs font-black text-[#0F5E49]">
+              🛡️ RAHASIA AMAN TERJAGA! Tidak ada yang bisa menebak, +4 Poin untuk {girl.name}!
+            </span>
+          </div>
+        )}
+
         {/* Boy Guesses Breakdown */}
         <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold text-[#1E1E24] mb-3">Hasil Tebakan Para Cowok</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-display text-base font-bold text-[#1E1E24]">Hasil Tebakan Para Cowok</p>
+            <span className="text-[11px] font-bold text-[#64616C] bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
+              Host bisa koreksi tombol jika typo
+            </span>
+          </div>
           <div className="space-y-2.5">
             {slot.boyGuesses.map((bg, i) => {
               const boy = g2BoyPlayers.find((b) => b.id === bg.boyId)
@@ -94,34 +134,45 @@ export default function G2Reveal() {
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 ${
+                  className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${
                     bg.correct
                       ? 'bg-[#D6F5EC] border-[#12B76A]'
                       : 'bg-[#FFE8DF] border-[#F04438]/40'
                   }`}
                 >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${
-                      bg.correct ? 'bg-[#12B76A]' : 'bg-[#F04438]'
-                    }`}
-                  >
-                    {bg.correct ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4 stroke-[3]" />}
-                  </div>
-
                   <PlayerProfileAvatar characterId={boy?.avatarId} size={36} name={boy?.name} />
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-display text-base font-bold text-[#1E1E24]">{boy?.name}</p>
-                    <p className="text-xs text-[#64616C] font-semibold">Tebak: "{bg.guess}"</p>
+                    <p className="font-display text-sm font-bold text-[#1E1E24] truncate">{boy?.name}</p>
+                    <p className="text-xs text-[#64616C] font-semibold truncate">Tebak: "{bg.guess}"</p>
                   </div>
 
-                  <span
-                    className={`font-display text-sm font-bold px-3 py-1 rounded-full ${
-                      bg.correct ? 'bg-[#12B76A] text-white' : 'bg-black/10 text-[#64616C]'
+                  {/* Interactive Host Override Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop(720)
+                      g2OverrideGuess(g2CurrentSlotIndex, bg.boyId, !bg.correct)
+                    }}
+                    title="Klik untuk mengubah status tebakan pemain ini"
+                    className={`font-display text-xs font-extrabold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition active:scale-95 cursor-pointer ${
+                      bg.correct
+                        ? 'bg-[#12B76A] text-white border-[#0E9355] shadow-xs'
+                        : 'bg-white text-[#D92D20] border-[#F04438]/40 hover:bg-[#FFE8DF]'
                     }`}
                   >
-                    {bg.correct ? '+1 pt' : '0 pt'}
-                  </span>
+                    {bg.correct ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>+3 Pts (Benar)</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>0 Pt (Salah)</span>
+                      </>
+                    )}
+                  </button>
                 </motion.div>
               )
             })}

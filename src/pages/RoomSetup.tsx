@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, Trash2, ArrowRight, Sparkles, Smile, X } from 'lucide-react';
-import { useGameStore, type Player, type Gender, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
+import { useGameStore, type Player, type Gender, type RoomVibe, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { GameMascotBot } from '../components/characters/GameMascotBot';
@@ -17,12 +17,21 @@ function genId() {
 
 export const RoomSetup: React.FC = () => {
   const navigate = useNavigate();
-  const { players, setPlayers, setRoomCreated, roomName, setRoomName } = useGameStore();
+  const {
+    players,
+    setPlayers,
+    setRoomCreated,
+    roomName,
+    setRoomName,
+    roomVibe,
+    setRoomVibe,
+  } = useGameStore();
 
   const [roster, setRoster] = useState<Player[]>(
     players.length > 0 ? players : DEFAULT_ROOM_PLAYERS
   );
   const [currentRoomName, setCurrentRoomName] = useState(roomName || 'Party Malam Ini');
+  const [currentVibe, setCurrentVibe] = useState<RoomVibe>(roomVibe || 'tongkrongan');
   const [avatarPickerPlayerId, setAvatarPickerPlayerId] = useState<string | null>(null);
   const [transitionActive, setTransitionActive] = useState(false);
 
@@ -123,6 +132,7 @@ export const RoomSetup: React.FC = () => {
 
     setPlayers(cleanPlayers);
     setRoomName(currentRoomName.trim() || 'Party Games Room');
+    setRoomVibe(currentVibe);
     setRoomCreated(true);
     setTransitionActive(true);
   };
@@ -216,6 +226,77 @@ export const RoomSetup: React.FC = () => {
                 title="3 Cewek + 3 Cowok"
               >
                 6 (3C+3L)
+              </button>
+            </div>
+          </div>
+
+          {/* Vibe Ruangan Selector (Audience Filter) */}
+          <div className="mb-4 pt-3 border-t border-[#1E1E24]/10">
+            <label className="block text-[11px] font-bold text-[#64616C] uppercase tracking-wider mb-2">
+              Suasana Pesta (Vibe Filter):
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop(750)
+                  setCurrentVibe('tongkrongan')
+                }}
+                className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
+                  currentVibe === 'tongkrongan'
+                    ? 'bg-[#FFE8DF] border-[#F04438] shadow-xs'
+                    : 'bg-[#FAF7F2] border-[#1E1E24]/10 hover:border-[#1E1E24]/20'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-base">🔥</span>
+                  <span className="font-display text-xs font-black text-[#1E1E24]">Tongkrongan</span>
+                </div>
+                <p className="text-[10px] text-[#64616C] font-semibold leading-tight">
+                  Full Chaos, topik absurd bebas sensor, & roasting lucu bareng temen akrab.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop(750)
+                  setCurrentVibe('office')
+                }}
+                className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
+                  currentVibe === 'office'
+                    ? 'bg-[#E0EBFF] border-[#2568EF] shadow-xs'
+                    : 'bg-[#FAF7F2] border-[#1E1E24]/10 hover:border-[#1E1E24]/20'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-base">💼</span>
+                  <span className="font-display text-xs font-black text-[#1E1E24]">Kantor / SFW</span>
+                </div>
+                <p className="text-[10px] text-[#64616C] font-semibold leading-tight">
+                  Aman HR, humor dunia kerja profesional, bebas konten canggung di depan atasan.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop(750)
+                  setCurrentVibe('family')
+                }}
+                className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
+                  currentVibe === 'family'
+                    ? 'bg-[#D6F5EC] border-[#12B76A] shadow-xs'
+                    : 'bg-[#FAF7F2] border-[#1E1E24]/10 hover:border-[#1E1E24]/20'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-base">🏡</span>
+                  <span className="font-display text-xs font-black text-[#1E1E24]">Keluarga & Arisan</span>
+                </div>
+                <p className="text-[10px] text-[#64616C] font-semibold leading-tight">
+                  Semua umur (anak s/d orang tua), nostalgia, masakan rumah & kebiasaan sehari-hari.
+                </p>
               </button>
             </div>
           </div>

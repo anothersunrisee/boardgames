@@ -15,14 +15,19 @@ function genId() {
 
 export default function G1Setup() {
   const navigate = useNavigate()
-  const { setPlayers, g1Reset } = useGameStore()
+  const { players: storePlayers, setPlayers, g1Reset } = useGameStore()
 
-  const [rows, setRows] = useState<{ id: string; name: string; kubu: string }[]>([
-    { id: genId(), name: 'Dina', kubu: 'Tim Hijau' },
-    { id: genId(), name: 'Bimo', kubu: 'Tim Kuning' },
-    { id: genId(), name: 'Sari', kubu: 'Tim Hijau' },
-    { id: genId(), name: 'Rian', kubu: 'Tim Kuning' },
-  ])
+  const [rows, setRows] = useState<{ id: string; name: string; kubu: string }[]>(() => {
+    if (storePlayers && storePlayers.length >= 2) {
+      return storePlayers.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim A' }))
+    }
+    return [
+      { id: genId(), name: 'Dina', kubu: 'Tim Hijau' },
+      { id: genId(), name: 'Bimo', kubu: 'Tim Kuning' },
+      { id: genId(), name: 'Sari', kubu: 'Tim Hijau' },
+      { id: genId(), name: 'Rian', kubu: 'Tim Kuning' },
+    ]
+  })
 
   const addRow = () => {
     if (rows.length >= 15) return
@@ -45,14 +50,19 @@ export default function G1Setup() {
   const handleStart = () => {
     if (!isValid) return
     sfx.playSuccess()
-    const players: Player[] = rows.map((r, i) => ({
-      id: r.id,
-      name: r.name.trim(),
-      gender: i % 2 === 0 ? 'cewek' : 'cowok',
-      kubu: r.kubu.trim(),
-      score: 0,
-    }))
-    setPlayers(players)
+    const updatedPlayers: Player[] = rows.map((r, i) => {
+      const existing = storePlayers.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: existing?.gender || (i % 2 === 0 ? 'cewek' : 'cowok'),
+        kubu: r.kubu.trim(),
+        score: existing?.score ?? 0,
+        avatarId: existing?.avatarId,
+        status: existing?.status || 'active',
+      }
+    })
+    setPlayers(updatedPlayers)
     g1Reset()
     navigate('/game1/round')
   }

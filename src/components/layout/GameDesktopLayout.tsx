@@ -22,6 +22,7 @@ import { GameOnboardingModal, type GameId } from '../modals/GameOnboardingModal'
 import { PUNISHMENT_CARDS } from '../../assets-library/punishments';
 import type { PunishmentCardDef } from '../../assets-library/types';
 import { sfx } from '../../assets-library/soundEngine';
+import { useSessionGuard } from '../../hooks/useSessionGuard';
 
 export interface GameDesktopLayoutProps {
   children: React.ReactNode;
@@ -348,6 +349,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
   shuffleLabel = 'Ganti Soal',
 }) => {
   const navigate = useNavigate();
+  useSessionGuard(true);
   const { players } = useGameStore();
   const [muted, setMuted] = useState(sfx.muted);
   const [showOnboarding, setShowOnboarding] = useState(false);

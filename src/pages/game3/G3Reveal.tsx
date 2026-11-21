@@ -13,7 +13,18 @@ import { sfx } from '../../utils/sound'
 
 export default function G3Reveal() {
   const navigate = useNavigate()
-  const { g3BoyPlayers, g3GirlPlayers, g3Slots, g3CurrentSlotIndex, g3NextSlot, addScore, players } = useGameStore()
+  const {
+    g3BoyPlayers,
+    g3GirlPlayers,
+    g3Slots,
+    g3CurrentSlotIndex,
+    g3NextSlot,
+    addScore,
+    incrementG3BoyWins,
+    incrementG3GirlWins,
+    g3OverrideGuess,
+    players,
+  } = useGameStore()
   const scored = useRef(false)
 
   const slot = g3Slots[g3CurrentSlotIndex]
@@ -23,9 +34,18 @@ export default function G3Reveal() {
     if (!slot || scored.current) return
     scored.current = true
     sfx.playSuccess()
-    slot.girlGuesses.forEach((gg) => {
-      if (gg.correct) addScore(gg.girlId, 1)
-    })
+
+    const hasAnyGirlCorrect = slot.girlGuesses.some((gg) => gg.correct)
+    if (hasAnyGirlCorrect) {
+      incrementG3GirlWins()
+      slot.girlGuesses.forEach((gg) => {
+        if (gg.correct) addScore(gg.girlId, 3)
+      })
+    } else {
+      // Cowok berhasil menjaga rahasia!
+      incrementG3BoyWins()
+      addScore(slot.playerId, 4)
+    }
   }, [])
 
   if (!slot || !boy) {
@@ -85,9 +105,29 @@ export default function G3Reveal() {
           </div>
         </motion.div>
 
+        {/* Keeper Outcome Banner */}
+        {slot.girlGuesses.some((gg) => gg.correct) ? (
+          <div className="mb-4 p-3 rounded-2xl bg-[#FFE8DF] border border-[#F04438]/30 text-center">
+            <span className="text-xs font-black text-[#D92D20]">
+              💥 RAHASIA TERBONGKAR! Cewek yang berhasil menebak dapat +3 Poin masing-masing.
+            </span>
+          </div>
+        ) : (
+          <div className="mb-4 p-3 rounded-2xl bg-[#D6F5EC] border border-[#12B76A]/40 text-center">
+            <span className="text-xs font-black text-[#0F5E49]">
+              🛡️ RAHASIA AMAN TERJAGA! Tidak ada yang bisa menebak, +4 Poin untuk {boy.name}!
+            </span>
+          </div>
+        )}
+
         {/* Girl Guesses Breakdown */}
         <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold text-[#1E1E24] mb-3">Hasil Tebakan Para Cewek</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-display text-base font-bold text-[#1E1E24]">Hasil Tebakan Para Cewek</p>
+            <span className="text-[11px] font-bold text-[#64616C] bg-[#FAF7F2] px-2 py-0.5 rounded-md border border-black/5">
+              Host bisa koreksi tombol jika typo
+            </span>
+          </div>
           <div className="space-y-2.5">
             {slot.girlGuesses.map((gg, i) => {
               const girl = g3GirlPlayers.find((g) => g.id === gg.girlId)
@@ -97,34 +137,45 @@ export default function G3Reveal() {
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.08 }}
-                  className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 ${
+                  className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${
                     gg.correct
                       ? 'bg-[#D6F5EC] border-[#12B76A]'
                       : 'bg-[#FFE8DF] border-[#F04438]/40'
                   }`}
                 >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${
-                      gg.correct ? 'bg-[#12B76A]' : 'bg-[#F04438]'
-                    }`}
-                  >
-                    {gg.correct ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4 stroke-[3]" />}
-                  </div>
-
                   <PlayerProfileAvatar characterId={girl?.avatarId} size={36} name={girl?.name} />
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-display text-base font-bold text-[#1E1E24]">{girl?.name}</p>
-                    <p className="text-xs text-[#64616C] font-semibold">Tebak: "{gg.guess}"</p>
+                    <p className="font-display text-sm font-bold text-[#1E1E24] truncate">{girl?.name}</p>
+                    <p className="text-xs text-[#64616C] font-semibold truncate">Tebak: "{gg.guess}"</p>
                   </div>
 
-                  <span
-                    className={`font-display text-sm font-bold px-3 py-1 rounded-full ${
-                      gg.correct ? 'bg-[#12B76A] text-white' : 'bg-black/10 text-[#64616C]'
+                  {/* Interactive Host Override Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop(720)
+                      g3OverrideGuess(g3CurrentSlotIndex, gg.girlId, !gg.correct)
+                    }}
+                    title="Klik untuk mengubah status tebakan pemain ini"
+                    className={`font-display text-xs font-extrabold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition active:scale-95 cursor-pointer ${
+                      gg.correct
+                        ? 'bg-[#12B76A] text-white border-[#0E9355] shadow-xs'
+                        : 'bg-white text-[#D92D20] border-[#F04438]/40 hover:bg-[#FFE8DF]'
                     }`}
                   >
-                    {gg.correct ? '+1 pt' : '0 pt'}
-                  </span>
+                    {gg.correct ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>+3 Pts (Benar)</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>0 Pt (Salah)</span>
+                      </>
+                    )}
+                  </button>
                 </motion.div>
               )
             })}

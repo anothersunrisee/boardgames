@@ -1,7 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Trophy, RotateCcw, Users, Crown, Home, UserPlus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowLeft,
+  Trophy,
+  RotateCcw,
+  Users,
+  Crown,
+  Home,
+  UserPlus,
+  Camera,
+  Download,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -13,28 +25,58 @@ import { PunishmentModal } from '../components/PunishmentModal';
 import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
 import { FluentEmoji } from '../components/ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
+import { generatePartyWrappedAwards } from '../utils/partyWrapped';
+import { generateStoryCardPng } from '../utils/storyCardGenerator';
 
 export default function RoomPodium() {
   const navigate = useNavigate();
-  const { roomName, players, resetRoomScores } = useGameStore();
+  const { roomName, roomVibe, players, resetRoomScores } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showTvBackdrop, setShowTvBackdrop] = useState(false);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
   const [podiumRevealKey, setPodiumRevealKey] = useState(1);
 
   useEffect(() => {
     sfx.playFanfare();
   }, []);
 
-  const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+  const sortedPlayers = useMemo(
+    () => [...players].sort((a, b) => b.score - a.score),
+    [players]
+  );
   const winner = sortedPlayers[0];
   const second = sortedPlayers[1];
   const third = sortedPlayers[2];
   const bottom3 = sortedPlayers.length <= 3 ? sortedPlayers : sortedPlayers.slice(-3);
+  const awards = useMemo(() => generatePartyWrappedAwards(players), [players]);
 
   const handleResetScores = () => {
     sfx.playPop();
     resetRoomScores();
     setShowResetConfirm(false);
+  };
+
+  const handleDownloadStory = async () => {
+    sfx.playPop(750);
+    setIsGeneratingStory(true);
+    try {
+      const dataUrl = await generateStoryCardPng({
+        roomName,
+        roomVibe: roomVibe || 'tongkrongan',
+        players,
+        awards,
+      });
+      const link = document.createElement('a');
+      link.download = `partyhub_${roomName.toLowerCase().replace(/\s+/g, '_')}_story.png`;
+      link.href = dataUrl;
+      link.click();
+      sfx.playSuccess();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGeneratingStory(false);
+    }
   };
 
   return (
@@ -234,6 +276,70 @@ export default function RoomPodium() {
           </div>
         </div>
 
+        {/* Viral Loop: TV Backdrop & Story Download Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              sfx.playFanfare();
+              setShowTvBackdrop(true);
+            }}
+            className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D8317E] to-[#9333EA] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98"
+          >
+            <Camera className="w-4 h-4" />
+            <span>📸 Mode Foto Bareng (TV Backdrop)</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={isGeneratingStory}
+            onClick={handleDownloadStory}
+            className="p-3.5 rounded-2xl bg-[#1E1E24] text-[#FBBF24] border-2 border-[#FBBF24]/40 font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:bg-black transition cursor-pointer active:scale-98 disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isGeneratingStory ? 'Memproses Kartu...' : '📲 Unduh Kartu Story (9:16 PNG)'}</span>
+          </button>
+        </div>
+
+        {/* Superlative Awards (Party Wrapped) */}
+        {awards.length > 0 && (
+          <Card className="mb-6 p-5 bg-white shadow-xs rounded-[28px] border-2 border-[#1E1E24]/10">
+            <div className="flex items-center justify-between pb-2 border-b border-[#1E1E24]/10 mb-3">
+              <span className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+                <span>Penghargaan Spesial Party (Party Wrapped)</span>
+              </span>
+              <span className="text-[11px] font-extrabold text-[#9333EA] bg-[#F3E8FF] px-2.5 py-0.5 rounded-full">
+                Gelar Kehormatan
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {awards.map((award, i) => (
+                <div
+                  key={`award-${i}`}
+                  className="p-3 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 flex items-start gap-3"
+                >
+                  <span className="text-2xl p-1.5 rounded-xl bg-white border border-[#1E1E24]/10 shadow-2xs shrink-0">
+                    {award.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-black uppercase text-[#9333EA] tracking-wider block">
+                      {award.badge}
+                    </span>
+                    <p className="font-display text-xs font-bold text-[#1E1E24] truncate">
+                      {award.playerName} — {award.title}
+                    </p>
+                    <p className="text-[11px] text-[#64616C] font-semibold mt-0.5 leading-tight">
+                      {award.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Full Room Standings Table with Player Avatars */}
         <Card className="mb-6 p-5 bg-white shadow-xs rounded-[28px] border-2 border-[#1E1E24]/10">
           <p className="font-display text-base font-bold text-[#1E1E24] mb-3.5 flex items-center justify-between">
@@ -423,6 +529,91 @@ export default function RoomPodium() {
           </div>
         </div>
       )}
+
+      {/* 📸 FULL-SCREEN TV BACKDROP FOR GROUP PHOTO */}
+      <AnimatePresence>
+        {showTvBackdrop && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#121217] text-white flex flex-col justify-between p-6 sm:p-12 overflow-hidden"
+          >
+            {/* Confetti in backdrop */}
+            <ConfettiShower active particleCount={80} />
+
+            {/* Top Bar with Close Button */}
+            <div className="flex items-center justify-between z-10">
+              <span className="font-display text-sm tracking-widest text-[#FBBF24] font-black uppercase">
+                PARTYHUB INDONESIA 🇮🇩 • TV PHOTO BACKDROP
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowTvBackdrop(false)}
+                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer transition active:scale-90"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Giant Centerpiece for Room Photo */}
+            <div className="text-center my-auto z-10">
+              <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FBBF24] via-[#F43F5E] to-[#A855F7] tracking-tight mb-2">
+                {roomName}
+              </h1>
+              <p className="font-display text-lg sm:text-2xl font-bold text-white/90">
+                🎉 TOURNAMENT CHAMPIONS 🎉
+              </p>
+
+              {/* Big Podium Displays */}
+              <div className="grid grid-cols-3 items-end gap-4 max-w-4xl mx-auto mt-8">
+                {second && (
+                  <div className="flex flex-col items-center">
+                    <PlayerProfileAvatar characterId={second.avatarId} size={72} name={second.name} />
+                    <p className="font-display text-xl sm:text-2xl font-bold mt-2">{second.name}</p>
+                    <span className="text-sm font-bold text-white/70">{second.score} pts</span>
+                    <div className="w-full h-32 rounded-t-3xl bg-white/10 border-2 border-white/20 flex flex-col items-center justify-center mt-3">
+                      <span className="font-display text-3xl font-black text-white">#2</span>
+                    </div>
+                  </div>
+                )}
+
+                {winner && (
+                  <div className="flex flex-col items-center">
+                    <FluentEmoji name="crown" variant="3d" size={48} />
+                    <PlayerProfileAvatar characterId={winner.avatarId} size={96} name={winner.name} />
+                    <p className="font-display text-2xl sm:text-4xl font-black text-[#FBBF24] mt-2">
+                      {winner.name}
+                    </p>
+                    <span className="text-base font-extrabold text-[#FBBF24]">{winner.score} pts</span>
+                    <div className="w-full h-44 rounded-t-3xl bg-gradient-to-t from-[#F59E0B] to-[#FBBF24] text-[#1E1E24] flex flex-col items-center justify-center mt-3 shadow-2xl">
+                      <span className="font-display text-5xl font-black">#1</span>
+                    </div>
+                  </div>
+                )}
+
+                {third && (
+                  <div className="flex flex-col items-center">
+                    <PlayerProfileAvatar characterId={third.avatarId} size={64} name={third.name} />
+                    <p className="font-display text-lg sm:text-xl font-bold mt-2">{third.name}</p>
+                    <span className="text-sm font-bold text-white/70">{third.score} pts</span>
+                    <div className="w-full h-24 rounded-t-3xl bg-white/10 border-2 border-white/20 flex flex-col items-center justify-center mt-3">
+                      <span className="font-display text-2xl font-black text-white">#3</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Photo Callout */}
+            <div className="text-center z-10">
+              <p className="font-display text-xs sm:text-sm font-bold text-white/60 tracking-wider">
+                Ayo foto bareng di depan layar TV sekarang! 📸✨ (Tekan tombol X untuk kembali)
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <HostUtilityBar />
     </div>

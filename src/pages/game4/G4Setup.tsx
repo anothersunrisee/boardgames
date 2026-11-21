@@ -18,21 +18,26 @@ type PlayerRow = { id: string; name: string; kubu: string }
 
 export default function G4Setup() {
   const navigate = useNavigate()
-  const { setPlayers, g4SetSetup, g4Reset } = useGameStore()
+  const { players: storePlayers, setPlayers, g4SetSetup, g4Reset } = useGameStore()
 
-  // Default 10 players (5 match pairs)
-  const [rows, setRows] = useState<PlayerRow[]>([
-    { id: genId(), name: 'Alex', kubu: 'Tim Merah' },
-    { id: genId(), name: 'Budi', kubu: 'Tim Biru' },
-    { id: genId(), name: 'Citra', kubu: 'Tim Merah' },
-    { id: genId(), name: 'Dian', kubu: 'Tim Biru' },
-    { id: genId(), name: 'Eka', kubu: 'Tim Merah' },
-    { id: genId(), name: 'Fajar', kubu: 'Tim Biru' },
-    { id: genId(), name: 'Gita', kubu: 'Tim Merah' },
-    { id: genId(), name: 'Hadi', kubu: 'Tim Biru' },
-    { id: genId(), name: 'Indah', kubu: 'Tim Merah' },
-    { id: genId(), name: 'Joko', kubu: 'Tim Biru' },
-  ])
+  // Ambil pemain aktif dari room jika sudah ada, atau fallback ke 10 preset
+  const [rows, setRows] = useState<PlayerRow[]>(() => {
+    if (storePlayers && storePlayers.length >= 4) {
+      return storePlayers.map((p) => ({ id: p.id, name: p.name, kubu: p.kubu || 'Tim A' }))
+    }
+    return [
+      { id: genId(), name: 'Alex', kubu: 'Tim Merah' },
+      { id: genId(), name: 'Budi', kubu: 'Tim Biru' },
+      { id: genId(), name: 'Citra', kubu: 'Tim Merah' },
+      { id: genId(), name: 'Dian', kubu: 'Tim Biru' },
+      { id: genId(), name: 'Eka', kubu: 'Tim Merah' },
+      { id: genId(), name: 'Fajar', kubu: 'Tim Biru' },
+      { id: genId(), name: 'Gita', kubu: 'Tim Merah' },
+      { id: genId(), name: 'Hadi', kubu: 'Tim Biru' },
+      { id: genId(), name: 'Indah', kubu: 'Tim Merah' },
+      { id: genId(), name: 'Joko', kubu: 'Tim Biru' },
+    ]
+  })
 
   const [enableChaos, setEnableChaos] = useState(true)
 
@@ -62,13 +67,18 @@ export default function G4Setup() {
     if (!isValid) return
     sfx.playSuccess()
 
-    const players: Player[] = rows.map((r, i) => ({
-      id: r.id,
-      name: r.name.trim(),
-      gender: i % 2 === 0 ? 'cowok' : 'cewek',
-      kubu: r.kubu.trim(),
-      score: 0,
-    }))
+    const players: Player[] = rows.map((r, i) => {
+      const existing = storePlayers.find((p) => p.id === r.id)
+      return {
+        id: r.id,
+        name: r.name.trim(),
+        gender: existing?.gender || (i % 2 === 0 ? 'cowok' : 'cewek'),
+        kubu: r.kubu.trim(),
+        score: existing?.score ?? 0,
+        avatarId: existing?.avatarId,
+        status: existing?.status || 'active',
+      }
+    })
 
     // Shuffle players to form random 2v2 pairings
     const shuffled = [...players].sort(() => Math.random() - 0.5)

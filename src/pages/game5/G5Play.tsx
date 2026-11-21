@@ -53,6 +53,8 @@ export default function G5Play() {
     roundCorrectCount: number;
     isRoundPassed: boolean;
   } | null>(null);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   const currentTeam = g5Teams[g5CurrentTeamIndex];
 
@@ -65,6 +67,32 @@ export default function G5Play() {
   const currentGlobalIdx = Math.min(15, currentTeam.currentGlobalQuestionIdx ?? currentTeam.currentMemberIdx ?? 0);
   const currentRoundIdx = Math.min(3, Math.floor(currentGlobalIdx / 4));
   const currentQuestionInRound = currentGlobalIdx % 4;
+
+  // Reset timer on question change
+  React.useEffect(() => {
+    if (stage === 'chain_quiz') {
+      setTimeLeft(15);
+      setIsTimerPaused(false);
+    }
+  }, [currentGlobalIdx, stage]);
+
+  // Tick interval
+  React.useEffect(() => {
+    if (stage !== 'chain_quiz' || isTimerPaused || timeLeft <= 0) return;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          sfx.playBuzzer();
+          return 0;
+        }
+        if (prev <= 4) {
+          sfx.playPop(500);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [stage, isTimerPaused, timeLeft]);
 
   const currentMemberIndexInTeam = currentGlobalIdx % currentTeam.memberIds.length;
   const currentMemberId = currentTeam.memberIds[currentMemberIndexInTeam];
@@ -416,6 +444,53 @@ export default function G5Play() {
                 </div>
               </div>
             )}
+
+            {/* 15-Second Urgent Countdown Timer Bar */}
+            <div className="mb-3 p-2.5 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-2xs flex items-center gap-3">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span
+                  className={`font-display text-xs font-black px-2.5 py-0.5 rounded-full transition-colors ${
+                    timeLeft <= 3
+                      ? 'bg-[#FEE2E2] text-[#DC2626] animate-pulse'
+                      : timeLeft <= 7
+                      ? 'bg-[#FEF3C7] text-[#D97706]'
+                      : 'bg-[#EDE9FE] text-[#7C3AED]'
+                  }`}
+                >
+                  ⏱️ {timeLeft > 0 ? `${timeLeft}s` : 'WAKTU HABIS!'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsTimerPaused(!isTimerPaused)}
+                  className="text-[10px] font-bold text-[#64616C] hover:text-[#1E1E24] px-1.5 py-0.5 rounded-md hover:bg-black/5"
+                >
+                  {isTimerPaused ? '▶ Lanjut' : '⏸ Jeda'}
+                </button>
+              </div>
+
+              {/* Progress Track */}
+              <div className="flex-1 h-3 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 overflow-hidden relative">
+                <motion.div
+                  className={`h-full transition-all duration-300 rounded-full ${
+                    timeLeft <= 3
+                      ? 'bg-gradient-to-r from-[#EF4444] to-[#DC2626]'
+                      : timeLeft <= 7
+                      ? 'bg-gradient-to-r from-[#F59E0B] to-[#D97706]'
+                      : 'bg-gradient-to-r from-[#10B981] to-[#059669]'
+                  }`}
+                  style={{ width: `${(timeLeft / 15) * 100}%` }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setTimeLeft(15)}
+                className="text-[10px] font-bold text-[#64616C] hover:text-[#7C3AED] px-1.5 py-0.5 rounded-md hover:bg-black/5 shrink-0"
+                title="Reset timer ke 15 detik"
+              >
+                ↺ Reset 15s
+              </button>
+            </div>
 
             {/* Active Question Card */}
             <motion.div
