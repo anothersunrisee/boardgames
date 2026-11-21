@@ -15,6 +15,7 @@ import {
   Check,
   Crown,
   Wifi,
+  Bot,
 } from 'lucide-react';
 import { useGameStore, type Player, type Gender, type RoomVibe, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
@@ -34,6 +35,7 @@ import {
   listenToRoom,
   isFirebaseConfigured,
 } from '../services/firebase';
+import { spawnVirtualBot, removeVirtualBot } from '../services/virtualCompanion';
 import type { OnlinePlayer } from '../types/multiplayer';
 
 function genId() {
@@ -71,8 +73,28 @@ export const RoomSetup: React.FC = () => {
     return existingHost ? existingHost.id : roster[0]?.id || 'host_1';
   });
 
+  const [activeBotId, setActiveBotId] = useState<string | null>(null);
+  const [isSpawningBot, setIsSpawningBot] = useState(false);
   const [showUnconnectedModal, setShowUnconnectedModal] = useState(false);
   const [connectionToast, setConnectionToast] = useState<string | null>(null);
+
+  const handleToggleVirtualBot = async () => {
+    if (activeBotId) {
+      sfx.playPop();
+      await removeVirtualBot(activeBotId);
+      setActiveBotId(null);
+      setConnectionToast('🤖 Bot penguji telah dilepas.');
+      setTimeout(() => setConnectionToast(null), 3000);
+    } else {
+      sfx.playSuccess();
+      setIsSpawningBot(true);
+      const botId = await spawnVirtualBot(roomCode, 'Budi (Bot 🤖)');
+      setActiveBotId(botId);
+      setIsSpawningBot(false);
+      setConnectionToast('🤖 Bot Budi terhubung sebagai HP ke-2!');
+      setTimeout(() => setConnectionToast(null), 3500);
+    }
+  };
 
   useEffect(() => {
     if (roomCode && roomCode !== storeRoomCode) {
@@ -589,6 +611,26 @@ export const RoomSetup: React.FC = () => {
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-[#34D399]" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'Tersalin!' : 'Salin Link'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleVirtualBot}
+                  disabled={isSpawningBot}
+                  className={`text-[11px] font-black px-3 py-1.5 rounded-xl transition cursor-pointer border flex items-center gap-1.5 shadow-2xs ${
+                    activeBotId
+                      ? 'bg-[#EF4444] text-white border-[#DC2626] hover:bg-[#DC2626]'
+                      : 'bg-[#FBBF24] text-[#1E1E24] border-[#F59E0B] hover:bg-[#F59E0B]'
+                  }`}
+                  title="Simulasikan 1 HP bot virtual untuk uji coba sendiri tanpa teman"
+                >
+                  <Bot className="w-3.5 h-3.5" />
+                  <span>
+                    {isSpawningBot
+                      ? 'Menghubungkan...'
+                      : activeBotId
+                      ? 'Hapus Bot 🤖'
+                      : '+ Hubungkan Bot HP (Uji Sendiri 🤖)'}
+                  </span>
                 </button>
               </div>
 
