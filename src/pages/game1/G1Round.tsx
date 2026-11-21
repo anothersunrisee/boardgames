@@ -142,29 +142,39 @@ export default function G1Round() {
     }
   }, [isTimerRunning, timeLeft, phase])
 
-  // Transition to Scoring / Reveal with Automated Duplicate Detection
+  // Transition to Scoring / Reveal
   const triggerRevealPhase = () => {
     sfx.playBuzzer()
     setPhase('scoring')
 
-    // Kumpulkan jawaban semua pemain
-    const items = players.map((p) => ({
-      playerId: p.id,
-      answer: phoneAnswers[p.id] || '',
-    }))
+    if (playMode === 'multi_device') {
+      // MODE MULTI-DEVICE (HP CONTROLLER):
+      // Kumpulkan jawaban yang diketik pemain dari HP
+      const items = players.map((p) => ({
+        playerId: p.id,
+        answer: phoneAnswers[p.id] || '',
+      }))
 
-    // Jalankan deteksi duplikasi otomatis (toleran typo & huruf berulang)
-    const { duplicatePlayerIds, groups } = detectDuplicateAnswers(items)
+      // Jalankan deteksi duplikasi otomatis (toleran typo & huruf berulang)
+      const { duplicatePlayerIds, groups } = detectDuplicateAnswers(items)
 
-    // Pemain tanpa jawaban juga dianggap gagal
-    players.forEach((p) => {
-      if (!phoneAnswers[p.id]?.trim()) {
-        duplicatePlayerIds.add(p.id)
-      }
-    })
+      // Pemain tanpa jawaban di HP dianggap gagal
+      players.forEach((p) => {
+        if (!phoneAnswers[p.id]?.trim()) {
+          duplicatePlayerIds.add(p.id)
+        }
+      })
 
-    setFailedPlayerIds(Array.from(duplicatePlayerIds))
-    setDuplicateGroups(groups)
+      setFailedPlayerIds(Array.from(duplicatePlayerIds))
+      setDuplicateGroups(groups)
+    } else {
+      // MODE 1 LAPTOP (OFFLINE 1 HOST):
+      // Pemain menulis di kertas / catatan HP masing-masing di tongkrongan!
+      // Semua pemain mulai dengan status UNIK (+2).
+      // Host mendengarkan saat pemain membacakan jawaban, lalu klik pemain yang KEMBAR (-1).
+      setFailedPlayerIds([])
+      setDuplicateGroups([])
+    }
   }
 
   if (!category || players.length === 0) {
@@ -352,45 +362,71 @@ export default function G1Round() {
                 </button>
               </div>
 
-              {/* 📱 Realtime Submission Roster Ticker */}
-              <div className="w-full mt-6 p-4 rounded-[26px] bg-white border-2 border-[#1E1E24]/10 shadow-xs">
-                <div className="flex items-center justify-between mb-3 text-xs font-bold">
-                  <span className="text-[#158467] flex items-center gap-1.5">
-                    <Users className="w-4 h-4" />
-                    <span>Status Masuk Jawaban Pemain:</span>
-                  </span>
-                  <span className="bg-[#D6F5EC] text-[#158467] px-2.5 py-0.5 rounded-full">
-                    {submittedCount} / {players.length} Terkunci
-                  </span>
-                </div>
+              {/* Ticker Roster / Mode Instruction */}
+              {playMode === 'multi_device' ? (
+                <div className="w-full mt-6 p-4 rounded-[26px] bg-white border-2 border-[#1E1E24]/10 shadow-xs">
+                  <div className="flex items-center justify-between mb-3 text-xs font-bold">
+                    <span className="text-[#158467] flex items-center gap-1.5">
+                      <Users className="w-4 h-4" />
+                      <span>Status Masuk Jawaban dari HP Pemain:</span>
+                    </span>
+                    <span className="bg-[#D6F5EC] text-[#158467] px-2.5 py-0.5 rounded-full">
+                      {submittedCount} / {players.length} Terkunci
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {players.map((p) => {
-                    const isSubmitted = !!phoneAnswers[p.id]
-                    return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {players.map((p) => {
+                      const isSubmitted = !!phoneAnswers[p.id]
+                      return (
+                        <div
+                          key={p.id}
+                          className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
+                            isSubmitted
+                              ? 'bg-[#D6F5EC]/60 border-[#12B76A]/40 text-[#0F5E49]'
+                              : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
+                          }`}
+                        >
+                          <PlayerProfileAvatar
+                            character={getCharacterById(p.avatarId || 'c01')}
+                            size={28}
+                          />
+                          <div className="min-w-0 flex-1 text-left">
+                            <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
+                            <span className="text-[10px] font-semibold block">
+                              {isSubmitted ? '✅ Terkunci' : '⏳ Mengetik...'}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full mt-6 p-4 rounded-[26px] bg-white border-2 border-[#1E1E24]/10 shadow-xs text-center">
+                  <p className="font-display text-sm font-black text-[#1E1E24] flex items-center justify-center gap-1.5">
+                    <span>📝 Mode 1 Layar Offline</span>
+                  </p>
+                  <p className="text-xs text-[#64616C] font-semibold mt-1">
+                    Semua pemain menulis 1 jawaban unik di kertas / catatan HP masing-masing sebelum timer 30 detik habis!
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-3">
+                    {players.map((p) => (
                       <div
                         key={p.id}
-                        className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
-                          isSubmitted
-                            ? 'bg-[#D6F5EC]/60 border-[#12B76A]/40 text-[#0F5E49]'
-                            : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
-                        }`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24]"
                       >
                         <PlayerProfileAvatar
                           character={getCharacterById(p.avatarId || 'c01')}
-                          size={28}
+                          size={22}
+                          animated={false}
                         />
-                        <div className="min-w-0 flex-1 text-left">
-                          <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
-                          <span className="text-[10px] font-semibold block">
-                            {isSubmitted ? '✅ Terkunci' : '⏳ Mengetik...'}
-                          </span>
-                        </div>
+                        <span>{p.name}</span>
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="w-full mt-6">
                 <Button
@@ -399,7 +435,11 @@ export default function G1Round() {
                   fullWidth
                   onClick={triggerRevealPhase}
                 >
-                  <span>Waktu Habis → Buka Kartu Jawaban Semua Pemain!</span>
+                  <span>
+                    {playMode === 'multi_device'
+                      ? 'Waktu Habis → Buka Kartu Jawaban HP Semua Pemain!'
+                      : 'Waktu Habis → Giliran Bacakan Jawaban & Skoring!'}
+                  </span>
                 </Button>
               </div>
             </motion.div>
@@ -419,10 +459,16 @@ export default function G1Round() {
                 <div>
                   <h3 className="font-display text-base font-black text-[#1E1E24] flex items-center justify-center sm:justify-start gap-1.5">
                     <Sparkles className="w-4 h-4 text-[#158467]" />
-                    <span>Hasil Jawaban Asli Seluruh Pemain</span>
+                    <span>
+                      {playMode === 'multi_device'
+                        ? 'Hasil Jawaban Asli Seluruh Pemain (HP)'
+                        : '🎤 Bacakan Jawaban & Skoring Host'}
+                    </span>
                   </h3>
                   <p className="text-xs text-[#64616C] font-semibold mt-0.5">
-                    Sistem mendeteksi kembar otomatis. Klik tombol di kartu untuk ubah status jika ada kesamaan makna.
+                    {playMode === 'multi_device'
+                      ? 'Sistem mendeteksi kembar otomatis dari HP. Klik tombol di kartu untuk ubah status jika ada kesamaan makna.'
+                      : 'Pemain membacakan jawaban kertas/lisan satu per satu. Host cukup klik tombol pada pemain yang jawabannya KEMBAR (-1)!'}
                   </p>
                 </div>
 
@@ -516,7 +562,7 @@ export default function G1Round() {
                         </span>
                       </div>
 
-                      {/* Middle Card: Big Clear User Typed Answer */}
+                      {/* Middle Card: Answer Display */}
                       <div className="my-2 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 min-h-[64px] flex flex-col justify-center text-center relative group">
                         {isEditing ? (
                           <div className="flex items-center gap-1.5">
@@ -524,7 +570,7 @@ export default function G1Round() {
                               type="text"
                               value={editAnswerText}
                               onChange={(e) => setEditAnswerText(e.target.value)}
-                              placeholder="Ketik jawaban..."
+                              placeholder="Ketik catatan jawaban..."
                               className="input-field text-xs font-bold py-1 px-2 rounded-xl flex-1"
                               autoFocus
                             />
@@ -543,10 +589,26 @@ export default function G1Round() {
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
+                        ) : playMode === 'single_screen' ? (
+                          <div className="py-1">
+                            {rawAnswer ? (
+                              <p className="font-display text-base font-black text-[#1E1E24] break-words">
+                                "{rawAnswer}"
+                              </p>
+                            ) : (
+                              <p className="text-xs font-bold text-[#64616C] flex items-center justify-center gap-1">
+                                <span>📝</span>
+                                <span>Jawaban Kertas / Lisan</span>
+                              </p>
+                            )}
+                            <p className="text-[10px] text-[#A09CA8] font-semibold mt-0.5">
+                              {isFailed ? '⚠️ Dinyatakan Kembar oleh Host (-1)' : '✨ Belum ada yang kembar (+2)'}
+                            </p>
+                          </div>
                         ) : (
                           <>
                             <p className="font-display text-lg font-black text-[#1E1E24] break-words">
-                              {rawAnswer ? `"${rawAnswer}"` : <span className="italic text-[#9CA3AF] text-xs font-medium">Tidak ada jawaban</span>}
+                              {rawAnswer ? `"${rawAnswer}"` : <span className="italic text-[#F04438] text-xs font-bold">Tidak submit via HP</span>}
                             </p>
                             {matchedGroup && (
                               <span className="text-[10px] font-bold text-[#F04438] block mt-0.5">
@@ -562,14 +624,24 @@ export default function G1Round() {
                         <button
                           type="button"
                           onClick={() => togglePlayerStatus(player.id)}
-                          className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1 ${
+                          className={`flex-1 py-2 px-2 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
                             isFailed
-                              ? 'bg-white hover:bg-[#12B76A] hover:text-white text-[#12B76A] border border-[#12B76A]/40'
-                              : 'bg-white hover:bg-[#F04438] hover:text-white text-[#F04438] border border-[#F04438]/40'
+                              ? 'bg-white hover:bg-[#12B76A] hover:text-white text-[#12B76A] border-2 border-[#12B76A]/40'
+                              : 'bg-white hover:bg-[#F04438] hover:text-white text-[#F04438] border-2 border-[#F04438]/40'
                           }`}
-                          title="Klik untuk menimpa hasil deteksi otomatis"
+                          title="Klik untuk ubah status Unik / Kembar"
                         >
-                          <span>{isFailed ? 'Ubah ke Unik (+2)' : 'Ubah ke Kembar (-1)'}</span>
+                          {isFailed ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Ubah ke Unik (+2)</span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-3.5 h-3.5" />
+                              <span>Tandai Kembar (-1)</span>
+                            </>
+                          )}
                         </button>
 
                         <button
@@ -578,24 +650,26 @@ export default function G1Round() {
                             setEditingPlayerId(player.id)
                             setEditAnswerText(rawAnswer)
                           }}
-                          className="p-1.5 rounded-xl bg-white border border-[#1E1E24]/10 text-[#64616C] hover:text-[#1E1E24] hover:bg-black/5"
-                          title="Edit teks jawaban manual"
+                          className="p-2 rounded-xl bg-white border border-[#1E1E24]/10 text-[#64616C] hover:text-[#1E1E24] hover:bg-black/5"
+                          title="Catat jawaban pemain ini"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => toggleMergeSelect(player.id)}
-                          className={`p-1.5 rounded-xl border transition ${
-                            isSelected
-                              ? 'bg-[#F59E0B] text-white border-[#F59E0B]'
-                              : 'bg-white border-[#1E1E24]/10 text-[#64616C] hover:text-[#F59E0B]'
-                          }`}
-                          title="Pilih untuk digabungkan dengan jawaban lain"
-                        >
-                          <Layers className="w-3.5 h-3.5" />
-                        </button>
+                        {playMode === 'multi_device' && (
+                          <button
+                            type="button"
+                            onClick={() => toggleMergeSelect(player.id)}
+                            className={`p-2 rounded-xl border transition ${
+                              isSelected
+                                ? 'bg-[#F59E0B] text-white border-[#F59E0B]'
+                                : 'bg-white border-[#1E1E24]/10 text-[#64616C] hover:text-[#F59E0B]'
+                            }`}
+                            title="Pilih untuk digabungkan dengan jawaban lain"
+                          >
+                            <Layers className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   )
