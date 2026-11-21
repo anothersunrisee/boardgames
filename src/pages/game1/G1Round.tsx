@@ -12,18 +12,20 @@ import { CHARACTER_PACK, getCharacterById } from '../../assets-library/character
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout'
 import { sfx } from '../../utils/sound'
+import { syncHostRoomState, listenToPlayerActions } from '../../services/firebase'
 
 type RoundPhase = 'timer' | 'scoring'
 
 export default function G1Round() {
   const navigate = useNavigate()
-  const { players, g1CurrentRound, g1UsedCategoryIds, g1NextRound, addScore, g1ShuffleCategory } = useGameStore()
+  const { players, roomCode, g1CurrentRound, g1UsedCategoryIds, g1NextRound, addScore, g1ShuffleCategory } = useGameStore()
 
   const [category, setCategory] = useState<Category | null>(null)
   const [phase, setPhase] = useState<RoundPhase>('timer')
   const [timeLeft, setTimeLeft] = useState(30)
   const [isTimerRunning, setIsTimerRunning] = useState(true)
   const [failedPlayerIds, setFailedPlayerIds] = useState<string[]>([])
+  const [phoneAnswers, setPhoneAnswers] = useState<Record<string, string>>({})
   const timerRef = useRef<number | null>(null)
 
   const handleShuffleCategory = () => {
@@ -50,7 +52,38 @@ export default function G1Round() {
     setIsTimerRunning(true)
     setPhase('timer')
     setFailedPlayerIds([])
+    setPhoneAnswers({})
   }, [g1CurrentRound])
+
+  // Sync state ke Firebase Realtime untuk HP Controller
+  useEffect(() => {
+    if (!roomCode || !category) return
+    syncHostRoomState(roomCode, {
+      activeGame: 'game1',
+      gamePhase: phase,
+      gameState: {
+        g1Prompt: category.prompt,
+        g1RoundNum: g1CurrentRound,
+        g1TimerSeconds: timeLeft,
+      },
+    })
+  }, [roomCode, category, phase, g1CurrentRound, timeLeft])
+
+  // Dengarkan jawaban yang masuk dari HP Controller
+  useEffect(() => {
+    if (!roomCode) return
+    const unsubscribe = listenToPlayerActions(roomCode, (actionsMap) => {
+      if (!actionsMap) return
+      const nextAnswers: Record<string, string> = {}
+      Object.values(actionsMap).forEach((action) => {
+        if (action.type === 'submit_g1_answer' && action.payload?.answer) {
+          nextAnswers[action.playerId] = action.payload.answer
+        }
+      })
+      setPhoneAnswers(nextAnswers)
+    })
+    return () => unsubscribe()
+  }, [roomCode])
 
   // Countdown timer logic
   useEffect(() => {
@@ -290,9 +323,15 @@ export default function G1Round() {
                           <p className={`font-display text-base font-bold truncate ${isFailed ? 'line-through text-[#64616C]' : 'text-[#1E1E24]'}`}>
                             {player.name}
                           </p>
-                          <p className="text-[11px] text-[#64616C] font-semibold">
-                            Kubu: {player.kubu} • Skor: {player.score} pt
-                          </p>
+                          {phoneAnswers[player.id] ? (
+                            <p className="text-xs font-bold text-[#158467] truncate bg-[#D6F5EC] px-2 py-0.5 rounded-md inline-block my-0.5">
+                              📱 "{phoneAnswers[player.id]}"
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-[#64616C] font-semibold">
+                              Kubu: {player.kubu} • Skor: {player.score} pt
+                            </p>
+                          )}
                         </div>
                       </div>
 

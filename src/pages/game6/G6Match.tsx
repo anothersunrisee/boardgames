@@ -12,12 +12,14 @@ import { PunishmentModal } from '../../components/PunishmentModal';
 import { FluentEmoji } from '../../components/ui/FluentEmoji';
 import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout';
 import { sfx } from '../../utils/sound';
+import { syncHostRoomState, listenToPlayerActions } from '../../services/firebase';
 
 type PitchStage = 'prep' | 'pitchA' | 'pitchB' | 'voting';
 
 export default function G6Match() {
   const navigate = useNavigate();
   const {
+    roomCode,
     players,
     g6Matches,
     g6CurrentMatchIndex,
@@ -62,6 +64,42 @@ export default function G6Match() {
   const teamBPlayers = (match?.teamBIds && match.teamBIds.length > 0)
     ? players.filter((p) => match.teamBIds.includes(p.id))
     : [playerB];
+
+  // Sync state ke Firebase Realtime untuk HP Controller
+  useEffect(() => {
+    if (!roomCode || !match) return;
+    syncHostRoomState(roomCode, {
+      activeGame: 'game6',
+      gamePhase: stage === 'voting' ? 'voting' : 'pitch',
+      gameState: {
+        g6ItemTitle: match.pitchItem?.product,
+        g6ItemDescription: match.pitchItem?.flaw,
+        g6TeamAIds: teamAPlayers.map((p) => p.id),
+        g6TeamBIds: teamBPlayers.map((p) => p.id),
+      },
+    });
+  }, [roomCode, match, stage, teamAPlayers, teamBPlayers]);
+
+  // Dengarkan live voting dari HP pembeli/penonton
+  useEffect(() => {
+    if (!roomCode) return;
+    const unsubscribe = listenToPlayerActions(roomCode, (actionsMap) => {
+      if (!actionsMap) return;
+      let countA = 0;
+      let countB = 0;
+      Object.values(actionsMap).forEach((action) => {
+        if (action.type === 'cast_g6_vote') {
+          if (action.payload?.team === 'A') countA++;
+          if (action.payload?.team === 'B') countB++;
+        }
+      });
+      if (countA > 0 || countB > 0) {
+        setVotesA(countA);
+        setVotesB(countB);
+      }
+    });
+    return () => unsubscribe();
+  }, [roomCode]);
 
   // Setup initial stage
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, ArrowLeft, Check, X, ArrowRight, Trophy, HelpCircle, Shuffle } from 'lucide-react'
@@ -9,10 +9,12 @@ import { BlobMascot } from '../../components/ui/BlobMascot'
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { sfx } from '../../utils/sound'
+import { syncHostRoomState, listenToPlayerActions } from '../../services/firebase'
 
 export default function G3Secret() {
   const navigate = useNavigate()
   const {
+    roomCode,
     g3BoyPlayers,
     g3GirlPlayers,
     g3Slots,
@@ -31,6 +33,7 @@ export default function G3Secret() {
   const [q2Done, setQ2Done] = useState(false)
   const [roundResult, setRoundResult] = useState<'guessed' | 'failed' | null>(null)
   const [creditedGirlId, setCreditedGirlId] = useState<string>('')
+  const [phoneGuesses, setPhoneGuesses] = useState<Array<{ playerId: string; playerName: string; guess: string }>>([])
 
   const handleShuffleItem = () => {
     const newItem = g3ShuffleItem()
@@ -62,6 +65,40 @@ export default function G3Secret() {
 
   const slot = g3Slots[g3CurrentSlotIndex]
   const boy = g3BoyPlayers.find((p) => p.id === slot?.playerId)
+
+  // Sync state ke Firebase Realtime untuk HP Controller
+  useEffect(() => {
+    if (!roomCode || !slot) return
+    syncHostRoomState(roomCode, {
+      activeGame: 'game3',
+      gamePhase: 'secret',
+      gameState: {
+        g3SecretHolders: { [slot.playerId]: slot.secretWord },
+        activeSlotPlayerId: slot.playerId,
+      },
+    })
+    setPhoneGuesses([])
+  }, [roomCode, slot])
+
+  // Dengarkan tebakan dari HP Controller pemain
+  useEffect(() => {
+    if (!roomCode) return
+    const unsubscribe = listenToPlayerActions(roomCode, (actionsMap) => {
+      if (!actionsMap) return
+      const guessesMap = new Map<string, { playerId: string; playerName: string; guess: string }>()
+      Object.values(actionsMap).forEach((action) => {
+        if (action.type === 'submit_g3_guess' && action.payload?.guess) {
+          guessesMap.set(action.playerId, {
+            playerId: action.playerId,
+            playerName: action.playerName,
+            guess: action.payload.guess,
+          })
+        }
+      })
+      setPhoneGuesses(Array.from(guessesMap.values()))
+    })
+    return () => unsubscribe()
+  }, [roomCode])
 
   if (!slot || !boy) {
     navigate('/game3/setup')
@@ -309,6 +346,23 @@ export default function G3Secret() {
         {/* Live Guess Verdict Buttons */}
         {roundResult === null ? (
           <div className="space-y-3 mt-auto">
+            {phoneGuesses.length > 0 && (
+              <div className="p-3 bg-[#E0EBFF] border border-[#2568EF]/30 rounded-2xl mb-2 text-left">
+                <p className="text-[11px] font-bold text-[#2568EF] mb-1.5 flex items-center gap-1">
+                  <span>📱 Tebakan Masuk dari HP ({phoneGuesses.length}):</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {phoneGuesses.map((pg) => (
+                    <span
+                      key={pg.playerId}
+                      className="px-2.5 py-1 bg-white rounded-lg text-xs font-bold text-[#1E1E24] shadow-xs border border-[#2568EF]/20"
+                    >
+                      <strong>{pg.playerName}:</strong> "{pg.guess}"
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <p className="text-center text-xs font-bold uppercase tracking-wider text-[#64616C]">
               Hasil Tebakan Para Cewek di Ruangan:
             </p>

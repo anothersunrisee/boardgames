@@ -8,6 +8,8 @@ const Home = lazy(() => import('./pages/Home'));
 const RoomSetup = lazy(() => import('./pages/RoomSetup'));
 const RoomPodium = lazy(() => import('./pages/RoomPodium'));
 const StudioAssetPack = lazy(() => import('./pages/StudioAssetPack'));
+const PlayerJoin = lazy(() => import('./pages/PlayerJoin'));
+const PlayerController = lazy(() => import('./pages/PlayerController'));
 
 // ── Game 1: Same Brain? NO! ──────────────────────────────────────────────────
 const G1Setup = lazy(() => import('./pages/game1/G1Setup'));
@@ -68,6 +70,11 @@ export default function App() {
           {/* 1. Onboarding Screen */}
           <Route path="/" element={<Onboarding />} />
           <Route path="/onboarding" element={<Onboarding />} />
+
+          {/* Player Controller Mobile Routes */}
+          <Route path="/join" element={<PlayerJoin />} />
+          <Route path="/play" element={<PlayerController />} />
+          <Route path="/controller" element={<PlayerController />} />
 
           {/* 2. Room Setup & Podium */}
           <Route path="/room" element={<RoomSetup />} />

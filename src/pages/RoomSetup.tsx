@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, Trash2, ArrowRight, Sparkles, Smile, X } from 'lucide-react';
 import { useGameStore, type Player, type Gender, type RoomVibe, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
@@ -10,6 +10,14 @@ import { ConcentricRoomTransition } from '../components/motion/ConcentricRoomTra
 import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
 import { HostUtilityBar } from '../components/HostUtilityBar';
 import { sfx } from '../assets-library/soundEngine';
+import { generateRoomCode } from '../utils/roomCode';
+import { QRCodeDisplay } from '../components/ui/QRCodeDisplay';
+import {
+  createOnlineRoom,
+  syncHostRoomState,
+  listenToRoom,
+  isFirebaseConfigured,
+} from '../services/firebase';
 
 function genId() {
   return Math.random().toString(36).slice(2, 9);
@@ -23,6 +31,8 @@ export const RoomSetup: React.FC = () => {
     setRoomCreated,
     roomName,
     setRoomName,
+    roomCode: storeRoomCode,
+    setRoomCode: setStoreRoomCode,
     roomVibe,
     setRoomVibe,
   } = useGameStore();
@@ -32,8 +42,69 @@ export const RoomSetup: React.FC = () => {
   );
   const [currentRoomName, setCurrentRoomName] = useState(roomName || 'Party Malam Ini');
   const [currentVibe, setCurrentVibe] = useState<RoomVibe>(roomVibe || 'tongkrongan');
+  const [roomCode, setRoomCode] = useState(() => storeRoomCode || generateRoomCode());
+
+  useEffect(() => {
+    if (roomCode && roomCode !== storeRoomCode) {
+      setStoreRoomCode(roomCode);
+    }
+  }, [roomCode, storeRoomCode, setStoreRoomCode]);
   const [avatarPickerPlayerId, setAvatarPickerPlayerId] = useState<string | null>(null);
   const [transitionActive, setTransitionActive] = useState(false);
+
+  const joinUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/join?code=${roomCode}`
+      : `/join?code=${roomCode}`;
+
+  // Inisialisasi online room & dengarkan pemain yang scan QR lewat HP
+  useEffect(() => {
+    if (!roomCode) return;
+    createOnlineRoom({
+      code: roomCode,
+      name: currentRoomName,
+      vibe: currentVibe,
+      hostId: 'host_tv',
+      createdAt: Date.now(),
+      status: 'lobby',
+      players: {},
+    });
+
+    const unsubscribe = listenToRoom(roomCode, (onlineRoom) => {
+      if (onlineRoom && onlineRoom.players) {
+        const remotePlayers = Object.values(onlineRoom.players);
+        if (remotePlayers.length > 0) {
+          setRoster((prev) => {
+            const merged = [...prev];
+            remotePlayers.forEach((rp) => {
+              const existingIdx = merged.findIndex((p) => p.id === rp.id);
+              if (existingIdx !== -1) {
+                merged[existingIdx] = {
+                  ...merged[existingIdx],
+                  name: rp.name,
+                  avatarId: rp.avatarId,
+                  gender: rp.gender,
+                  kubu: rp.kubu,
+                };
+              } else {
+                merged.push({
+                  id: rp.id,
+                  name: rp.name,
+                  avatarId: rp.avatarId,
+                  gender: rp.gender,
+                  kubu: rp.kubu,
+                  score: 0,
+                });
+              }
+            });
+            return merged;
+          });
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomCode]);
 
   const cewekCount = roster.filter((p) => p.gender === 'cewek').length;
   const cowokCount = roster.filter((p) => p.gender === 'cowok').length;
@@ -134,6 +205,11 @@ export const RoomSetup: React.FC = () => {
     setRoomName(currentRoomName.trim() || 'Party Games Room');
     setRoomVibe(currentVibe);
     setRoomCreated(true);
+    syncHostRoomState(roomCode, {
+      status: 'playing',
+      name: currentRoomName,
+      vibe: currentVibe,
+    });
     setTransitionActive(true);
   };
 
@@ -182,6 +258,53 @@ export const RoomSetup: React.FC = () => {
           <p className="text-[#64616C] text-xs sm:text-sm font-medium mt-1 max-w-lg mx-auto">
             1 Host memegang layar. Pilih avatar unik untuk tiap pemain. Semua mini-game akan diacak otomatis!
           </p>
+        </div>
+
+        {/* 📱 MULTI-DEVICE REALTIME JOIN BANNER */}
+        <div className="mb-4 p-4 sm:p-5 rounded-[28px] bg-gradient-to-r from-[#1E1E24] to-[#2D2A3E] text-white border-2 border-[#1E1E24] shadow-md flex flex-col md:flex-row items-center justify-between gap-5">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#10B981]/20 text-[#34D399] border border-[#10B981]/30 text-[10px] font-black uppercase tracking-wider mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span>
+                {isFirebaseConfigured()
+                  ? '🟢 FIREBASE REALTIME ONLINE'
+                  : '⚡ MULTI-DEVICE CONTROLLER'}
+              </span>
+            </div>
+            <h3 className="font-display text-xl sm:text-2xl font-black text-white">
+              Main Pakai HP Masing-Masing?
+            </h3>
+            <p className="text-xs text-white/75 font-semibold mt-1 max-w-md">
+              Scan QR Code atau buka <strong>{joinUrl}</strong> di browser HP, lalu masukkan kode room:
+            </p>
+
+            {/* Large 4-Letter Room Code */}
+            <div className="flex items-center justify-center md:justify-start gap-2 mt-3">
+              <span className="text-xs font-bold text-white/70">KODE ROOM:</span>
+              <div className="font-display text-2xl sm:text-3xl font-black tracking-widest text-[#FBBF24] bg-white/10 px-4 py-1.5 rounded-2xl border border-white/20 shadow-xs">
+                {roomCode}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop(720);
+                  setRoomCode(generateRoomCode());
+                }}
+                className="text-[11px] font-bold text-white/60 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
+                title="Ganti kode room"
+              >
+                ↺ Ganti
+              </button>
+            </div>
+          </div>
+
+          {/* QR Code Container */}
+          <div className="shrink-0 flex flex-col items-center">
+            <QRCodeDisplay value={joinUrl} size={140} />
+            <span className="text-[10px] font-extrabold text-[#FBBF24] mt-1.5 tracking-wider">
+              SCAN QR VIA HP
+            </span>
+          </div>
         </div>
 
         {/* Room Name & Preset Bar */}

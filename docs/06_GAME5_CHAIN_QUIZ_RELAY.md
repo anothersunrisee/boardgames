@@ -1,112 +1,185 @@
-# NIRANTARA PARTYGAMES — SPESIFIKASI GAME 05: CHAIN QUIZ RELAY (CERDAS CERMAT BERANTAI)
-> Kategori: Cerdas Cermat Tim Estafet • 4 Ronde Beruntun (16 Soal)  
-> Tema Warna: Purple Violet (`#7C3AED`) | Maskot: Nori (Clover / Cheeks)  
-> Target Pembaca: Reviewer Sistem & Model AI (Gemini Neon High)
+# PARTYHUB INDONESIA — SPESIFIKASI GAME 05: CHAIN QUIZ RELAY!
+> Kategori: Cerdas Cermat Berantai 16 Soal Estafet • Turnamen Cepat Tim • Kartu Tantangan Akting  
+> Tema Warna: Purple Violet (`#7C3AED`) | Maskot: Milo / Star  
+> Target Demografis: Universal (Tongkrongan, Tim Kantor, Keluarga Lintas Generasi)  
+> Target Pembaca: Reviewer Sistem, Full-Stack Architect, & Model AI (Gemini Neon High)
 
 ---
 
-## 🎯 1. KONSEP & STRUKTUR 16 SOAL ESTAFET
+## 🎯 1. KONSEP & ATURAN UTAMA PERMAINAN
 
-### 1.1. Filosofi & Alur Turnamen
-Game ini mensimulasikan cerdas cermat televisi berkecepatan tinggi dengan sistem estafet anggota tim:
-* **1 Tim maju sekaligus ke depan panggung dan bermain selama 4 Ronde Beruntun (Total 16 Soal)** tanpa diselingi oleh tim lawan.
-* **1 Ronde = 4 Soal Berantai**. Urutan menjawab berputar adil di antara anggota tim (#1 $\rightarrow$ #2 $\rightarrow$ #3 $\rightarrow$ #4).
-* Setiap ada anggota yang **salah menjawab**, anggota tersebut langsung terkena **-2 Poin penalti** dan mendapatkan **Kartu Tantangan Konyol** yang **WAJIB DIJALANKAN TERUS SAMPAI RONDE KE-4 SELESAI!**
-* Setelah 1 tim menuntaskan ke-16 soalnya, giliran tim berikutnya yang maju ke panggung dengan pola 16 soal yang sama.
-* Di akhir turnamen, ditampilkan **Papan Klasemen Akhir (Leaderboard)**: Tim Juara 1 dan Pemain MVP Perorangan.
+### 1.1. Filosofi & Sensasi Sosial
+Kuis trivia cerdas cermat sering kali membosankan jika formatnya kaku dan hanya menguji hafalan akademis. Di **Chain Quiz Relay**, trivia diubah menjadi arena olahraga sosial estafet penuh tawa!  
+Pemain dibagi menjadi tim-tim kecil (3 hingga 4 orang per kelompok). Satu tim maju ke panggung dan wajib menyelesaikan **4 Ronde Berurutan (1 Ronde = 4 Soal Estafet, Total 16 Soal berturut-turut)** tanpa diselingi tim lain.  
+Pertanyaan dijawab secara bergantian orang per orang tanpa boleh saling berbisik.  
+Jika ada anggota yang **SALAH MENJAWAB**, dia tidak hanya kehilangan poin, tetapi juga **MENDAPATKAN KARTU TANTANGAN KONYOL YANG WAJIB DIJALANKAN SAMPAI RONDE KE-4 SELESAI!** (Misal: berdiri dengan satu kaki, bicara dengan nada opera, atau kepala digoyangkan terus-menerus).  
+Pemandangan anggota tim yang berusaha menjawab soal sejarah sambil berdiri satu kaki dan bicara gaya robot menjadi magnet tawa terbesar bagi seluruh penonton di ruangan.
+
+### 1.2. Peran Partisipan (Orang-Orangnya)
+1. **Tim yang Sedang Maju (3–4 Pemain):** Berdiri di depan layar TV, menjawab soal secara berurutan sesuai urutan estafet.
+2. **Pemain Aktif per Soal:** Satu anggota tim yang sedang memegang giliran. Hanya dia yang boleh bersuara. Rekan setim dilarang membantu.
+3. **Tim Penonton (Tim-Tim Lain):** Duduk menonton di sofa, mengawasi apakah ada yang berbisik curang, dan menertawakan aksi tantangan lawan.
+4. **Host (Quizmaster & Wasit):** Membacakan soal, mengontrol countdown 15 detik, memvalidasi jawaban, dan memastikan kartu tantangan dijalankan dengan tertib.
 
 ---
 
-## 🔄 2. ALUR PERMAINAN (4 STAGES FLOW)
+## 🖥️ 2. SPESIFIKASI UI & TAMPILAN LAYAR LENGKAP
 
-```mermaid
-flowchart TD
-    A["Tahap 1: Lineup Tim & Strategi (team_ready)"] --> B["Tahap 2: Estafet Kuis Ronde 1 (chain_quiz - Soal 1..4)"]
-    B --> C["Tahap 3: Ringkasan Ronde 1 (round_summary - Cek +2 Poin & Tantangan)"]
-    C --> D["Tahap 2: Estafet Kuis Ronde 2 (chain_quiz - Soal 5..8)"]
-    D --> E["Tahap 3: Ringkasan Ronde 2 (round_summary)"]
-    E --> F["Tahap 2: Estafet Kuis Ronde 3 (chain_quiz - Soal 9..12)"]
-    F --> G["Tahap 3: Ringkasan Ronde 3 (round_summary)"]
-    G --> H["Tahap 2: Estafet Kuis Ronde 4 (chain_quiz - Soal 13..16)"]
-    H --> I["Tahap 4: Ringkasan Akhir Tim (team_summary - Cek Jackpot 10 Pts)"]
-    I --> J{"Apakah Masih Ada Tim Berikutnya?"}
-    J -- "Ya" --> A
-    J -- "Tidak (Semua Tim Selesai)" --> K["Panggung Pemenang & Leaderboard (G5Results)"]
+### 2.1. Tampilan Layar Utama TV / Proyektor Host (`G5Play.tsx`)
+1. **Header Desktop Layout:**
+   * Badge Neo-Brutalist: `GAME 05 • CHAIN QUIZ RELAY` dengan aksen ungu violet `#7C3AED`.
+   * Indikator Tim & Ronde: `Tim Garuda • Ronde 2 / 4 (Soal 7 / 16)`.
+   * Tombol Host: `Ganti Soal (Shuffle)`, `Undo Jawaban`, dan `Jeda Timer`.
+2. **Struktur 4 Tahap UX Layar:**
+   * **Tahap 1: `team_ready` (Panggilan Tim):**
+     * Memanggil nama tim ke depan panggung.
+     * Menampilkan daftar anggota dan roadmap 4 ronde (16 soal estafet).
+     * Tombol besar `[Mulai Ronde 1 ➔]`.
+   * **Tahap 2: `chain_quiz` (Layar Soal Berantai Aktif):**
+     * Badge Kategori Soal: (Sejarah, IPA, IPS, Fakta Unik, Kuliner, dll.).
+     * Teks Soal Raksasa berfont display tebal terbaca jelas dari 4 meter.
+     * **Countdown Timer 15 Detik:** Lingkaran timer beranimasi cepat dengan SFX detak jam dramatis dan warning merah saat $\le 5$ detik.
+     * **Indikator Giliran Anggota:** Menampilkan avatar dan nama pemain yang WAJIB menjawab soal ini (misal: `🎯 Giliran: Budi`).
+     * Tombol Spoiler Host: `[Intip Kunci Jawaban]` (membuka jawaban untuk memandu Host).
+     * Tombol Eksekusi Cepat: `[✓ BENAR]` (Hijau besar) dan `[✗ SALAH]` (Merah besar).
+   * **Tahap 3: `round_summary` (Rekap per Ronde Selesai):**
+     * Muncul tiap 4 soal selesai.
+     * Menampilkan evaluasi: Skor benar ronde ini (`3/4 Benar ➔ Lolos Ronde (+2 Pts Tim)` atau `2/4 Benar ➔ Ronde Gagal`).
+     * Jika ada yang salah: Modal Kartu Tantangan Konyol otomatis terbuka untuk memberikan hukuman fisik yang wajib dijalankan!
+     * Tombol `[Lanjut ke Ronde Berikutnya ➔]`.
+   * **Tahap 4: `team_summary` (Grand Rekapitulasi 16 Soal Tim):**
+     * Menampilkan total skor 16 soal.
+     * Pengecekan Jackpot Sempurna 16/16.
+     * Tombol `[Panggil Tim Berikutnya ➔]`.
+3. **Daftar Tantangan Aktif (Persistent Challenge Stack):**
+   * Di sudut kanan layar TV, selalu terpampang kartu nama pemain yang sedang menanggung tantangan aktif:  
+     `⚡ Alya: Bicara dengan intonasi robot`  
+     `⚡ Kevin: Berdiri dengan 1 kaki`
+
+### 2.2. Tampilan Controller HP Pemain (`PlayerController.tsx`)
+* Menampilkan nama tim aktif yang sedang bermain di panggung.
+* Menampilkan teks soal trivia dan hitungan mundur timer yang sinkron dengan layar TV.
+* Jika pemain sedang menanggung kartu tantangan, HP-nya menampilkan peringatan kuning besar berisi teks tantangan yang wajib ia teruskan.
+
+---
+
+## ⚖️ 3. LOGIKA SKOR, CARA BENAR, & CARA SALAH
+
+### 3.1. Tabel Perhitungan Skor Matematis
+| Kondisi Permainan | Cara Benar / Salah | Dampak Skor Individu | Dampak Skor Tim |
+| :--- | :--- | :---: | :---: |
+| **Jawaban Benar** | **CARA BENAR:** Menjawab dengan benar dalam batas waktu 15 detik tanpa bantuan bisikan. | `0 Poin` | Berkontribusi pada kuota lolos ronde |
+| **Jawaban Salah / Waktu Habis** | **CARA SALAH:** Menjawab salah atau waktu 15 detik habis sebelum menjawab. | **-2 Poin (Penalti Individu) + Kartu Tantangan** | Kehilangan 1 kuota benar |
+| **Lolos Ronde (Minimal 3 dari 4 Benar)** | **CARA BENAR TIM:** Tim berhasil menjawab minimal 3 soal benar dalam 1 ronde. | `0 Poin` | **+2 Poin Tim** ke saldo Room seluruh anggota |
+| **Gagal Ronde ($\le 2$ Benar)** | **CARA SALAH TIM:** Menjawab salah 2 kali atau lebih dalam ronde tersebut. | `0 Poin` | `0 Poin` (Tidak dapat bonus ronde) |
+| **Jackpot Sapu Bersih Sempurna** | **PRESTASI MAKSIMAL:** Menjawab **16 dari 16 soal benar (0 Salah / Clean Sheet)**! | **+2 Poin Ekstra** | **Total 10 Poin Penuh** untuk masing-masing anggota tim (`8 + 2`) |
+
+### 3.2. Penjelasan Logika Jackpot 10 Poin
+* 4 Ronde Lolos = `4 x +2 Pts = +8 Poin`.
+* Bonus Sempurna 16/16 = `+2 Poin Bonus Ekstra`.
+* Total Akhir Jackpot = **10 Poin Penuh**.
+* Tim yang salah 1 kali saja (misal 15/16 benar) tetap mendapatkan `+8 Poin` ronde, namun **TIDAK BERHAK** atas Bonus Jackpot Sempurna.
+
+---
+
+## 🔍 4. DEEP EDGE CASES: "KALAU ORANGNYA BEGINI BAGAIMANA, KALAU BEGITU BAGAIMANA"
+
+### 1. Bagaimana menjaga tensi penonton agar tidak bosan saat 1 tim menyelesaikan 16 soal berturut-turut?
+* *Masalah:* Jika 1 tim bermain terlalu lama, penonton yang menunggu giliran bisa merasa bosan.
+* *Solusi Mekanik PartyHub:*
+  1. **Timer Kilat 15 Detik:** Alur soal berjalan sangat cepat tanpa basa-basi (16 soal rata-rata selesai dalam waktu 3–4 menit saja).
+  2. **Tontonan Komedi Tantangan Fisik:** Semakin banyak anggota tim yang salah, semakin banyak tantangan konyol bertumpuk yang harus mereka peragakan di depan panggung. Penonton justru sangat terhibur menyaksikan penderitaan komedi teman-temannya!
+  3. **Peran Penonton sebagai Pengawas (Police Role):** Penonton aktif bersorak dan memprotes jika ada anggota tim yang melanggar kartu tantangannya (misal: menurunkan kakinya saat berdiri 1 kaki).
+
+### 2. Kalau ada anggota tim yang salah berkali-kali (tumpukan 2 atau 3 tantangan sekaligus)?
+* *Skenario:* Budi salah di Ronde 1 dan salah lagi di Ronde 3.
+* *Penanganan:* Tantangan bersifat **KUMULATIF (BERTUMPUK)**! Budi wajib menjalankan kedua tantangan tersebut secara bersamaan (misal: berdiri 1 kaki SAMBIL bicara dengan nada robot). Ini menjadi momen paling pecah di turnamen!
+
+### 3. Kalau anggota tim membisikkan jawaban ke teman yang sedang giliran (Pelanggaran Estafet)?
+* *Skenario:* Giliran Alya, lalu Kevin dari belakang membisikkan jawaban *"Bandung!"*.
+* *Penanganan:* Berlaku **Aturan Denda Bisikan**. Soal tersebut otomatis dinyatakan **SALAH / HANGUS**, dan Kevin (si pembisik) dikenai denda **-2 Poin individu** dan wajib mengambil 1 Kartu Tantangan Konyol!
+
+### 4. Kalau jumlah anggota tim hanya 2 orang atau 3 orang (Pemain tidak pas dibagi 4)?
+* *Skenario:* Ada tim yang hanya beranggotakan 3 orang.
+* *Penanganan:* Sistem estafet menggunakan algoritma modulo berulang:  
+  `Soal 1: Pemain 1 ➔ Soal 2: Pemain 2 ➔ Soal 3: Pemain 3 ➔ Soal 4: Pemain 1 ➔ Soal 5: Pemain 2...`  
+  Seluruh anggota tetap mendapatkan giliran secara simetris dan adil hingga soal ke-16.
+
+### 5. Kalau soal trivia dirasa terlalu rumit untuk kelompok keluarga / anak-anak?
+* *Skenario:* Muncul pertanyaan sains antariksa yang terlalu spesifik.
+* *Penanganan:* Host cukup menekan tombol **`[Ganti Soal / Shuffle]`**. Sistem langsung mengganti soal tersebut dengan pertanyaan baru dari bank data tanpa menambah counter ronde.
+
+### 6. Kalau Host salah pencet tombol Benar/Salah?
+* *Skenario:* Host tidak sengaja menekan tombol Salah padahal jawaban pemain benar.
+* *Penanganan:* Host cukup menekan tombol **`[Undo Jawaban]`** di Host Utility Bar. Skor, tantangan, dan timer akan dikembalikan ke status soal tersebut sebelum ditekan.
+
+---
+
+## 🔄 5. UX FLOW DIAGRAM & TRANSISI STATE
+
+```
+[Mulai Game 5 di Hub]
+         │
+         ▼
+[G5Play: State TEAM_READY]
+  ├─ TV menampilkan Nama Tim & Daftar Anggota Estafet
+  ├─ Host mengarahkan tim berdiri di depan panggung
+  │
+  ▼
+┌────────────────────────────────────────────────────────┐
+│ LOOP 4 RONDE BERUNTUN (TOTAL 16 SOAL ESTAFET)          │
+│                                                        │
+│  [G5Play: State CHAIN_QUIZ (Soal 1..4 per Ronde)]      │
+│    ├─ Teks Soal & Countdown 15s berjalan               │
+│    ├─ Pemain aktif menjawab secara lisan               │
+│    ├─ Host intip kunci & tekan [✓ Benar] / [✗ Salah]  │
+│    │  • Benar ➔ Lanjut soal estafet berikutnya         │
+│    │  • Salah ➔ -2 Pts & Kartu Tantangan Konyol Aktif  │
+│    │                                                   │
+│    ▼ (4 Soal Selesai)                                  │
+│  [G5Play: State ROUND_SUMMARY]                         │
+│    ├─ Cek kelulusan ronde (Min. 3/4 Benar) ➔ +2 Pts    │
+│    ├─ Evaluasi Kartu Tantangan yang wajib diteruskan   │
+│    └─ Host tekan [Lanjut ke Ronde Berikutnya]          │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                 (16 Soal Tim Selesai)
+                           │
+                           ▼
+[G5Play: State TEAM_SUMMARY]
+  ├─ Rekap Total 16 Soal Tim
+  ├─ Cek Bonus Jackpot Sempurna 16/16 (Ekstra +2 Pts)
+  ├─ Akumulasi skor tim masuk ke Saldo Utama Room
+  │
+  ▼
+[Tim Terakhir Selesai?] ─── Tidak ───► [G5NextTeam -> Panggil Tim Berikutnya]
+         │
+        Ya
+         │
+         ▼
+[G5Results: Papan Klasemen Lengkap Room & Upacara Juara Kuis]
 ```
 
 ---
 
-## 🖥️ 3. SPESIFIKASI UI & TAMPILAN LAYAR (`G5Play.tsx`)
+## 📚 6. BANK DATA 450 SOAL TRIVIA 9 KATEGORI (`game5-questions.ts`)
+Terkurasi luas melingkupi:
+1. **Pengetahuan Umum & Keseharian Indonesia:** Mata uang, nama jembatan legendaris, pelabuhan, hari libur nasional, makanan khas daerah.
+2. **Sejarah & Budaya:** Tokoh proklamasi, kerajaan kuno Nusantara, candi-candi besar, peristiwa bersejarah dunia.
+3. **IPA & Sains Populer:** Konsep gaya fisika, wujud zat, tata surya, hukum gravitasi, fenomena alam.
+4. **Biologi & Dunia Satwa:** Hewan mamalia, rantai makanan, metamorfosis serangga, habitat satwa langka Indonesia.
+5. **IPS & Geografi Dunia:** Ibukota negara dunia, bendera, benua, pegunungan tertinggi, sungai terpanjang.
+6. **Kuliner & Tradisi Lokal:** Bumbu rempah masakan Padang, jenis sambal nusantara, filosofi tumpeng, jajanan pasar.
+7. **Matematika Cepat & Logika:** Perhitungan hitungan mental sederhana (perkalian, persentase diskon belanja, deret angka).
+8. **Olahraga & Prestasi:** Bulu tangkis, sepakbola Piala Dunia, rekor olimpiade, atlet legendaris Indonesia.
+9. **Fakta Unik & Pop Culture:** Asal-usul nama benda, fenomena viral, rekor dunia unik, fakta tubuh manusia.
 
-### 3.1. Stepper Visual 4 Ronde (Pipeline Utama)
-Di bagian atas layar terpampang 4 kapsul ronde:
-* `✓ Ronde 1` (Hijau jika selesai)
-* `▶ Ronde 2` (Ungu menyala dengan ring glow jika sedang aktif)
-* `Ronde 3`, `Ronde 4` (Abu-abu netral)
-
-### 3.2. Stepper Estafet Soal Ronde Aktif (4 Soal)
-Di bawah pipeline ronde, terdapat jalur estafet 4 soal untuk ronde yang sedang berjalan:
-* Menampilkan avatar dan nama anggota tim yang bertanggung jawab menjawab soal tersebut (`S1: Alya`, `S2: Budi`, `S3: Caca`, `S4: Dara`).
-* Indikator status: `✓ Benar` (Hijau), `❌ Salah` (Merah), atau `▶ Aktif` (Ungu pulsasi).
-
-### 3.3. Banner Kartu Tantangan Aktif (Persistent Challenges)
-Jika ada anggota tim yang salah menjawab di soal-soal sebelumnya, banner kuning menyala muncul di atas kartu soal:
-* **"⚠️ KARTU TANTANGAN AKTIF (BERLAKU SAMPAI RONDE 4 SELESAI):"**
-* Menampilkan avatar anggota yang kena hukuman, nomor ronde saat terkena, dan bunyi tantangannya (misal: *"Budi (Kena R#1): Wajib bicara dengan huruf vokal O semua"*).
-
-### 3.4. Kartu Soal & Kontrol Host
-* **Badge Kategori:** Menampilkan ikon emoji dan nama kategori (misal: `🏛️ Kategori: Sejarah Indonesia`).
-* **Tombol Ganti Soal (Shuffle):** Terletak langsung di pojok kanan atas kartu soal untuk mengganti pertanyaan seketika jika dirasa kurang cocok.
-* **Teks Pertanyaan:** Font besar ukuran 24px di tengah kartu.
-* **Host Spoiler Box:** Tombol *"Buka Kunci Jawaban"* yang dapat dibuka-tutup oleh host agar host tahu kunci jawaban resmi tanpa terlihat jelas oleh pemain.
-* **Tombol Verdict:**
-  * Tombol Hijau: `BENAR! (Lanjut Soal ✓)`
-  * Tombol Merah: `SALAH! (-2 Pts & Tantangan)`
-* **Host Undo Assist Pill:** *"Salah Pencet? Undo Jawaban Soal Lalu"*.
-
----
-
-## ⚖️ 4. ATURAN SKOR & FORMULA PERHITUNGAN
-
-1. **Penalti Jawaban Salah Perorangan:**
-   * Setiap kali ada anggota yang salah jawab: **-2 Poin Individu** langsung dikurangkan dari saldo pemain tersebut, dan pemain tersebut mendapatkan kartu tantangan aktif.
-2. **Poin Keberhasilan Ronde (+2 Poin Tim):**
-   * Di akhir setiap ronde (soal ke-4), tim dievaluasi.
-   * Jika tim menjawab minimal 3 dari 4 soal dengan benar: **+2 Poin** dihadiahkan untuk **SELURUH anggota tim**.
-3. **Jackpot Sapu Bersih 4/4 Ronde (+10 Poin Masing-Masing):**
-   * Jika satu tim berhasil menyapu bersih seluruh 4 ronde dengan sukses tanpa cacat: seluruh anggota tim mendapatkan **Jackpot Total 10 Poin perorangan**!
-
----
-
-## 📚 5. BANK DATA 450 SOAL TRIVIA EDUKATIF & POP (`game5-questions.ts`)
-
-Terdiri dari **9 Kategori Lengkap** dengan masing-masing **50 Pertanyaan Pilihan**:
-1. **Sejarah Indonesia & Dunia (50 Soal):** Kerajaan Majapahit, Proklamasi, Konferensi Meja Bundar, Perang Dunia, Tembok Besar China.
-2. **IPA / Sains & Fisika Sehari-hari (50 Soal):** Fotosintesis, gravitasi bumi, organ tubuh manusia, titik didih air, lapisan atmosfer.
-3. **IPS & Geografi Dunia (50 Soal):** Ibu kota negara, benua terbesar, garis khatulistiwa, mata uang dunia, selat Indonesia.
-4. **Politik Umum & Ketatanegaraan (50 Soal):** Lembaga negara (DPR, MPR, MK), Trias Politika, pemilu, dasar negara Pancasila.
-5. **Matematika Cepat & Logika (50 Soal):** Hitungan cepat, kuadrat sederhana, bilangan prima, perbandingan rasio.
-6. **Antariksa & Tata Surya (50 Soal):** Planet terbesar, planet merah (Mars), komet, gerhana matahari, satelit alami bumi (Bulan).
-7. **Ilmu Pengetahuan Umum (50 Soal):** Penemu listrik, bahasa internasional, hari nasional, penemu telepon.
-8. **Biologi & Dunia Hewan (50 Soal):** Mamalia bertelur, metamorfosis kupu-kupu, hewan karnivora, fungsi klorofil.
-9. **Fakta Unik & Pop Culture (50 Soal):** Guinness World Records, film legendaris, makanan khas dunia, fenomena alam unik.
-
----
-
-## 🔍 6. PENANGANAN KASUS KHUSUS (*EDGE CASES*)
-
-### A. Bagaimana jika jumlah anggota tim hanya 2 orang atau 3 orang?
-* Pertanyaan estafet tetap berjumlah 16 soal. Rumus perputaran anggota menggunakan operator modulo:
-  `memberId = team.memberIds[globalIdx % team.memberIds.length]`
-  Sehingga giliran menjawab akan berputar secara adil dan berulang (misal tim isi 3 orang: P1 $\rightarrow$ P2 $\rightarrow$ P3 $\rightarrow$ P1 $\rightarrow$ dst).
-
-### B. Bagaimana jika Host salah memencet tombol SALAH di soal ke-4 ronde?
-* Host cukup menekan tombol **"Undo Soal Lalu"**. Sistem akan secara matematis:
-  1. Mengembalikan +2 poin pemain yang salah.
-  2. Mencabut kartu tantangan yang baru saja diberikan.
-  3. Mengembalikan tim ke stage `chain_quiz` tanpa kehilangan riwayat soal sebelumnya.
-
-### C. Opsi Replay di Papan Klasemen Akhir (`G5Results.tsx`):
-* Host diberikan 2 tombol pilihan:
-  1. **Main Lagi (Kelompok Sama):** Mengambil 16 soal baru yang belum pernah muncul untuk masing-masing tim dengan susunan anggota yang tetap.
-  2. **Main Lagi (Acak Ulang / Shuffle Tim):** Mengacak ulang seluruh pemain room menjadi susunan tim baru yang segar.
+### Bank Kartu Tantangan Konyol (Active Challenges):
+* *Berdiri dengan satu kaki selama ronde berlangsung.*
+* *Wajib menjawab dengan intonasi robot kaku tanpa ekspresi wajah.*
+* *Tepuk tangan heboh setiap kali ada orang yang bersuara di ruangan.*
+* *Wajib katakan "Siap Bosque!" dengan lantang sebelum menjawab soal.*
+* *Goyangkan kepala ke kiri dan kanan terus-menerus seolah sedang mendengar musik.*
+* *Tahan tawa dan pasang muka melotot heran ke arah penonton.*
+* *Bicara dengan nada berbisik rahasia agen mata-mata CIA.*
+* *Pegang dagu seolah-olah lagi merenungi masa depan bangsa.*

@@ -9,6 +9,7 @@ import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAv
 import { HostUtilityBar } from '../../components/HostUtilityBar'
 import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout'
 import { sfx } from '../../utils/sound'
+import { syncHostRoomState, listenToPlayerActions } from '../../services/firebase'
 
 type Stage =
   | 'prep'
@@ -82,6 +83,7 @@ const STAGE_ORDER: Stage[] = [
 export default function G4Match() {
   const navigate = useNavigate()
   const {
+    roomCode,
     g4Players,
     g4Matches,
     g4CurrentMatchIndex,
@@ -106,6 +108,43 @@ export default function G4Match() {
 
   const [stageIndex, setStageIndex] = useState(0)
   const currentStage = STAGE_ORDER[stageIndex]
+
+  // Sync state ke Firebase Realtime untuk HP Controller
+  useEffect(() => {
+    if (!roomCode || !match) return
+    syncHostRoomState(roomCode, {
+      activeGame: 'game4',
+      gamePhase: currentStage === 'voting' ? 'voting' : 'debate',
+      gameState: {
+        g4Topic: match.topic?.topic,
+        g4ProTeamIds: teamAPlayers.map((p) => p.id),
+        g4ContraTeamIds: teamBPlayers.map((p) => p.id),
+        g4ChaosCardPro: match.chaosCardA,
+        g4ChaosCardContra: match.chaosCardB,
+      },
+    })
+  }, [roomCode, match, currentStage, teamAPlayers, teamBPlayers])
+
+  // Dengarkan live voting dari HP penonton
+  useEffect(() => {
+    if (!roomCode) return
+    const unsubscribe = listenToPlayerActions(roomCode, (actionsMap) => {
+      if (!actionsMap) return
+      let countA = 0
+      let countB = 0
+      Object.values(actionsMap).forEach((action) => {
+        if (action.type === 'cast_g4_vote') {
+          if (action.payload?.team === 'A') countA++
+          if (action.payload?.team === 'B') countB++
+        }
+      })
+      if (countA > 0 || countB > 0) {
+        setVotesA(countA)
+        setVotesB(countB)
+      }
+    })
+    return () => unsubscribe()
+  }, [roomCode])
 
   const handleShuffleTopic = () => {
     const newTopic = g4ShuffleTopic()

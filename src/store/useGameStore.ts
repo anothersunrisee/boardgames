@@ -191,10 +191,12 @@ interface GameStore {
   // ── Room & Players ──
   roomCreated: boolean;
   roomName: string;
+  roomCode: string;
   roomVibe: RoomVibe;
   players: Player[];
   setRoomCreated: (created: boolean) => void;
   setRoomName: (name: string) => void;
+  setRoomCode: (code: string) => void;
   setRoomVibe: (vibe: RoomVibe) => void;
   setPlayers: (players: Player[]) => void;
   addScore: (playerId: string, points: number) => void;
@@ -316,6 +318,7 @@ interface GameStore {
 const initialState = {
   roomCreated: false,
   roomName: 'Party Games Room',
+  roomCode: '',
   roomVibe: 'tongkrongan' as RoomVibe,
   players: DEFAULT_ROOM_PLAYERS,
   g1Rounds: [],
@@ -353,6 +356,7 @@ export const useGameStore = create<GameStore>()(
   // ── Room & Players Actions ──
   setRoomCreated: (created) => set({ roomCreated: created }),
   setRoomName: (roomName) => set({ roomName }),
+  setRoomCode: (roomCode) => set({ roomCode }),
   setRoomVibe: (roomVibe) => set({ roomVibe }),
   setPlayers: (players) => set({ players }),
   addScore: (playerId, points) =>

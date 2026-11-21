@@ -27,10 +27,11 @@ import { FluentEmoji } from '../components/ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
 import { generatePartyWrappedAwards } from '../utils/partyWrapped';
 import { generateStoryCardPng } from '../utils/storyCardGenerator';
+import { syncHostRoomState } from '../services/firebase';
 
 export default function RoomPodium() {
   const navigate = useNavigate();
-  const { roomName, roomVibe, players, resetRoomScores } = useGameStore();
+  const { roomName, roomCode, roomVibe, players, resetRoomScores } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showTvBackdrop, setShowTvBackdrop] = useState(false);
@@ -39,7 +40,14 @@ export default function RoomPodium() {
 
   useEffect(() => {
     sfx.playFanfare();
-  }, []);
+    if (roomCode) {
+      syncHostRoomState(roomCode, {
+        status: 'podium',
+        activeGame: null,
+        gamePhase: 'podium',
+      });
+    }
+  }, [roomCode]);
 
   const sortedPlayers = useMemo(
     () => [...players].sort((a, b) => b.score - a.score),

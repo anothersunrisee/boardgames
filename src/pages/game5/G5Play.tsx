@@ -26,10 +26,12 @@ import { FluentEmoji } from '../../components/ui/FluentEmoji';
 import { GameDesktopLayout } from '../../components/layout/GameDesktopLayout';
 import { PunishmentModal } from '../../components/PunishmentModal';
 import { sfx } from '../../utils/sound';
+import { syncHostRoomState } from '../../services/firebase';
 
 export default function G5Play() {
   const navigate = useNavigate();
   const {
+    roomCode,
     players,
     g5Teams,
     g5CurrentTeamIndex,
@@ -75,6 +77,23 @@ export default function G5Play() {
       setIsTimerPaused(false);
     }
   }, [currentGlobalIdx, stage]);
+
+  // Sync state ke Firebase Realtime untuk HP Controller
+  React.useEffect(() => {
+    if (!roomCode || !currentTeam) return;
+    const currentQ = currentTeam.questions[currentGlobalIdx];
+    syncHostRoomState(roomCode, {
+      activeGame: 'game5',
+      gamePhase: stage,
+      gameState: {
+        g5ActiveQuestion: currentQ?.question,
+        g5ActiveCategory: currentQ?.category,
+        g5ActiveMemberId: currentTeam.memberIds[currentQuestionInRound % currentTeam.memberIds.length],
+        g5CurrentRound: currentRoundIdx + 1,
+        g5TimeLeft: timeLeft,
+      },
+    });
+  }, [roomCode, currentTeam, stage, currentGlobalIdx, currentQuestionInRound, currentRoundIdx, timeLeft]);
 
   // Tick interval
   React.useEffect(() => {
