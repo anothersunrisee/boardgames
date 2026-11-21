@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserPlus, Trash2, ArrowRight, Sparkles, Smile, X } from 'lucide-react';
+import { Users, UserPlus, Trash2, ArrowRight, Sparkles, Smile, X, Smartphone, Monitor, CheckCircle2, Copy, Check } from 'lucide-react';
 import { useGameStore, type Player, type Gender, type RoomVibe, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -35,7 +35,11 @@ export const RoomSetup: React.FC = () => {
     setRoomCode: setStoreRoomCode,
     roomVibe,
     setRoomVibe,
+    playMode,
+    setPlayMode,
   } = useGameStore();
+
+  const [copied, setCopied] = useState(false);
 
   const [roster, setRoster] = useState<Player[]>(
     players.length > 0 ? players : DEFAULT_ROOM_PLAYERS
@@ -209,6 +213,7 @@ export const RoomSetup: React.FC = () => {
       status: 'playing',
       name: currentRoomName,
       vibe: currentVibe,
+      playMode,
     });
     setTransitionActive(true);
   };
@@ -260,52 +265,171 @@ export const RoomSetup: React.FC = () => {
           </p>
         </div>
 
-        {/* 📱 MULTI-DEVICE REALTIME JOIN BANNER */}
-        <div className="mb-4 p-4 sm:p-5 rounded-[28px] bg-gradient-to-r from-[#1E1E24] to-[#2D2A3E] text-white border-2 border-[#1E1E24] shadow-md flex flex-col md:flex-row items-center justify-between gap-5">
-          <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#10B981]/20 text-[#34D399] border border-[#10B981]/30 text-[10px] font-black uppercase tracking-wider mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span>
-                {isFirebaseConfigured()
-                  ? '🟢 FIREBASE REALTIME ONLINE'
-                  : '⚡ MULTI-DEVICE CONTROLLER'}
-              </span>
-            </div>
-            <h3 className="font-display text-xl sm:text-2xl font-black text-white">
-              Main Pakai HP Masing-Masing?
-            </h3>
-            <p className="text-xs text-white/75 font-semibold mt-1 max-w-md">
-              Scan QR Code atau buka <strong>{joinUrl}</strong> di browser HP, lalu masukkan kode room:
-            </p>
-
-            {/* Large 4-Letter Room Code */}
-            <div className="flex items-center justify-center md:justify-start gap-2 mt-3">
-              <span className="text-xs font-bold text-white/70">KODE ROOM:</span>
-              <div className="font-display text-2xl sm:text-3xl font-black tracking-widest text-[#FBBF24] bg-white/10 px-4 py-1.5 rounded-2xl border border-white/20 shadow-xs">
-                {roomCode}
+        {/* 🎛️ 2-BUTTON SWITCH MODE (SATU LAYAR vs HP MASING-MASING) */}
+        <div className="mb-4">
+          <label className="block text-[11px] font-black text-[#64616C] uppercase tracking-wider mb-2 text-center sm:text-left">
+            Pilih Mode Bermain Party:
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Opsi 1: Satu Layar Bersama */}
+            <button
+              type="button"
+              onClick={() => {
+                sfx.playPop(700);
+                setPlayMode('single_screen');
+              }}
+              className={`p-4 rounded-[26px] border-2 text-left transition-all cursor-pointer flex items-center justify-between ${
+                playMode === 'single_screen'
+                  ? 'bg-white border-[#158467] shadow-[0_6px_0_#0F5E49] translate-y-[-2px]'
+                  : 'bg-white/60 border-[#1E1E24]/10 hover:bg-white text-[#64616C] hover:border-[#1E1E24]/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    playMode === 'single_screen'
+                      ? 'bg-[#158467] text-white shadow-xs'
+                      : 'bg-[#1E1E24]/5 text-[#64616C]'
+                  }`}
+                >
+                  <Monitor className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4
+                    className={`font-display text-sm sm:text-base font-black leading-tight ${
+                      playMode === 'single_screen' ? 'text-[#1E1E24]' : 'text-[#64616C]'
+                    }`}
+                  >
+                    Satu Layar Bersama
+                  </h4>
+                  <p className="text-[11px] font-medium text-[#64616C] mt-0.5">
+                    1 Layar digilir (Pass & Play). 100% Offline tanpa HP.
+                  </p>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  sfx.playPop(720);
-                  setRoomCode(generateRoomCode());
-                }}
-                className="text-[11px] font-bold text-white/60 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
-                title="Ganti kode room"
-              >
-                ↺ Ganti
-              </button>
-            </div>
-          </div>
+              {playMode === 'single_screen' && (
+                <CheckCircle2 className="w-5 h-5 text-[#158467] shrink-0" />
+              )}
+            </button>
 
-          {/* QR Code Container */}
-          <div className="shrink-0 flex flex-col items-center">
-            <QRCodeDisplay value={joinUrl} size={140} />
-            <span className="text-[10px] font-extrabold text-[#FBBF24] mt-1.5 tracking-wider">
-              SCAN QR VIA HP
-            </span>
+            {/* Opsi 2: Multi-Device (HP Masing-Masing) */}
+            <button
+              type="button"
+              onClick={() => {
+                sfx.playPop(750);
+                setPlayMode('multi_device');
+              }}
+              className={`p-4 rounded-[26px] border-2 text-left transition-all cursor-pointer flex items-center justify-between ${
+                playMode === 'multi_device'
+                  ? 'bg-[#1E1E24] text-white border-[#1E1E24] shadow-[0_6px_0_#0C0D14] translate-y-[-2px]'
+                  : 'bg-white/60 border-[#1E1E24]/10 hover:bg-white text-[#64616C] hover:border-[#1E1E24]/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    playMode === 'multi_device'
+                      ? 'bg-[#FBBF24] text-[#1E1E24] shadow-xs'
+                      : 'bg-[#1E1E24]/5 text-[#64616C]'
+                  }`}
+                >
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4
+                    className={`font-display text-sm sm:text-base font-black leading-tight ${
+                      playMode === 'multi_device' ? 'text-white' : 'text-[#64616C]'
+                    }`}
+                  >
+                    Pakai HP Masing-Masing
+                  </h4>
+                  <p
+                    className={`text-[11px] font-medium mt-0.5 ${
+                      playMode === 'multi_device' ? 'text-white/75' : 'text-[#64616C]'
+                    }`}
+                  >
+                    Layar TV + HP masing-masing ketik jawaban & voting!
+                  </p>
+                </div>
+              </div>
+              {playMode === 'multi_device' && (
+                <CheckCircle2 className="w-5 h-5 text-[#FBBF24] shrink-0" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* 📱 KONTEN MULTI-DEVICE: SCAN QR + KODE ROOM */}
+        {playMode === 'multi_device' ? (
+          <div className="mb-4 p-4 sm:p-5 rounded-[28px] bg-gradient-to-r from-[#1E1E24] to-[#2D2A3E] text-white border-2 border-[#1E1E24] shadow-md flex flex-col md:flex-row items-center justify-between gap-5">
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#10B981]/20 text-[#34D399] border border-[#10B981]/30 text-[10px] font-black uppercase tracking-wider mb-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                <span>
+                  {isFirebaseConfigured()
+                    ? '🟢 FIREBASE REALTIME ONLINE'
+                    : '⚡ MULTI-DEVICE CONTROLLER'}
+                </span>
+              </div>
+              <h3 className="font-display text-xl sm:text-2xl font-black text-white">
+                Scan QR Code untuk Gabung via HP
+              </h3>
+              <p className="text-xs text-white/75 font-semibold mt-1 max-w-md">
+                Buka kamera HP atau kunjungi <strong>{joinUrl}</strong>, lalu masukkan kode room di bawah:
+              </p>
+
+              {/* Large 4-Letter Room Code */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 mt-3">
+                <span className="text-xs font-bold text-white/70">KODE ROOM:</span>
+                <div className="font-display text-2xl sm:text-3xl font-black tracking-widest text-[#FBBF24] bg-white/10 px-4 py-1.5 rounded-2xl border border-white/20 shadow-xs">
+                  {roomCode}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playPop(720);
+                    setRoomCode(generateRoomCode());
+                  }}
+                  className="text-[11px] font-bold text-white/70 hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/10"
+                  title="Ganti kode room"
+                >
+                  ↺ Ganti Kode
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playSuccess();
+                    navigator.clipboard.writeText(joinUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="text-[11px] font-bold text-white/70 hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer border border-white/10 flex items-center gap-1"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-[#34D399]" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Tersalin!' : 'Salin Link'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="shrink-0 flex flex-col items-center bg-white/5 p-3 rounded-2xl border border-white/10">
+              <QRCodeDisplay value={joinUrl} size={135} />
+              <span className="text-[10px] font-extrabold text-[#FBBF24] mt-2 tracking-wider">
+                SCAN QR VIA HP
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4 p-4 rounded-[24px] bg-[#D6F5EC] border-2 border-[#158467]/30 text-[#158467] flex items-center gap-3">
+            <Monitor className="w-6 h-6 shrink-0 text-[#158467]" />
+            <div className="text-xs">
+              <p className="font-bold">Mode 1 Layar Aktif:</p>
+              <p className="text-[#1E1E24]/80 font-medium">
+                Pemain tidak perlu scan HP. Setiap giliran dan tebakan akan dikendalikan langsung oleh Host di layar ini.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Room Name & Preset Bar */}
         <Card className="mb-4 p-4 md:p-5 bg-white shadow-xs border-2 border-[#1E1E24]/10 rounded-[28px]">

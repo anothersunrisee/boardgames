@@ -34,6 +34,7 @@ export interface OnlineRoomData {
   hostId: string;
   createdAt: number;
   status: 'lobby' | 'playing' | 'podium';
+  playMode?: 'single_screen' | 'multi_device';
   activeGame?: string | null;
   gamePhase?: string | null;
   gameState?: {

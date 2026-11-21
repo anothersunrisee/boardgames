@@ -17,6 +17,7 @@ import { getRandomPitchItem, type PitchItem } from '../data/game6-pitches';
 export type Gender = 'cowok' | 'cewek';
 export type RoomVibe = 'family' | 'office' | 'tongkrongan';
 export type PlayerStatus = 'active' | 'inactive';
+export type PlayMode = 'single_screen' | 'multi_device';
 
 export type Player = {
   id: string;
@@ -193,11 +194,13 @@ interface GameStore {
   roomName: string;
   roomCode: string;
   roomVibe: RoomVibe;
+  playMode: PlayMode;
   players: Player[];
   setRoomCreated: (created: boolean) => void;
   setRoomName: (name: string) => void;
   setRoomCode: (code: string) => void;
   setRoomVibe: (vibe: RoomVibe) => void;
+  setPlayMode: (mode: PlayMode) => void;
   setPlayers: (players: Player[]) => void;
   addScore: (playerId: string, points: number) => void;
   resetRoomScores: () => void;
@@ -320,6 +323,7 @@ const initialState = {
   roomName: 'Party Games Room',
   roomCode: '',
   roomVibe: 'tongkrongan' as RoomVibe,
+  playMode: 'multi_device' as PlayMode,
   players: DEFAULT_ROOM_PLAYERS,
   g1Rounds: [],
   g1CurrentRound: 1,
@@ -358,6 +362,7 @@ export const useGameStore = create<GameStore>()(
   setRoomName: (roomName) => set({ roomName }),
   setRoomCode: (roomCode) => set({ roomCode }),
   setRoomVibe: (roomVibe) => set({ roomVibe }),
+  setPlayMode: (playMode) => set({ playMode }),
   setPlayers: (players) => set({ players }),
   addScore: (playerId, points) =>
     set((state) => ({
