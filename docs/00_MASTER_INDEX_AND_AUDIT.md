@@ -1,14 +1,21 @@
-# NIRANTARA PARTYGAMES — ARSITEKTUR SISTEM, MASTER INDEX & AUDIT GO-PUBLIC
+# UNIVERSAL PARTY GAMES (PARTYHUB INDONESIA) — ARSITEKTUR SISTEM, MASTER INDEX & AUDIT GO-PUBLIC
 > Dokumen Spesifikasi Menyeluruh untuk Review Sistem & Pengujian Model AI (Gemini Neon High)  
-> Tanggal Penyusunan: 21 November 2026 | Versi: 1.0 Production Readiness Candidate
+> Tanggal Penyusunan: 21 November 2026 | Versi: 1.0 Production Readiness Candidate  
+> Posisi Produk: Platform Game Pesta Luring Universal untuk Semua Kalangan (Tongkrongan, Kantor/Corporate, Keluarga, Komunitas)
 
 ---
 
 ## 📌 1. EXECUTIVE SUMMARY & ARSITEKTUR PLATFORM
 
-**Nirantara Partygames** adalah aplikasi web permainan pesta luring (*offline casual party games*) berbasis **Shared-Screen Host Mode** (1 layar utama di laptop/tablet/TV proyektor yang dipandu oleh seorang Host, dimainkan bersama oleh 2 hingga 20 orang dalam satu ruangan).
+**Universal Party Games (PartyHub Indonesia)** adalah aplikasi web permainan pesta luring (*offline casual party games*) berbasis **Shared-Screen Host Mode** (1 layar utama di laptop/tablet/TV proyektor yang dipandu oleh seorang Host, dimainkan bersama oleh 2 hingga 20 orang dalam satu ruangan).
 
-Aplikasi ini dibangun dengan prinsip:
+Aplikasi ini diposisikan untuk **SEMUA KALANGAN** masyarakat Indonesia:
+* **Tongkrongan Pemuda / Mahasiswa:** Adu argumen cepat, adu tebak kata, dan hukuman receh pemecah tawa.
+* **Kantor / Corporate Gathering:** Ice-breaking dan team building aman (*safe for work*), bebas pelecehan atau materi tidak senonoh.
+* **Keluarga & Arisan Lintas Generasi:** Mudah dipahami oleh orang tua, remaja, hingga anak-anak tanpa mekanik gamer rumit.
+* **Komunitas / Reuni:** Cukup 1 klik tanpa login, scan QR rumit, atau unduh aplikasi native.
+
+Prinsip Utama Platform:
 1. **Zero Login / Zero Friction:** Pemain tidak perlu mengunduh aplikasi atau scan QR per orang untuk memulai. Cukup buka browser, atur nama room, pilih game, dan mainkan langsung.
 2. **Neo-Brutalist Pop Aesthetics:** Mengombinasikan tipografi gemas (*Fredoka* display font + *Plus Jakarta Sans* body font), palet warna cerah bergaya pesta (*warm cream* `#FAF7F2`, *charcoal black* `#1E1E24`, aksen neon punchy), bayangan solid tebal (*drop-shadow offset* 4px–8px), serta **3D Microsoft Fluent Emoji** lintas platform.
 3. **Sintetis Audio Prosedural (Web Audio API):** Suara SFX (*pop, tick, success fanfare, buzzer, whoosh*) di-sintesis secara matematis langsung di browser melalui osilator audio native tanpa dependensi file `.mp3` eksternal yang rawan gagal muat di jaringan seluler.
