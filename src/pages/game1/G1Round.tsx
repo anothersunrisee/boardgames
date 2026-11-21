@@ -65,6 +65,7 @@ export default function G1Round() {
 
   const handleUndoScoring = () => {
     sfx.playPop()
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     setPhase('timer')
     setTimeLeft(30)
     setIsTimerRunning(false)
@@ -74,6 +75,7 @@ export default function G1Round() {
 
   // Pick category on mount or when round changes
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     const [cat] = pickRandomCategories(1, g1UsedCategoryIds)
     setCategory(cat ?? null)
     setTimeLeft(30)
@@ -145,6 +147,7 @@ export default function G1Round() {
   // Transition to Scoring / Reveal
   const triggerRevealPhase = () => {
     sfx.playBuzzer()
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     setPhase('scoring')
 
     if (playMode === 'multi_device') {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -385,8 +385,13 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
     if (!sfx.muted) sfx.playPop();
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
   const handleBack = () => {
     sfx.playPop();
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     if (onBack) {
       onBack();
     } else if (onExit) {
@@ -398,6 +403,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
 
   const handleBackToMenu = () => {
     sfx.playPop();
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     navigate('/hub');
   };
 
