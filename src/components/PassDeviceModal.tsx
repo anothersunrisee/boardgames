@@ -19,7 +19,7 @@ export const PassDeviceModal: React.FC<PassDeviceModalProps> = ({
   playerName,
   avatarId,
   teamName,
-  subtitle = 'Jangan intip layar kalau bukan giliranmu ya!',
+  subtitle = 'Pemain lain harap tutup mata / jangan intip layar TV ya!',
   accentColor = '#9D71E8',
   onReady,
   onBack,
@@ -59,11 +59,11 @@ export const PassDeviceModal: React.FC<PassDeviceModalProps> = ({
 
       <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-extrabold uppercase tracking-wider mb-3">
         <ShieldAlert className="w-4 h-4" />
-        <span>Privacy Lock Aktif</span>
+        <span>Kunci Privasi Rahasia</span>
       </div>
 
       <p className="text-[#64616C] font-bold text-base mb-1">
-        Oper HP ini ke:
+        Host, panggil pemain ini ke depan layar:
       </p>
       <h2 className="font-display text-4xl md:text-5xl font-bold text-[#1E1E24] mb-2">
         {playerName}
@@ -75,12 +75,14 @@ export const PassDeviceModal: React.FC<PassDeviceModalProps> = ({
         </span>
       )}
 
-      <p className="text-[#64616C] text-sm max-w-xs mb-8">{subtitle}</p>
+      <p className="text-[#64616C] text-sm max-w-xs mb-8">
+        {subtitle}
+      </p>
 
       <div className="w-full max-w-xs">
         <Button variant="ink" size="lg" fullWidth onClick={onReady}>
           <Hand className="w-5 h-5" />
-          <span>Saya {playerName}, Buka Layar!</span>
+          <span>Saya {playerName}, Buka Rahasia!</span>
         </Button>
       </div>
     </motion.div>

@@ -28,6 +28,9 @@ export type Player = {
   avatarId?: string;
   status?: PlayerStatus;
   joinedLate?: boolean;
+  isHost?: boolean;
+  isOnline?: boolean;
+  connectedFromHp?: boolean;
 };
 
 // ─── Game 1 Types ────────────────────────────────────────────────────────────

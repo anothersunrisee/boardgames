@@ -69,6 +69,57 @@ export async function createOnlineRoom(room: OnlineRoomData): Promise<boolean> {
 }
 
 /**
+ * Ambil data room sekali (One-time fetch)
+ */
+export async function getOnlineRoom(roomCode: string): Promise<OnlineRoomData | null> {
+  const database = getFirebaseDb();
+  if (!database) return null;
+  try {
+    const roomRef = ref(database, `rooms/${roomCode}`);
+    const snapshot = await get(roomRef);
+    if (snapshot.exists()) {
+      return snapshot.val() as OnlineRoomData;
+    }
+    return null;
+  } catch (err) {
+    console.error('Gagal fetch online room:', err);
+    return null;
+  }
+}
+
+/**
+ * Host menyinkronkan daftar roster pemain ke Firebase
+ * Mempertahankan status connectedFromHp jika pemain sudah connect
+ */
+export async function syncRosterSlots(
+  roomCode: string,
+  players: Record<string, OnlinePlayer>
+): Promise<void> {
+  const database = getFirebaseDb();
+  if (!database) return;
+  try {
+    const playersRef = ref(database, `rooms/${roomCode}/players`);
+    const snapshot = await get(playersRef);
+    const existingPlayers = snapshot.exists() ? (snapshot.val() as Record<string, OnlinePlayer>) : {};
+
+    const merged: Record<string, OnlinePlayer> = {};
+    for (const [id, p] of Object.entries(players)) {
+      const prev = existingPlayers[id];
+      merged[id] = {
+        ...p,
+        isOnline: prev?.isOnline ?? p.isOnline ?? false,
+        connectedFromHp: prev?.connectedFromHp ?? p.connectedFromHp ?? false,
+        deviceId: prev?.deviceId ?? p.deviceId,
+        lastActive: prev?.lastActive ?? Date.now(),
+      };
+    }
+    await set(playersRef, merged);
+  } catch (err) {
+    console.error('Gagal sync roster slots:', err);
+  }
+}
+
+/**
  * Host menyinkronkan state permainan (fase game, pertanyaan, giliran)
  */
 export async function syncHostRoomState(
@@ -107,7 +158,15 @@ export async function joinOnlineRoom(
 
     const roomData = snapshot.val() as OnlineRoomData;
     const playerRef = ref(database, `rooms/${roomCode}/players/${player.id}`);
-    await set(playerRef, player);
+    
+    const enrichedPlayer: OnlinePlayer = {
+      ...player,
+      isOnline: true,
+      connectedFromHp: true,
+      lastActive: Date.now(),
+    };
+
+    await set(playerRef, enrichedPlayer);
 
     // Otomatis tandai offline saat HP pemain disconnect
     const onlineRef = ref(database, `rooms/${roomCode}/players/${player.id}/isOnline`);

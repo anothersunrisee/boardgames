@@ -9,6 +9,8 @@ export interface OnlinePlayer {
   score: number;
   isHost?: boolean;
   isOnline: boolean;
+  connectedFromHp?: boolean;
+  deviceId?: string;
   lastActive: number;
 }
 
@@ -32,6 +34,7 @@ export interface OnlineRoomData {
   name: string;
   vibe: RoomVibe;
   hostId: string;
+  hostPlayerId?: string;
   createdAt: number;
   status: 'lobby' | 'playing' | 'podium';
   playMode?: 'single_screen' | 'multi_device';

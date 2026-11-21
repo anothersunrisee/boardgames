@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserPlus, Trash2, ArrowRight, Sparkles, Smile, X, Smartphone, Monitor, CheckCircle2, Copy, Check } from 'lucide-react';
+import {
+  Users,
+  UserPlus,
+  Trash2,
+  ArrowRight,
+  Sparkles,
+  Smile,
+  X,
+  Smartphone,
+  Monitor,
+  CheckCircle2,
+  Copy,
+  Check,
+  Crown,
+  Wifi,
+} from 'lucide-react';
 import { useGameStore, type Player, type Gender, type RoomVibe, DEFAULT_ROOM_PLAYERS } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -15,9 +30,11 @@ import { QRCodeDisplay } from '../components/ui/QRCodeDisplay';
 import {
   createOnlineRoom,
   syncHostRoomState,
+  syncRosterSlots,
   listenToRoom,
   isFirebaseConfigured,
 } from '../services/firebase';
+import type { OnlinePlayer } from '../types/multiplayer';
 
 function genId() {
   return Math.random().toString(36).slice(2, 9);
@@ -48,11 +65,21 @@ export const RoomSetup: React.FC = () => {
   const [currentVibe, setCurrentVibe] = useState<RoomVibe>(roomVibe || 'tongkrongan');
   const [roomCode, setRoomCode] = useState(() => storeRoomCode || generateRoomCode());
 
+  // Host / Operator Selection (1 pemain yang memegang laptop/TV)
+  const [hostPlayerId, setHostPlayerId] = useState<string>(() => {
+    const existingHost = roster.find((p) => p.isHost);
+    return existingHost ? existingHost.id : roster[0]?.id || 'host_1';
+  });
+
+  const [showUnconnectedModal, setShowUnconnectedModal] = useState(false);
+  const [connectionToast, setConnectionToast] = useState<string | null>(null);
+
   useEffect(() => {
     if (roomCode && roomCode !== storeRoomCode) {
       setStoreRoomCode(roomCode);
     }
   }, [roomCode, storeRoomCode, setStoreRoomCode]);
+
   const [avatarPickerPlayerId, setAvatarPickerPlayerId] = useState<string | null>(null);
   const [transitionActive, setTransitionActive] = useState(false);
 
@@ -61,17 +88,36 @@ export const RoomSetup: React.FC = () => {
       ? `${window.location.origin}/join?code=${roomCode}`
       : `/join?code=${roomCode}`;
 
-  // Inisialisasi online room & dengarkan pemain yang scan QR lewat HP
+  // Inisialisasi online room & daftarkan slot roster ke Firebase
   useEffect(() => {
     if (!roomCode) return;
+
+    const initialPlayerMap: Record<string, OnlinePlayer> = {};
+    roster.forEach((p) => {
+      const isHost = p.id === hostPlayerId;
+      initialPlayerMap[p.id] = {
+        id: p.id,
+        name: p.name || 'Pemain',
+        avatarId: p.avatarId || 'c01',
+        gender: p.gender || 'cewek',
+        kubu: p.kubu || 'Tim',
+        score: p.score || 0,
+        isHost,
+        isOnline: isHost ? true : (p.isOnline ?? false),
+        connectedFromHp: p.connectedFromHp ?? false,
+        lastActive: Date.now(),
+      };
+    });
+
     createOnlineRoom({
       code: roomCode,
       name: currentRoomName,
       vibe: currentVibe,
       hostId: 'host_tv',
+      hostPlayerId,
       createdAt: Date.now(),
       status: 'lobby',
-      players: {},
+      players: initialPlayerMap,
     });
 
     const unsubscribe = listenToRoom(roomCode, (onlineRoom) => {
@@ -83,14 +129,27 @@ export const RoomSetup: React.FC = () => {
             remotePlayers.forEach((rp) => {
               const existingIdx = merged.findIndex((p) => p.id === rp.id);
               if (existingIdx !== -1) {
+                // Notifikasi suara jika baru saja terhubung dari HP
+                if (!merged[existingIdx].connectedFromHp && rp.connectedFromHp) {
+                  sfx.playSuccess();
+                  setConnectionToast(`🎉 ${rp.name} terhubung via HP!`);
+                  setTimeout(() => setConnectionToast(null), 3500);
+                }
+
                 merged[existingIdx] = {
                   ...merged[existingIdx],
                   name: rp.name,
                   avatarId: rp.avatarId,
                   gender: rp.gender,
                   kubu: rp.kubu,
+                  connectedFromHp: rp.connectedFromHp,
+                  isOnline: rp.isOnline,
                 };
               } else {
+                // Pemain baru daftar mandiri lewat HP
+                sfx.playSuccess();
+                setConnectionToast(`🎉 ${rp.name} baru bergabung via HP!`);
+                setTimeout(() => setConnectionToast(null), 3500);
                 merged.push({
                   id: rp.id,
                   name: rp.name,
@@ -98,6 +157,8 @@ export const RoomSetup: React.FC = () => {
                   gender: rp.gender,
                   kubu: rp.kubu,
                   score: 0,
+                  connectedFromHp: rp.connectedFromHp,
+                  isOnline: rp.isOnline,
                 });
               }
             });
@@ -110,8 +171,38 @@ export const RoomSetup: React.FC = () => {
     return () => unsubscribe();
   }, [roomCode]);
 
+  // Sinkronkan slot roster setiap kali nama atau avatar diubah Host
+  useEffect(() => {
+    if (!roomCode) return;
+    const playerMap: Record<string, OnlinePlayer> = {};
+    roster.forEach((p) => {
+      const isHost = p.id === hostPlayerId;
+      playerMap[p.id] = {
+        id: p.id,
+        name: p.name || 'Pemain',
+        avatarId: p.avatarId || 'c01',
+        gender: p.gender || 'cewek',
+        kubu: p.kubu || 'Tim',
+        score: p.score || 0,
+        isHost,
+        isOnline: isHost ? true : (p.isOnline ?? false),
+        connectedFromHp: p.connectedFromHp ?? false,
+        lastActive: Date.now(),
+      };
+    });
+    syncRosterSlots(roomCode, playerMap);
+  }, [roster, hostPlayerId, roomCode]);
+
   const cewekCount = roster.filter((p) => p.gender === 'cewek').length;
   const cowokCount = roster.filter((p) => p.gender === 'cowok').length;
+
+  // Status koneksi HP di mode multi-device
+  const nonHostPlayers = roster.filter((p) => p.id !== hostPlayerId);
+  const connectedNonHost = nonHostPlayers.filter((p) => p.connectedFromHp);
+  const allConnected =
+    playMode !== 'multi_device' ||
+    nonHostPlayers.length === 0 ||
+    connectedNonHost.length === nonHostPlayers.length;
 
   const handleAddPlayer = () => {
     if (roster.length >= 20) return;
@@ -127,6 +218,7 @@ export const RoomSetup: React.FC = () => {
         kubu: nextGender === 'cewek' ? 'Tim Cewek' : 'Tim Cowok',
         score: 0,
         avatarId: nextAvatar,
+        connectedFromHp: false,
       },
     ]);
   };
@@ -134,6 +226,10 @@ export const RoomSetup: React.FC = () => {
   const handleRemovePlayer = (id: string) => {
     if (roster.length <= 2) return;
     sfx.playPop(420);
+    if (id === hostPlayerId) {
+      const remaining = roster.filter((p) => p.id !== id);
+      if (remaining.length > 0) setHostPlayerId(remaining[0].id);
+    }
     setRoster((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -164,38 +260,53 @@ export const RoomSetup: React.FC = () => {
   const applyPreset10 = () => {
     sfx.playSuccess();
     setRoster(DEFAULT_ROOM_PLAYERS);
+    setHostPlayerId(DEFAULT_ROOM_PLAYERS[0].id);
   };
 
   const applyPreset8 = () => {
     sfx.playSuccess();
-    setRoster([
-      { id: genId(), name: 'Alya', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c01' },
-      { id: genId(), name: 'Bella', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c07' },
-      { id: genId(), name: 'Caca', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c04' },
-      { id: genId(), name: 'Dara', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c09' },
-      { id: genId(), name: 'Budi', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c03' },
-      { id: genId(), name: 'Dimas', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c05' },
-      { id: genId(), name: 'Fajar', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c02' },
-      { id: genId(), name: 'Kevin', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c08' },
-    ]);
+    const p8 = [
+      { id: genId(), name: 'Alya', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c01' },
+      { id: genId(), name: 'Bella', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c07' },
+      { id: genId(), name: 'Caca', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c04' },
+      { id: genId(), name: 'Dara', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c09' },
+      { id: genId(), name: 'Budi', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c03' },
+      { id: genId(), name: 'Dimas', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c05' },
+      { id: genId(), name: 'Fajar', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c02' },
+      { id: genId(), name: 'Kevin', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c08' },
+    ];
+    setRoster(p8);
+    setHostPlayerId(p8[0].id);
   };
 
   const applyPreset6 = () => {
     sfx.playSuccess();
-    setRoster([
-      { id: genId(), name: 'Nisa', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c01' },
-      { id: genId(), name: 'Tiara', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c04' },
-      { id: genId(), name: 'Maya', gender: 'cewek', kubu: 'Tim Cewek', score: 0, avatarId: 'c07' },
-      { id: genId(), name: 'Bagas', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c02' },
-      { id: genId(), name: 'Diki', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c05' },
-      { id: genId(), name: 'Fikri', gender: 'cowok', kubu: 'Tim Cowok', score: 0, avatarId: 'c08' },
-    ]);
+    const p6 = [
+      { id: genId(), name: 'Nisa', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c01' },
+      { id: genId(), name: 'Tiara', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c04' },
+      { id: genId(), name: 'Maya', gender: 'cewek' as Gender, kubu: 'Tim Cewek', score: 0, avatarId: 'c07' },
+      { id: genId(), name: 'Bagas', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c02' },
+      { id: genId(), name: 'Diki', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c05' },
+      { id: genId(), name: 'Fikri', gender: 'cowok' as Gender, kubu: 'Tim Cowok', score: 0, avatarId: 'c08' },
+    ];
+    setRoster(p6);
+    setHostPlayerId(p6[0].id);
   };
 
   const isValid = roster.length >= 2 && roster.every((p) => p.name.trim().length > 0);
 
-  const handleSaveAndEnter = () => {
+  const handleStartClick = () => {
     if (!isValid) return;
+    if (playMode === 'multi_device' && !allConnected) {
+      sfx.playPop(400);
+      setShowUnconnectedModal(true);
+      return;
+    }
+    executeSaveAndEnter();
+  };
+
+  const executeSaveAndEnter = () => {
+    setShowUnconnectedModal(false);
     sfx.playFanfare();
 
     const cleanPlayers: Player[] = roster.map((p, i) => ({
@@ -203,6 +314,7 @@ export const RoomSetup: React.FC = () => {
       name: p.name.trim() || `Pemain ${i + 1}`,
       kubu: p.kubu.trim() || (p.gender === 'cewek' ? 'Tim Cewek' : 'Tim Cowok'),
       avatarId: p.avatarId || CHARACTER_PACK[i % CHARACTER_PACK.length].id,
+      isHost: p.id === hostPlayerId,
     }));
 
     setPlayers(cleanPlayers);
@@ -214,6 +326,7 @@ export const RoomSetup: React.FC = () => {
       name: currentRoomName,
       vibe: currentVibe,
       playMode,
+      hostPlayerId,
     });
     setTransitionActive(true);
   };
@@ -230,6 +343,75 @@ export const RoomSetup: React.FC = () => {
           navigate('/hub');
         }}
       />
+
+      {/* Floating Toast Notification when a friend connects from mobile */}
+      {connectionToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1E1E24] text-white px-4 py-2 rounded-2xl shadow-lg border border-[#FBBF24]/40 flex items-center gap-2 animate-bounce">
+          <Smartphone className="w-4 h-4 text-[#FBBF24]" />
+          <span className="text-xs font-black">{connectionToast}</span>
+        </div>
+      )}
+
+      {/* ⚠️ MODAL KONFIRMASI: JIKA BELUM SEMUA HP TERHUBUNG */}
+      {showUnconnectedModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FAF7F2] border-3 border-[#1E1E24] shadow-[0_8px_0_#1E1E24] rounded-[28px] max-w-md w-full p-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <Smartphone className="w-7 h-7 animate-bounce" />
+            </div>
+
+            <h3 className="font-display text-xl sm:text-2xl font-black text-[#1E1E24]">
+              Belum Semua HP Terhubung!
+            </h3>
+            <p className="text-xs text-[#64616C] font-semibold mt-1 max-w-xs mx-auto">
+              Baru <strong>{connectedNonHost.length} dari {nonHostPlayers.length}</strong> teman yang sudah connect HP ke TV.
+            </p>
+
+            <div className="my-4 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 text-left">
+              <p className="text-[10px] font-black text-[#64616C] uppercase tracking-wider mb-2">
+                Pemain Belum Connect HP:
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {nonHostPlayers
+                  .filter((p) => !p.connectedFromHp)
+                  .map((p) => (
+                    <span
+                      key={p.id}
+                      className="px-2.5 py-1 rounded-xl bg-[#FEE2E2] text-[#991B1B] text-xs font-bold flex items-center gap-1 border border-[#DC2626]/20"
+                    >
+                      <span>⚪</span>
+                      <span>{p.name || 'Pemain'}</span>
+                    </span>
+                  ))}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#64616C] font-medium mb-4">
+              Pemain yang belum connect tidak bisa submit jawaban rahasia dari HP mereka.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop();
+                  setShowUnconnectedModal(false);
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#158467] hover:bg-[#0F5E49] text-white font-display text-xs font-black shadow-[0_4px_0_#0F5E49] transition active:translate-y-1 cursor-pointer"
+              >
+                ⏳ Tunggu Teman Scan HP
+              </button>
+              <button
+                type="button"
+                onClick={executeSaveAndEnter}
+                className="py-3 px-4 rounded-xl bg-white hover:bg-black/5 text-[#64616C] hover:text-[#1E1E24] font-display text-xs font-bold border border-[#1E1E24]/20 transition cursor-pointer"
+              >
+                Lanjut Saja
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-start">
         {/* Header Mascot & Title */}
@@ -254,24 +436,24 @@ export const RoomSetup: React.FC = () => {
 
           <div className="inline-flex items-center gap-2 px-3.5 py-0.5 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-bold tracking-wide mb-1.5 shadow-xs">
             <Users className="w-3.5 h-3.5 text-[#FCD34D]" />
-            <span>SINGLE-HOST ROOM REGISTRATION</span>
+            <span>ROOM REGISTRATION & MODERATOR SETUP</span>
           </div>
 
           <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#1E1E24]">
             Masuk Room & Daftar Pemain
           </h1>
           <p className="text-[#64616C] text-xs sm:text-sm font-medium mt-1 max-w-lg mx-auto">
-            1 Host memegang layar. Pilih avatar unik untuk tiap pemain. Semua mini-game akan diacak otomatis!
+            1 Orang memegang laptop/TV sebagai <strong>Host / Moderator</strong> (bisa sekalian ikut bermain!). Semua mini-game akan diacak otomatis.
           </p>
         </div>
 
-        {/* 🎛️ 2-BUTTON SWITCH MODE (SATU LAYAR vs HP MASING-MASING) */}
+        {/* 🎛️ 2-BUTTON SWITCH MODE (HOST MODERATOR vs HP MASING-MASING) */}
         <div className="mb-4">
           <label className="block text-[11px] font-black text-[#64616C] uppercase tracking-wider mb-2 text-center sm:text-left">
             Pilih Mode Bermain Party:
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Opsi 1: Satu Layar Bersama */}
+            {/* Opsi 1: Mode Host Moderator (1 Layar Utama) */}
             <button
               type="button"
               onClick={() => {
@@ -300,10 +482,10 @@ export const RoomSetup: React.FC = () => {
                       playMode === 'single_screen' ? 'text-[#1E1E24]' : 'text-[#64616C]'
                     }`}
                   >
-                    Satu Layar Bersama
+                    Mode Moderator (1 Layar Utama)
                   </h4>
                   <p className="text-[11px] font-medium text-[#64616C] mt-0.5">
-                    1 Layar digilir (Pass & Play). 100% Offline tanpa HP.
+                    1 Pemain di depan laptop mengoperasikan game untuk semua orang. 100% Offline tanpa HP.
                   </p>
                 </div>
               </div>
@@ -312,7 +494,7 @@ export const RoomSetup: React.FC = () => {
               )}
             </button>
 
-            {/* Opsi 2: Multi-Device (HP Masing-Masing) */}
+            {/* Opsi 2: Multi-Device (HP Masing-Masing + TV) */}
             <button
               type="button"
               onClick={() => {
@@ -341,14 +523,14 @@ export const RoomSetup: React.FC = () => {
                       playMode === 'multi_device' ? 'text-white' : 'text-[#64616C]'
                     }`}
                   >
-                    Pakai HP Masing-Masing
+                    Mode Multi-Device (Pakai HP)
                   </h4>
                   <p
                     className={`text-[11px] font-medium mt-0.5 ${
                       playMode === 'multi_device' ? 'text-white/75' : 'text-[#64616C]'
                     }`}
                   >
-                    Layar TV + HP masing-masing ketik jawaban & voting!
+                    TV di depan sebagai panggung + Semua teman pegang HP untuk ketik & voting rahasia!
                   </p>
                 </div>
               </div>
@@ -375,7 +557,7 @@ export const RoomSetup: React.FC = () => {
                 Scan QR Code untuk Gabung via HP
               </h3>
               <p className="text-xs text-white/75 font-semibold mt-1 max-w-md">
-                Buka kamera HP atau kunjungi <strong>{joinUrl}</strong>, lalu masukkan kode room di bawah:
+                Arahkan kamera HP ke QR Code atau buka <strong>{joinUrl}</strong>. Teman bisa langsung memilih namanya dari daftar TV!
               </p>
 
               {/* Large 4-Letter Room Code */}
@@ -409,6 +591,23 @@ export const RoomSetup: React.FC = () => {
                   <span>{copied ? 'Tersalin!' : 'Salin Link'}</span>
                 </button>
               </div>
+
+              {/* Live Connection Progress Pill */}
+              <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center gap-2">
+                <Wifi className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                <span className="text-xs font-bold text-white">
+                  Status HP Teman: <strong>{connectedNonHost.length} dari {nonHostPlayers.length}</strong> HP Terhubung
+                </span>
+                {allConnected ? (
+                  <span className="text-[10px] font-black text-[#34D399] bg-[#10B981]/20 px-2 py-0.5 rounded-full ml-auto">
+                    Siap Main!
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-black text-[#FBBF24] bg-[#F59E0B]/20 px-2 py-0.5 rounded-full ml-auto">
+                    Menunggu HP Lain...
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* QR Code Container */}
@@ -423,9 +622,9 @@ export const RoomSetup: React.FC = () => {
           <div className="mb-4 p-4 rounded-[24px] bg-[#D6F5EC] border-2 border-[#158467]/30 text-[#158467] flex items-center gap-3">
             <Monitor className="w-6 h-6 shrink-0 text-[#158467]" />
             <div className="text-xs">
-              <p className="font-bold">Mode 1 Layar Aktif:</p>
+              <p className="font-bold">Mode Host Moderator Aktif:</p>
               <p className="text-[#1E1E24]/80 font-medium">
-                Pemain tidak perlu scan HP. Setiap giliran dan tebakan akan dikendalikan langsung oleh Host di layar ini.
+                Pemain tidak perlu scan HP. Host memegang kendali laptop di meja depan dan memandu jalannya permainan untuk semua pemain.
               </p>
             </div>
           </div>
@@ -486,8 +685,8 @@ export const RoomSetup: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  sfx.playPop(750)
-                  setCurrentVibe('tongkrongan')
+                  sfx.playPop(750);
+                  setCurrentVibe('tongkrongan');
                 }}
                 className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
                   currentVibe === 'tongkrongan'
@@ -507,8 +706,8 @@ export const RoomSetup: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  sfx.playPop(750)
-                  setCurrentVibe('office')
+                  sfx.playPop(750);
+                  setCurrentVibe('office');
                 }}
                 className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
                   currentVibe === 'office'
@@ -528,8 +727,8 @@ export const RoomSetup: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  sfx.playPop(750)
-                  setCurrentVibe('family')
+                  sfx.playPop(750);
+                  setCurrentVibe('family');
                 }}
                 className={`p-2.5 rounded-2xl text-left border-2 transition-all cursor-pointer ${
                   currentVibe === 'family'
@@ -564,22 +763,31 @@ export const RoomSetup: React.FC = () => {
             </div>
           </div>
 
-          {/* Players Rows (Responsive: 1-col on mobile, 2-cols on desktop with zero overflow/collisions) */}
+          {/* Players Rows */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] lg:max-h-[390px] overflow-y-auto overflow-x-hidden pr-1.5 custom-scroll">
             {roster.map((player, index) => {
               const char = getCharacterById(player.avatarId || CHARACTER_PACK[index % CHARACTER_PACK.length].id);
               const isPickingAvatar = avatarPickerPlayerId === player.id;
+              const isHost = player.id === hostPlayerId;
 
               return (
                 <div key={player.id} className="space-y-2">
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/8 hover:border-[#1E1E24]/20 transition-all shadow-xs flex flex-col gap-2 relative">
-                    {/* Top Row: # Index + Interactive Avatar + Full-width Name Input + Delete Button */}
+                  <div
+                    className={`p-2.5 sm:p-3 rounded-2xl border-2 transition-all shadow-xs flex flex-col gap-2 relative ${
+                      isHost
+                        ? 'bg-[#FFFBEB] border-[#F59E0B]'
+                        : player.connectedFromHp
+                        ? 'bg-[#F0FDF4] border-[#10B981]'
+                        : 'bg-[#FAF7F2] border-[#1E1E24]/8 hover:border-[#1E1E24]/20'
+                    }`}
+                  >
+                    {/* Top Row: # Index + Interactive Avatar + Full-width Name Input + Host Badge / Delete Button */}
                     <div className="flex items-center gap-2 w-full min-w-0">
                       <span className="w-5 text-center font-display text-xs font-black text-[#64616C] shrink-0">
                         #{index + 1}
                       </span>
 
-                      {/* Interactive Avatar Button with edit hint */}
+                      {/* Interactive Avatar Button */}
                       <button
                         type="button"
                         onClick={() => {
@@ -595,7 +803,7 @@ export const RoomSetup: React.FC = () => {
                         </span>
                       </button>
 
-                      {/* Name Input (Takes all remaining width, never clipped) */}
+                      {/* Name Input */}
                       <div className="flex-1 min-w-0">
                         <input
                           type="text"
@@ -606,6 +814,23 @@ export const RoomSetup: React.FC = () => {
                           maxLength={20}
                         />
                       </div>
+
+                      {/* Crown Button (Jadikan Host/Moderator) */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sfx.playPop(800);
+                          setHostPlayerId(player.id);
+                        }}
+                        className={`p-1.5 rounded-xl transition cursor-pointer shrink-0 ${
+                          isHost
+                            ? 'bg-[#F59E0B] text-white shadow-xs'
+                            : 'text-[#64616C] hover:bg-black/5 hover:text-[#F59E0B]'
+                        }`}
+                        title={isHost ? 'Pemain ini adalah Host/Operator Laptop' : 'Jadikan pemain ini Host/Operator Laptop'}
+                      >
+                        <Crown className="w-4 h-4" />
+                      </button>
 
                       {/* Remove button */}
                       {roster.length > 2 && (
@@ -620,14 +845,14 @@ export const RoomSetup: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Bottom Row: Gender Segmented Switch + Kubu/Team Input */}
+                    {/* Bottom Row: Gender Segmented Switch + Connection Badge + Kubu */}
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#1E1E24]/8 pl-7">
                       {/* Gender Segmented Switch */}
                       <div className="inline-flex p-0.5 rounded-xl bg-white border border-[#1E1E24]/12 shrink-0">
                         <button
                           type="button"
                           onClick={() => handleUpdateField(player.id, 'gender', 'cewek')}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
                             player.gender === 'cewek'
                               ? 'bg-[#D8317E] text-white shadow-xs'
                               : 'text-[#64616C] hover:text-[#1E1E24]'
@@ -639,7 +864,7 @@ export const RoomSetup: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleUpdateField(player.id, 'gender', 'cowok')}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
                             player.gender === 'cowok'
                               ? 'bg-[#2568EF] text-white shadow-xs'
                               : 'text-[#64616C] hover:text-[#1E1E24]'
@@ -650,14 +875,30 @@ export const RoomSetup: React.FC = () => {
                         </button>
                       </div>
 
-                      {/* Team / Kubu Input */}
-                      <div className="flex items-center gap-1.5 flex-1 max-w-[160px] min-w-0">
-                        <span className="text-[10px] font-bold text-[#64616C] uppercase tracking-wider shrink-0">
-                          Kubu:
+                      {/* Realtime Connection Status Pill */}
+                      {isHost ? (
+                        <span className="px-2 py-0.5 rounded-full bg-[#F59E0B]/20 text-[#B45309] text-[10px] font-black border border-[#F59E0B]/30 flex items-center gap-1">
+                          <Crown className="w-3 h-3 text-[#D97706]" />
+                          <span>HOST LAPTOP</span>
                         </span>
+                      ) : playMode === 'multi_device' ? (
+                        player.connectedFromHp ? (
+                          <span className="px-2 py-0.5 rounded-full bg-[#10B981]/20 text-[#047857] text-[10px] font-black border border-[#10B981]/30 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                            <span>HP CONNECTED</span>
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-[#1E1E24]/5 text-[#64616C] text-[10px] font-bold border border-[#1E1E24]/10">
+                            ⚪ Belum Scan HP
+                          </span>
+                        )
+                      ) : null}
+
+                      {/* Team / Kubu Input */}
+                      <div className="flex items-center gap-1 flex-1 max-w-[120px] min-w-0">
                         <input
                           type="text"
-                          className="w-full px-2 py-1 text-xs font-bold bg-white rounded-lg border border-[#1E1E24]/15 focus:border-[#1E1E24] outline-none text-[#1E1E24] min-w-0"
+                          className="w-full px-2 py-0.5 text-xs font-bold bg-white rounded-lg border border-[#1E1E24]/15 focus:border-[#1E1E24] outline-none text-[#1E1E24] min-w-0 text-right"
                           placeholder="Nama Tim"
                           value={player.kubu}
                           onChange={(e) => handleUpdateField(player.id, 'kubu', e.target.value)}
@@ -728,9 +969,13 @@ export const RoomSetup: React.FC = () => {
             size="lg"
             fullWidth
             disabled={!isValid}
-            onClick={handleSaveAndEnter}
+            onClick={handleStartClick}
           >
-            <span>Buka Room & Lanjut Pilih Game</span>
+            <span>
+              {playMode === 'multi_device' && !allConnected
+                ? `Buka Room (Baru ${connectedNonHost.length}/${nonHostPlayers.length} HP Connect)`
+                : 'Buka Room & Lanjut Pilih Game'}
+            </span>
             <ArrowRight className="w-5 h-5" />
           </Button>
 

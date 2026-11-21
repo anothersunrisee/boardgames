@@ -27,13 +27,19 @@ import type { OnlineRoomData, OnlinePlayer } from '../types/multiplayer';
 export default function PlayerController() {
   const navigate = useNavigate();
 
-  // Load session from sessionStorage
+  // Load session from sessionStorage or localStorage
   const [session] = useState<{
     roomCode: string;
     player: OnlinePlayer;
   } | null>(() => {
-    const raw = sessionStorage.getItem('partyhub_player_session');
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw =
+        sessionStorage.getItem('partyhub_player_session') ||
+        localStorage.getItem('partyhub_player_session');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [room, setRoom] = useState<OnlineRoomData | null>(null);
@@ -96,6 +102,7 @@ export default function PlayerController() {
     sfx.playPop();
     await leaveOnlineRoom(session.roomCode, player.id);
     sessionStorage.removeItem('partyhub_player_session');
+    localStorage.removeItem('partyhub_player_session');
     navigate('/join');
   };
 
