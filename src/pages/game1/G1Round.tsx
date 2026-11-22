@@ -261,9 +261,9 @@ export default function G1Round() {
       onUndo={phase === 'scoring' ? handleUndoScoring : undefined}
       undoLabel="Undo ke Timer"
     >
-      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between gap-3.5">
         {/* Category Card (Compact, always visible at top) */}
-        <div className="rounded-[24px] bg-[#158467] text-white p-4 md:p-5 mb-3.5 shadow-[0_6px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden">
+        <div className="rounded-[24px] bg-[#158467] text-white p-4 md:p-5 shadow-[0_6px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-[#5CE6C0]" />
@@ -291,183 +291,167 @@ export default function G1Round() {
           </p>
         </div>
 
-        {/* Phase 1: 2-Column Layout — Timer on Left | Navigation & Roster on Right */}
-        <AnimatePresence mode="wait">
-          {phase === 'timer' && (
-            <motion.div
-              key="timer-phase"
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.97 }}
-              className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3.5 items-stretch"
-            >
-              {/* LEFT COLUMN: Compact Mascot + Timer Ring + Timer Controls */}
-              <div className="md:col-span-5 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-4 flex flex-col items-center justify-center text-center gap-3">
-                <GameMascotBot
-                  character={CHARACTER_PACK[1]}
-                  mood={timeLeft <= 5 ? 'shocked' : timeLeft <= 15 ? 'thinking' : 'happy'}
-                  size={68}
-                />
+        {/* Middle Stage (stretches cleanly to fill down to anchored Main Button) */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <AnimatePresence mode="wait">
+            {phase === 'timer' && (
+              <motion.div
+                key="timer-phase"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3.5 items-stretch"
+              >
+                {/* LEFT COLUMN: Mascot + Timer Ring + Timer Controls */}
+                <div className="md:col-span-5 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-5 flex flex-col items-center justify-center text-center gap-3.5">
+                  <GameMascotBot
+                    character={CHARACTER_PACK[1]}
+                    mood={timeLeft <= 5 ? 'shocked' : timeLeft <= 15 ? 'thinking' : 'happy'}
+                    size={70}
+                  />
 
-                <div
-                  className={`w-32 h-32 lg:w-36 lg:h-36 rounded-full flex flex-col items-center justify-center border-4 shadow-md transition-all ${
-                    timeLeft <= 5
-                      ? 'bg-[#FFE8DF] border-[#F04438] text-[#F04438] animate-pulse'
-                      : 'bg-[#FAF7F2] border-[#158467] text-[#158467]'
-                  }`}
-                >
-                  <span className="font-display text-4xl lg:text-5xl font-black tracking-tight tabular-nums">
-                    {timeLeft}
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#64616C]">
-                    Detik Tersisa
-                  </span>
+                  <div
+                    className={`w-34 h-34 lg:w-38 lg:h-38 rounded-full flex flex-col items-center justify-center border-4 shadow-md transition-all ${
+                      timeLeft <= 5
+                        ? 'bg-[#FFE8DF] border-[#F04438] text-[#F04438] animate-pulse'
+                        : 'bg-[#FAF7F2] border-[#158467] text-[#158467]'
+                    }`}
+                  >
+                    <span className="font-display text-4xl lg:text-5xl font-black tracking-tight tabular-nums">
+                      {timeLeft}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#64616C]">
+                      Detik Tersisa
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop()
+                        setIsTimerRunning(!isTimerRunning)
+                      }}
+                    >
+                      {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      <span>{isTimerRunning ? 'Jeda' : 'Lanjut'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop()
+                        setTimeLeft((t) => t + 10)
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+10 Detik</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop()
+                        setTimeLeft(30)
+                        setIsTimerRunning(true)
+                      }}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Reset 30s</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
-                    onClick={() => {
-                      sfx.playPop()
-                      setIsTimerRunning(!isTimerRunning)
-                    }}
-                  >
-                    {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                    <span>{isTimerRunning ? 'Jeda' : 'Lanjut'}</span>
-                  </button>
+                {/* RIGHT COLUMN: Mode Status / Player Roster */}
+                <div className="md:col-span-7 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-5 flex flex-col justify-center">
+                  {playMode === 'multi_device' ? (
+                    <div className="flex-1 flex flex-col min-h-0">
+                      <div className="flex items-center justify-between mb-3 text-xs font-bold">
+                        <span className="text-[#158467] flex items-center gap-1.5">
+                          <Users className="w-4 h-4" />
+                          <span>Status Masuk Jawaban HP:</span>
+                        </span>
+                        <span className="bg-[#D6F5EC] text-[#0F5E49] px-2.5 py-0.5 rounded-full font-extrabold">
+                          {submittedCount} / {players.length} Terkunci
+                        </span>
+                      </div>
 
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
-                    onClick={() => {
-                      sfx.playPop()
-                      setTimeLeft((t) => t + 10)
-                    }}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>+10 Detik</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 min-h-[36px] rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1.5 cursor-pointer"
-                    onClick={() => {
-                      sfx.playPop()
-                      setTimeLeft(30)
-                      setIsTimerRunning(true)
-                    }}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reset 30s</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: Mode Status / Player Roster + Primary Navigation CTA */}
-              <div className="md:col-span-7 flex flex-col justify-between gap-3.5 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-4">
-                {playMode === 'multi_device' ? (
-                  <div className="flex-1 flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-2.5 text-xs font-bold">
-                      <span className="text-[#158467] flex items-center gap-1.5">
-                        <Users className="w-4 h-4" />
-                        <span>Status Masuk Jawaban HP:</span>
-                      </span>
-                      <span className="bg-[#D6F5EC] text-[#0F5E49] px-2.5 py-0.5 rounded-full font-extrabold">
-                        {submittedCount} / {players.length} Terkunci
-                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[260px] overflow-y-auto pr-1">
+                        {players.map((p) => {
+                          const isSubmitted = !!phoneAnswers[p.id]
+                          return (
+                            <div
+                              key={p.id}
+                              className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
+                                isSubmitted
+                                  ? 'bg-[#D6F5EC]/60 border-[#12B76A]/40 text-[#0F5E49]'
+                                  : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
+                              }`}
+                            >
+                              <PlayerProfileAvatar
+                                character={getCharacterById(p.avatarId || 'c01')}
+                                size={26}
+                              />
+                              <div className="min-w-0 flex-1 text-left">
+                                <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
+                                <span className="text-xs font-semibold block">
+                                  {isSubmitted ? 'Terkunci' : 'Mengetik...'}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[210px] overflow-y-auto pr-1">
-                      {players.map((p) => {
-                        const isSubmitted = !!phoneAnswers[p.id]
-                        return (
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-display text-base font-black text-[#1E1E24] flex items-center gap-1.5">
+                          <span>📝 Mode 1 Layar Offline</span>
+                        </p>
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F2ECE1] text-[#1E1E24]">
+                          {players.length} Pemain
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-[#64616C] font-semibold leading-relaxed">
+                        Semua pemain menulis 1 jawaban unik di kertas atau catatan HP masing-masing sebelum timer 30 detik habis.
+                      </p>
+                      <div className="flex flex-wrap gap-2 pt-1 max-h-[220px] overflow-y-auto pr-1">
+                        {players.map((p) => (
                           <div
                             key={p.id}
-                            className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
-                              isSubmitted
-                                ? 'bg-[#D6F5EC]/60 border-[#12B76A]/40 text-[#0F5E49]'
-                                : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
-                            }`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24]"
                           >
                             <PlayerProfileAvatar
                               character={getCharacterById(p.avatarId || 'c01')}
-                              size={26}
+                              size={22}
+                              animated={false}
                             />
-                            <div className="min-w-0 flex-1 text-left">
-                              <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
-                              <span className="text-xs font-semibold block">
-                                {isSubmitted ? 'Terkunci' : 'Mengetik...'}
-                              </span>
-                            </div>
+                            <span>{p.name}</span>
                           </div>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <p className="font-display text-sm font-black text-[#1E1E24] flex items-center gap-1.5">
-                        <span>📝 Mode 1 Layar Offline</span>
-                      </p>
-                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F2ECE1] text-[#1E1E24]">
-                        {players.length} Pemain
-                      </span>
-                    </div>
-                    <p className="text-xs text-[#64616C] font-semibold">
-                      Semua pemain menulis 1 jawaban unik di kertas atau catatan HP masing-masing sebelum timer 30 detik habis.
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mt-3 max-h-[170px] overflow-y-auto pr-1">
-                      {players.map((p) => (
-                        <div
-                          key={p.id}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24]"
-                        >
-                          <PlayerProfileAvatar
-                            character={getCharacterById(p.avatarId || 'c01')}
-                            size={20}
-                            animated={false}
-                          />
-                          <span>{p.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-2 border-t border-[#1E1E24]/10 space-y-2">
-                  <Button
-                    variant="emerald"
-                    size="lg"
-                    fullWidth
-                    onClick={triggerRevealPhase}
-                  >
-                    <span>
-                      {playMode === 'multi_device'
-                        ? 'Waktu Habis • Buka Kartu Jawaban HP'
-                        : 'Lanjut Input & Skoring Jawaban'}
-                    </span>
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
+                  )}
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Phase 2: Compact Top Action Bar + Scroll-Contained Answer Cards */}
-          {phase === 'scoring' && (
-            <motion.div
-              key="scoring-phase"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex-1 flex flex-col min-h-0"
-            >
-              {/* Top Action & Tally Bar (No scrolling down required to advance!) */}
-              <div className="mb-3 p-3.5 rounded-[22px] bg-white border-2 border-[#1E1E24]/10 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
+            {/* Phase 2: Scoring Cards (Compact Header + Cards Filling Middle Space) */}
+            {phase === 'scoring' && (
+              <motion.div
+                key="scoring-phase"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col min-h-0"
+              >
+                {/* Header Tally + Compact Undo */}
+                <div className="mb-3 p-3.5 rounded-[22px] bg-white border-2 border-[#1E1E24]/10 shadow-xs flex flex-wrap items-center justify-between gap-2.5 shrink-0">
+                  <div>
                     <h3 className="font-display text-sm sm:text-base font-black text-[#1E1E24] flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-[#158467]" />
                       <span>
@@ -476,84 +460,65 @@ export default function G1Round() {
                           : '🎤 Bacakan Jawaban & Skoring Host'}
                       </span>
                     </h3>
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-[#D6F5EC] text-[#0F5E49] border border-[#12B76A]/30">
+                    <p className="text-xs text-[#64616C] font-semibold mt-0.5">
+                      {playMode === 'multi_device'
+                        ? 'Klik tombol status di kartu jika ingin ubah Unik / Kembar.'
+                        : 'Klik "Tandai Kembar (-1)" pada pemain yang jawabannya sama.'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-[#D6F5EC] text-[#0F5E49] border border-[#12B76A]/30">
                       ✅ {uniqueCount} Unik (+2)
                     </span>
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-[#FFE8DF] text-[#B42318] border border-[#F04438]/30">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-[#FFE8DF] text-[#B42318] border border-[#F04438]/30">
                       ❌ {failedCount} Kembar (-1)
                     </span>
-                  </div>
-                  <p className="text-xs text-[#64616C] font-semibold">
-                    {playMode === 'multi_device'
-                      ? 'Klik tombol status di kartu jika ingin ubah Unik / Kembar secara manual.'
-                      : 'Klik "Tandai Kembar (-1)" pada pemain yang jawabannya sama dengan pemain lain.'}
-                  </p>
-                </div>
-
-                {/* Primary Next Round & Undo Navigation right at top-right */}
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    className="px-3 py-2 min-h-[42px] rounded-2xl bg-[#FAF7F2] hover:bg-black/5 border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] cursor-pointer"
-                    onClick={handleUndoScoring}
-                  >
-                    ← Ulangi 30s
-                  </button>
-                  <Button
-                    variant="emerald"
-                    size="md"
-                    onClick={handleFinishScoring}
-                  >
-                    {isLastRound ? (
-                      <>
-                        <Trophy className="w-4 h-4" />
-                        <span>Selesai &amp; Juara Game 01</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Simpan &amp; Ronde {g1CurrentRound + 1}</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Merge Tools Bar (jika ada kartu terpilih untuk digabungkan) */}
-              {selectedForMerge.length > 0 && (
-                <div className="mb-3 p-3 rounded-2xl bg-[#FEF3C7] border-2 border-[#F59E0B] flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold text-[#B45309] flex items-center gap-1.5">
-                    <Layers className="w-4 h-4" />
-                    <span>{selectedForMerge.length} kartu dipilih untuk digabungkan</span>
-                  </span>
-                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setSelectedForMerge([])}
-                      className="px-2.5 py-1 rounded-xl bg-white text-xs font-bold text-[#64616C] hover:bg-black/5"
+                      className="px-2.5 py-1 rounded-lg bg-[#FAF7F2] hover:bg-black/5 border border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] cursor-pointer"
+                      onClick={handleUndoScoring}
                     >
-                      Batal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleMergeSelected}
-                      className="px-3 py-1 rounded-xl bg-[#F59E0B] text-white text-xs font-black shadow-xs hover:bg-[#D97706]"
-                    >
-                      Tandai Keduanya Kembar!
+                      ← Ulangi 30s
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* 🃏 Visual Grid of Player Cards (Compact Name+Button in Host Mode, Answer Box in Multi-Device) */}
-              <div
-                className={`grid gap-2.5 max-h-[calc(100vh-330px)] overflow-y-auto pr-1 ${
-                  playMode === 'single_screen'
-                    ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
-                    : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
-                }`}
-              >
-                {players.map((player) => {
+                {/* Merge Tools Bar */}
+                {selectedForMerge.length > 0 && (
+                  <div className="mb-3 p-3 rounded-2xl bg-[#FEF3C7] border-2 border-[#F59E0B] flex items-center justify-between gap-3 shrink-0">
+                    <span className="text-xs font-bold text-[#B45309] flex items-center gap-1.5">
+                      <Layers className="w-4 h-4" />
+                      <span>{selectedForMerge.length} kartu dipilih untuk digabungkan</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedForMerge([])}
+                        className="px-2.5 py-1 rounded-xl bg-white text-xs font-bold text-[#64616C] hover:bg-black/5"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleMergeSelected}
+                        className="px-3 py-1 rounded-xl bg-[#F59E0B] text-white text-xs font-black shadow-xs hover:bg-[#D97706]"
+                      >
+                        Tandai Keduanya Kembar!
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Grid of Player Cards */}
+                <div
+                  className={`flex-1 content-start grid gap-2.5 max-h-[380px] overflow-y-auto pr-1 ${
+                    playMode === 'single_screen'
+                      ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
+                      : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+                  }`}
+                >
+                  {players.map((player) => {
                   const isFailed = failedPlayerIds.includes(player.id)
                   const rawAnswer = phoneAnswers[player.id]?.trim() || ''
                   const isSelected = selectedForMerge.includes(player.id)
@@ -702,10 +667,42 @@ export default function G1Round() {
                     </motion.div>
                   )
                 })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Fixed Anchored Main Action Button (Never changes vertical/horizontal spot across phases) */}
+        <div className="shrink-0">
+          <Button
+            variant="emerald"
+            size="lg"
+            fullWidth
+            onClick={phase === 'timer' ? triggerRevealPhase : handleFinishScoring}
+          >
+            {phase === 'timer' ? (
+              <>
+                <span>
+                  {playMode === 'multi_device'
+                    ? 'Waktu Habis • Buka Kartu Jawaban HP'
+                    : 'Lanjut Input & Skoring Jawaban'}
+                </span>
+                <ArrowRight className="w-5 h-5" />
+              </>
+            ) : isLastRound ? (
+              <>
+                <Trophy className="w-5 h-5" />
+                <span>Selesai &amp; Lihat Juara Game 01</span>
+              </>
+            ) : (
+              <>
+                <span>Simpan Skor &amp; Lanjut Ronde {g1CurrentRound + 1}</span>
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <div className="block lg:hidden">

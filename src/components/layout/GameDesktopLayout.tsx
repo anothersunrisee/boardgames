@@ -618,15 +618,15 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
         {/* ========================================================================= */}
         {/* 2-COLUMN RESPONSIVE WORKSPACE (Main Game Stage + LiveScoreSidebar)        */}
         {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_380px] gap-6 items-stretch">
           
           {/* Main Game Stage */}
-          <main className="min-w-0 space-y-5 flex-1">
+          <main className="min-w-0 flex-1 flex flex-col">
             {children}
           </main>
 
           {/* Right Live Score Sidebar */}
-          <aside className="w-full lg:w-[360px] xl:w-[380px] lg:sticky lg:top-6 shrink-0 space-y-4">
+          <aside className="w-full lg:w-[360px] xl:w-[380px] lg:self-start lg:sticky lg:top-6 shrink-0 space-y-4">
             <div className="rounded-[24px] bg-white border-2 border-[#1E1E24] shadow-[0_5px_0_#1E1E24] overflow-hidden flex flex-col">
               
               {/* Header */}
