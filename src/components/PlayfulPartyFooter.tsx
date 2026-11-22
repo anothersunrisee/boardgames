@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Coffee,
@@ -20,7 +20,7 @@ import {
   HardDrive,
   Lock,
   PartyPopper,
-  Star,
+  RefreshCw,
   Info,
   Zap,
 } from 'lucide-react';
@@ -168,6 +168,55 @@ class SoundEffects {
     } catch {}
   }
 
+  /** Soft bouncy arcade soccer kick / ball toss thump */
+  playKick(volume = 0.16) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(210, now);
+      osc.frequency.exponentialRampToValueAtTime(68, now + 0.11);
+
+      gain.gain.setValueAtTime(volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.13);
+    } catch {}
+  }
+
+  /** Smooth airy chime for mascot relay swap */
+  playWhoosh() {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(380, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.14);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.11, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.17);
+    } catch {}
+  }
+
   /** Grumpy comic buzz when the headphone mascot gets annoyed */
   playAngryBuzz() {
     if (this.muted) return;
@@ -195,9 +244,19 @@ class SoundEffects {
 export const sfx = new SoundEffects();
 
 // ============================================================================
-// 2. TYPES & DATA CONSTANTS
+// 2. TYPES & DATA CONSTANTS (INCLUDING 10-MASCOT ROTATING CAST)
 // ============================================================================
-export type MascotShape = 'squircle' | 'cloud' | 'circle' | 'triangle' | 'blob';
+export type MascotShape =
+  | 'squircle'
+  | 'cloud'
+  | 'circle'
+  | 'triangle'
+  | 'blob'
+  | 'pentagon'
+  | 'flower'
+  | 'flame'
+  | 'hexagon'
+  | 'scallop';
 export type MascotMood =
   | 'idle'
   | 'happy'
@@ -207,6 +266,81 @@ export type MascotMood =
   | 'angry'
   | 'dizzy'
   | 'surprised';
+
+type PlaygroundMode = 'auto' | 'ball' | 'parkour';
+
+interface MascotProfile {
+  id: string;
+  name: string;
+  shape: MascotShape;
+  color: string;
+  mood: MascotMood;
+  glasses?: boolean;
+  headphones?: boolean;
+  crown?: boolean;
+  detective?: boolean;
+  horns?: boolean;
+  headband?: boolean;
+  pitch: number;
+}
+
+const MASCOT_CAST: MascotProfile[] = [
+  { id: 'berry', name: 'Beri', shape: 'circle', color: '#D8317E', mood: 'happy', pitch: 640 },
+  { id: 'cobalt', name: 'Kobi', shape: 'squircle', color: '#2568EF', mood: 'idle', pitch: 520 },
+  { id: 'tangerine', name: 'Tangi', shape: 'triangle', color: '#EC5A29', mood: 'excited', pitch: 680 },
+  { id: 'lavender', name: 'Lavi', shape: 'blob', color: '#9D71E8', mood: 'chill', headphones: true, pitch: 440 },
+  { id: 'emerald', name: 'Emi', shape: 'cloud', color: '#158467', mood: 'happy', pitch: 580 },
+  { id: 'sunny', name: 'Suni', shape: 'pentagon', color: '#EAB308', mood: 'idle', detective: true, pitch: 610 },
+  { id: 'mint', name: 'Minti', shape: 'flower', color: '#10B981', mood: 'excited', headband: true, pitch: 700 },
+  { id: 'coral', name: 'Kori', shape: 'flame', color: '#F43F5E', mood: 'excited', horns: true, pitch: 560 },
+  { id: 'sky', name: 'Skai', shape: 'hexagon', color: '#0284C7', mood: 'idle', glasses: true, pitch: 500 },
+  { id: 'rose', name: 'Rosi', shape: 'scallop', color: '#EC4899', mood: 'happy', crown: true, pitch: 740 },
+];
+
+const CLICK_PHRASES = [
+  'Boop! 🫧',
+  'Oper sini! ⚽',
+  'Wuss~ ⚡',
+  'Hap! 🦘',
+  'Gacor! ✨',
+  'Hehe geli! 😆',
+  'Gas lari! 🏃',
+  'Gol yuk! 🥅',
+];
+
+const EXIT_PHRASES = [
+  'Gantian ya! 👋',
+  'Dadah~ ✨',
+  'Giliran temenku!',
+  'Minum dulu~ ☕',
+  'Cabut bentar! 💨',
+];
+
+const ENTER_PHRASES = [
+  'Hadir! ✨',
+  'Oper bola! ⚽',
+  'Gas lari! 🏃',
+  'Ikut main! 🎉',
+  'Siap tempur! ⚡',
+];
+
+const LIFT_PHRASES = [
+  'WAAAH TURUNIN GUA!! 😱',
+  'Tinggi banget tolonggg! 🛸',
+  'Jangan dilepas woi!! 😭',
+];
+
+const DROP_PHRASES = [
+  'Aduh bokong gua! 😵‍💫',
+  'Buset puyeng mendarat! 🌀',
+  'Untung empuk! 🫧',
+];
+
+const ANGRY_HEADSET_PHRASES = [
+  'WOI LAGI VIBING JANGAN DIGANGGU!! 💢🔥',
+  'HEADSET GUA JANGAN DITARIK!! 😡',
+  'LAGI ENAK DENGER LAGU!! 💢',
+];
 
 export interface CoffeeTier {
   id: string;
@@ -324,10 +458,15 @@ export const GrokMascot: React.FC<{
   glasses?: boolean;
   headphones?: boolean;
   coffeeCup?: boolean;
+  crown?: boolean;
+  detective?: boolean;
+  horns?: boolean;
+  headband?: boolean;
   stickerBorder?: boolean;
   foreheadAngry?: boolean;
   blinkDelay?: number;
   lookX?: number;
+  eyeTrackRef?: React.RefObject<SVGGElement | null>;
   className?: string;
 }> = ({
   shape = 'squircle',
@@ -337,9 +476,14 @@ export const GrokMascot: React.FC<{
   glasses = false,
   headphones = false,
   coffeeCup = false,
+  crown = false,
+  detective = false,
+  horns = false,
+  headband = false,
   stickerBorder = true,
   foreheadAngry = false,
   lookX = 0,
+  eyeTrackRef,
   className = '',
 }) => {
   const gradId = React.useId();
@@ -350,7 +494,7 @@ export const GrokMascot: React.FC<{
       ? {
           fill: '#FFFFFF',
           stroke: '#FFFFFF',
-          strokeWidth: 14,
+          strokeWidth: 13,
           strokeLinejoin: 'round' as const,
           strokeLinecap: 'round' as const,
         }
@@ -360,14 +504,14 @@ export const GrokMascot: React.FC<{
       case 'cloud':
         return (
           <path
-            d="M28,88 C14,88 9,74 16,61 C16,45 30,39 39,44 C44,25 74,21 83,42 C99,42 109,56 103,73 C100,84 90,88 77,88 Z"
+            d="M28,90 C14,90 9,76 16,63 C16,47 30,41 39,46 C44,27 74,23 83,44 C99,44 109,58 103,75 C100,86 90,90 77,90 Z"
             {...props}
           />
         );
       case 'triangle':
         return (
           <path
-            d="M52,20 C56,12 64,12 68,20 L102,84 C106,92 100,100 90,100 L30,100 C20,100 14,92 18,84 Z"
+            d="M52,20 C56,12 64,12 68,20 L102,86 C106,94 100,102 90,102 L30,102 C20,102 14,94 18,86 Z"
             {...props}
           />
         );
@@ -380,13 +524,48 @@ export const GrokMascot: React.FC<{
             {...props}
           />
         );
+      case 'pentagon':
+        return (
+          <path
+            d="M65,18 L101,44 C105,47 107,52 105,58 L91,95 C89,100 84,103 79,103 L41,103 C36,103 31,100 29,95 L15,58 C13,52 15,47 19,44 L55,18 C58,15 62,15 65,18 Z"
+            {...props}
+          />
+        );
+      case 'flower':
+        return (
+          <path
+            d="M60,16 C72,16 81,24 83,35 C94,37 102,47 102,60 C102,73 94,83 83,85 C81,96 72,104 60,104 C48,104 39,96 37,85 C26,83 18,73 18,60 C18,47 26,37 37,35 C39,24 48,16 60,16 Z"
+            {...props}
+          />
+        );
+      case 'flame':
+        return (
+          <path
+            d="M62,14 C62,14 96,37 96,68 C96,90 80,104 59,104 C38,104 22,90 22,68 C22,53 31,40 38,34 C38,34 36,46 45,47 C43,31 62,14 62,14 Z"
+            {...props}
+          />
+        );
+      case 'hexagon':
+        return (
+          <path
+            d="M38,20 H82 C87,20 91,23 93,27 L106,55 C108,58 108,62 106,65 L93,93 C91,97 87,100 82,100 H38 C33,100 29,97 27,93 L14,65 C12,62 12,58 14,55 L27,27 C29,23 33,20 38,20 Z"
+            {...props}
+          />
+        );
+      case 'scallop':
+        return (
+          <path
+            d="M22,36 C22,24 34,20 42,29 C48,19 56,19 60,29 C64,19 72,19 78,29 C86,20 98,24 98,36 V74 C98,92 82,104 60,104 C38,104 22,92 22,74 Z"
+            {...props}
+          />
+        );
       case 'squircle':
       default:
-        return <rect x="20" y="22" width="80" height="76" rx="28" {...props} />;
+        return <rect x="20" y="22" width="80" height="78" rx="28" {...props} />;
     }
   };
 
-  const eyeY = shape === 'triangle' ? 66 : 58;
+  const eyeY = shape === 'triangle' ? 68 : shape === 'flame' ? 66 : 58;
 
   const renderEyes = () => {
     if (mood === 'angry') {
@@ -512,6 +691,44 @@ export const GrokMascot: React.FC<{
       {/* Red Forehead Gradient Overlay when Angry / Disturbed */}
       {isAngry && renderBody(false, `url(#angry-grad-${gradId})`)}
 
+      {/* Horns Accessory */}
+      {horns && (
+        <g fill="#1E1E24">
+          <path d="M31,32 C22,20 26,11 36,18 C40,20 42,26 40,32 Z" />
+          <path d="M89,32 C98,20 94,11 84,18 C80,20 78,26 80,32 Z" />
+        </g>
+      )}
+
+      {/* Headband Accessory */}
+      {headband && (
+        <path
+          d="M27,37 C43,29 77,29 93,37"
+          stroke="#FBBF24"
+          strokeWidth="7.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      )}
+
+      {/* Crown Accessory */}
+      {crown && (
+        <path
+          d="M40,22 L45,9 L60,18 L75,9 L80,22 Z"
+          fill="#FBBF24"
+          stroke="#1E1E24"
+          strokeWidth="3.5"
+          strokeLinejoin="round"
+        />
+      )}
+
+      {/* Detective Cap Accessory */}
+      {detective && (
+        <g>
+          <path d="M30,27 Q60,8 90,27 Z" fill="#5C4428" stroke="#1E1E24" strokeWidth="3.5" />
+          <path d="M20,27 H100" stroke="#1E1E24" strokeWidth="4.5" strokeLinecap="round" />
+        </g>
+      )}
+
       {/* Subtle Top Highlight */}
       {!isAngry && (
         <ellipse cx="44" cy="37" rx="11" ry="5" fill="#FFFFFF" opacity="0.22" transform="rotate(-18 44 37)" />
@@ -527,9 +744,12 @@ export const GrokMascot: React.FC<{
         </g>
       )}
 
-      {/* Crisp Eyes */}
+      {/* Eye Tracking Group (driven at 60fps by eyeTrackRef OR static lookX) */}
       <g
-        style={{ transform: `translateX(${lookX}px)` }}
+        ref={eyeTrackRef}
+        style={{
+          transform: eyeTrackRef ? undefined : `translate3d(${lookX}px, 0, 0)`,
+        }}
       >
         {renderEyes()}
       </g>
@@ -717,54 +937,1286 @@ export const StylizedQrisSvg: React.FC = () => {
 };
 
 // ============================================================================
-// 6. <PlayfulPartyFooter /> — SENSIBLE FOOTER + INTERACTIVE MASCOT PLAYGROUND
+// 5B. BUTTERY-SMOOTH 60FPS PHYSICS MASCOT PLAYGROUND ENGINE
+//     - Zero per-frame React setState (direct DOM transform updates via refs)
+//     - Smooth velocity easing, damped spring squash-and-stretch, continuous stride
+//     - Real 2D bouncing arcade soccer ball with kicks, passes & headers
+//     - Drag & lift any mascot into the air + angry red forehead on headphone bot
+//     - Seamless edge-to-edge mascot relay swap across 10 unique characters
 // ============================================================================
-interface PlaygroundMascotState {
-  bubble: string | null;
-  burstKey: number;
-  squishKey: number;
+type AgentAction = 'walk' | 'run' | 'jump_crouch' | 'play_ball' | 'exit_swap' | 'enter_swap';
+
+interface MascotAgent {
+  slot: number;
+  castIdx: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  targetX: number;
+  action: AgentAction;
+  actionTimer: number;
+  crouchTimer: number;
+  pendingJumpVy: number;
+  pendingJumpVx: number;
+  kickCooldown: number;
+  dustTimer: number;
+  stageAge: number;
+  isDragged: boolean;
+  angryTimer: number;
+  // Smooth animation springs & oscillators
+  sx: number;
+  sy: number;
+  vsx: number;
+  vsy: number;
+  tilt: number;
+  stridePhase: number;
+  bobAmp: number;
+  eyeX: number;
+  eyeY: number;
+  exitDir: -1 | 1;
 }
 
-interface MascotVariant {
-  shape: MascotShape;
+interface BallState {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  angle: number;
+  sx: number;
+  sy: number;
+  vsx: number;
+  vsy: number;
+  lastTouchedBy: number;
+  userBoosted: boolean;
+}
+
+interface Particle {
+  active: boolean;
+  kind: 'dust' | 'sparkle';
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
   color: string;
-  name: string;
-  glasses?: boolean;
-  coffeeCup?: boolean;
+  rot: number;
 }
 
-const BOUNCER_VARIANTS: MascotVariant[] = [
-  { shape: 'circle', color: '#D8317E', name: 'Boba' },
-  { shape: 'cloud', color: '#158467', name: 'Kiko' },
-  { shape: 'blob', color: '#65A30D', name: 'Juno' },
-];
-
-const CHASER_VARIANTS: MascotVariant[] = [
-  { shape: 'squircle', color: '#2568EF', name: 'Zuzu' },
-  { shape: 'circle', color: '#EA580C', name: 'Bimi', glasses: true },
-  { shape: 'triangle', color: '#D8317E', name: 'Riri' },
-];
-
-const JUGGLER_VARIANTS: MascotVariant[] = [
-  { shape: 'triangle', color: '#EC5A29', name: 'Piko' },
-  { shape: 'squircle', color: '#7C3AED', name: 'Nori', coffeeCup: true },
-  { shape: 'circle', color: '#0284C7', name: 'Toto' },
-];
-
-const CHILLER_VARIANTS: MascotVariant[] = [
-  { shape: 'blob', color: '#9D71E8', name: 'Momo' },
-  { shape: 'cloud', color: '#2568EF', name: 'Lilo' },
-  { shape: 'squircle', color: '#B45309', name: 'Kopi' },
-];
-
-interface RoamingBotState {
-  walkX: number;
-  dir: 1 | -1;
-  hopping: boolean;
-  variantIdx: number;
-  swapping: boolean;
+interface BubbleState {
+  text: string;
+  color: string;
+  key: number;
 }
 
+const PARTICLE_POOL_SIZE = 28;
+const MASCOT_SIZE = 62;
+const BALL_SIZE = 28;
+const GROUND_OFFSET_PX = 20;
+
+const InteractiveMascotPlayground: React.FC = () => {
+  const [mode, setMode] = useState<PlaygroundMode>('auto');
+  const [slotCast, setSlotCast] = useState<number[]>([0, 1, 2, 3]);
+  const [bubbles, setBubbles] = useState<(BubbleState | null)[]>([null, null, null, null]);
+  const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
+  const [angrySlots, setAngrySlots] = useState<boolean[]>([false, false, false, false]);
+
+  // Refs synced for zero-stale-closure RAF loop
+  const modeRef = useRef<PlaygroundMode>('auto');
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const stageSizeRef = useRef({ width: 760, height: 210 });
+  const nextCastPointerRef = useRef(4);
+  const swapTimerRef = useRef(6.5);
+  const bubbleTimersRef = useRef<(number | null)[]>([null, null, null, null]);
+  const angryTimersRef = useRef<(number | null)[]>([null, null, null, null]);
+  const dragInfoRef = useRef<{
+    slot: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    lastY: number;
+    lastTime: number;
+    vx: number;
+    vy: number;
+    moved: boolean;
+  } | null>(null);
+
+  // Direct DOM refs for 60fps transforms
+  const mascotPosRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const mascotBodyRefs = useRef<(HTMLButtonElement | null)[]>([null, null, null, null]);
+  const mascotShadowRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const eyeRefs = useRef<React.RefObject<SVGGElement | null>[]>([
+    React.createRef<SVGGElement | null>(),
+    React.createRef<SVGGElement | null>(),
+    React.createRef<SVGGElement | null>(),
+    React.createRef<SVGGElement | null>(),
+  ]);
+
+  const ballPosRef = useRef<HTMLDivElement | null>(null);
+  const ballSpinRef = useRef<HTMLDivElement | null>(null);
+  const ballShadowRef = useRef<HTMLDivElement | null>(null);
+  const particleElsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Physics simulation state in refs (ZERO per-frame React re-renders)
+  const agentsRef = useRef<MascotAgent[]>([]);
+  const ballRef = useRef<BallState>({
+    x: 340,
+    y: 64,
+    vx: 135,
+    vy: 210,
+    angle: 0,
+    sx: 1,
+    sy: 1,
+    vsx: 0,
+    vsy: 0,
+    lastTouchedBy: -1,
+    userBoosted: false,
+  });
+  const particlesRef = useRef<Particle[]>(
+    Array.from({ length: PARTICLE_POOL_SIZE }).map((_, i) => ({
+      active: false,
+      kind: i < 16 ? 'dust' : 'sparkle',
+      x: -100,
+      y: -100,
+      vx: 0,
+      vy: 0,
+      life: 0,
+      maxLife: 0.5,
+      size: 8,
+      color: '#FFFFFF',
+      rot: 0,
+    }))
+  );
+
+  // Sync mode ref
+  useEffect(() => {
+    modeRef.current = mode;
+    const width = stageSizeRef.current.width;
+    agentsRef.current.forEach((a, idx) => {
+      if (a.action === 'exit_swap' || a.action === 'enter_swap' || a.isDragged) return;
+      if (mode === 'ball') {
+        a.action = 'play_ball';
+        a.actionTimer = 4 + idx * 0.8;
+      } else if (mode === 'parkour') {
+        a.action = 'run';
+        a.targetX = 60 + Math.random() * Math.max(120, width - 120);
+        a.actionTimer = 1.4 + Math.random() * 1.6;
+      } else {
+        a.action = idx < 2 ? 'play_ball' : idx === 2 ? 'run' : 'walk';
+        a.actionTimer = 2 + Math.random() * 2.5;
+      }
+    });
+  }, [mode]);
+
+  const showBubble = useCallback((slot: number, text: string, color: string, duration = 1850) => {
+    const existing = bubbleTimersRef.current[slot];
+    if (existing) window.clearTimeout(existing);
+
+    setBubbles((prev) => {
+      const next = [...prev];
+      next[slot] = { text, color, key: Date.now() + Math.random() };
+      return next;
+    });
+
+    bubbleTimersRef.current[slot] = window.setTimeout(() => {
+      setBubbles((prev) => {
+        const next = [...prev];
+        next[slot] = null;
+        return next;
+      });
+    }, duration);
+  }, []);
+
+  const triggerAngryHeadset = useCallback(
+    (slot: number) => {
+      const a = agentsRef.current[slot];
+      if (a) a.angryTimer = 3.2;
+
+      const existing = angryTimersRef.current[slot];
+      if (existing) window.clearTimeout(existing);
+
+      sfx.playAngryBuzz();
+      setAngrySlots((prev) => {
+        const next = [...prev];
+        next[slot] = true;
+        return next;
+      });
+
+      const phrase = ANGRY_HEADSET_PHRASES[Math.floor(Math.random() * ANGRY_HEADSET_PHRASES.length)];
+      showBubble(slot, phrase, '#DC2626', 3000);
+
+      angryTimersRef.current[slot] = window.setTimeout(() => {
+        setAngrySlots((prev) => {
+          const next = [...prev];
+          next[slot] = false;
+          return next;
+        });
+      }, 3200);
+    },
+    [showBubble]
+  );
+
+  const spawnParticle = useCallback(
+    (
+      kind: 'dust' | 'sparkle',
+      x: number,
+      y: number,
+      vx: number,
+      vy: number,
+      color: string,
+      size: number,
+      maxLife = 0.48
+    ) => {
+      const pool = particlesRef.current;
+      const start = kind === 'dust' ? 0 : 16;
+      const end = kind === 'dust' ? 16 : PARTICLE_POOL_SIZE;
+      for (let i = start; i < end; i++) {
+        if (!pool[i].active) {
+          const p = pool[i];
+          p.active = true;
+          p.kind = kind;
+          p.x = x;
+          p.y = y;
+          p.vx = vx;
+          p.vy = vy;
+          p.life = maxLife;
+          p.maxLife = maxLife;
+          p.size = size;
+          p.color = color;
+          p.rot = Math.random() * 360;
+          return;
+        }
+      }
+    },
+    []
+  );
+
+  const spawnSparkleRing = useCallback(
+    (x: number, y: number, color: string, count = 6) => {
+      const colors = [color, '#FBBF24', '#FFFFFF', '#4AE3B5'];
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const speed = 70 + Math.random() * 75;
+        spawnParticle(
+          'sparkle',
+          x,
+          y,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed + 45,
+          colors[i % colors.length],
+          6 + Math.random() * 4,
+          0.45 + Math.random() * 0.2
+        );
+      }
+    },
+    [spawnParticle]
+  );
+
+  const triggerSwapOnSlot = useCallback(
+    (slotIdx?: number, withSound = false) => {
+      const agents = agentsRef.current;
+      if (!agents.length) return;
+
+      let chosen: MascotAgent | undefined;
+      if (typeof slotIdx === 'number') {
+        chosen = agents[slotIdx];
+      } else {
+        const eligible = agents.filter(
+          (a) => a.action !== 'exit_swap' && a.action !== 'enter_swap' && !a.isDragged
+        );
+        if (!eligible.length) return;
+        eligible.sort((a, b) => b.stageAge - a.stageAge);
+        chosen = eligible[0];
+      }
+
+      if (!chosen || chosen.action === 'exit_swap' || chosen.action === 'enter_swap' || chosen.isDragged) return;
+
+      const width = stageSizeRef.current.width;
+      const profile = MASCOT_CAST[chosen.castIdx];
+      chosen.action = 'exit_swap';
+      chosen.exitDir = chosen.x < width * 0.5 ? -1 : 1;
+      chosen.crouchTimer = 0;
+      const phrase = EXIT_PHRASES[Math.floor(Math.random() * EXIT_PHRASES.length)];
+      showBubble(chosen.slot, phrase, profile.color, 1300);
+      if (withSound) sfx.playWhoosh();
+    },
+    [showBubble]
+  );
+
+  // Main 60fps ResizeObserver + Physics RAF Loop
+  useEffect(() => {
+    const stageEl = stageRef.current;
+    if (!stageEl) return;
+
+    const updateSize = () => {
+      const rect = stageEl.getBoundingClientRect();
+      if (rect.width > 0) {
+        stageSizeRef.current = { width: rect.width, height: rect.height };
+      }
+    };
+    updateSize();
+
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(stageEl);
+
+    const w0 = stageSizeRef.current.width;
+    if (agentsRef.current.length === 0) {
+      agentsRef.current = [0, 1, 2, 3].map((slot) => ({
+        slot,
+        castIdx: slot,
+        x: (w0 / 5) * (slot + 1),
+        y: 0,
+        vx: (slot % 2 === 0 ? 1 : -1) * 55,
+        vy: 0,
+        targetX: (w0 / 5) * (slot + 1),
+        action: slot < 2 ? 'play_ball' : slot === 2 ? 'run' : 'walk',
+        actionTimer: 2.2 + slot * 1.1,
+        crouchTimer: 0,
+        pendingJumpVy: 0,
+        pendingJumpVx: 0,
+        kickCooldown: 0.4,
+        dustTimer: 0,
+        stageAge: slot * 2.1,
+        isDragged: false,
+        angryTimer: 0,
+        sx: 1,
+        sy: 1,
+        vsx: 0,
+        vsy: 0,
+        tilt: 0,
+        stridePhase: slot * 1.4,
+        bobAmp: 0,
+        eyeX: 0,
+        eyeY: 0,
+        exitDir: 1,
+      }));
+      ballRef.current.x = w0 * 0.48;
+      ballRef.current.y = 75;
+    }
+
+    let rafId = 0;
+    let lastTime = performance.now();
+
+    const pickNextAction = (a: MascotAgent, width: number, currentMode: PlaygroundMode) => {
+      const pad = 48;
+      const span = Math.max(80, width - pad * 2);
+
+      if (currentMode === 'ball') {
+        a.action = 'play_ball';
+        a.actionTimer = 3.5 + Math.random() * 2.5;
+        return;
+      }
+
+      if (currentMode === 'parkour') {
+        const roll = Math.random();
+        if (roll < 0.42 && a.y <= 1) {
+          a.action = 'jump_crouch';
+          a.crouchTimer = 0.13;
+          a.pendingJumpVy = 365 + Math.random() * 90;
+          const dir = a.x < width * 0.25 ? 1 : a.x > width * 0.75 ? -1 : Math.random() < 0.5 ? -1 : 1;
+          a.pendingJumpVx = dir * (130 + Math.random() * 90);
+          a.actionTimer = 1.1;
+        } else {
+          a.action = 'run';
+          a.targetX = pad + Math.random() * span;
+          a.actionTimer = 1.6 + Math.random() * 1.8;
+        }
+        return;
+      }
+
+      const ballPlayers = agentsRef.current.filter(
+        (other) => other.slot !== a.slot && other.action === 'play_ball'
+      ).length;
+
+      const roll = Math.random();
+      if (ballPlayers < 2 && roll < 0.44) {
+        a.action = 'play_ball';
+        a.actionTimer = 3.2 + Math.random() * 2.8;
+      } else if (roll < 0.66) {
+        a.action = 'run';
+        a.targetX = pad + Math.random() * span;
+        a.actionTimer = 1.8 + Math.random() * 2.0;
+      } else if (roll < 0.84) {
+        a.action = 'walk';
+        a.targetX = pad + Math.random() * span;
+        a.actionTimer = 2.4 + Math.random() * 2.6;
+      } else if (a.y <= 1) {
+        a.action = 'jump_crouch';
+        a.crouchTimer = 0.14;
+        a.pendingJumpVy = 350 + Math.random() * 85;
+        const dir = a.x < width * 0.3 ? 1 : a.x > width * 0.7 ? -1 : Math.random() < 0.5 ? -1 : 1;
+        a.pendingJumpVx = dir * (65 + Math.random() * 95);
+        a.actionTimer = 1.25;
+      } else {
+        a.action = 'walk';
+        a.targetX = pad + Math.random() * span;
+        a.actionTimer = 2.0;
+      }
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min((now - lastTime) / 1000, 0.04);
+      lastTime = now;
+
+      const { width, height } = stageSizeRef.current;
+      const currentMode = modeRef.current;
+      const agents = agentsRef.current;
+      const ball = ballRef.current;
+
+      // 1. AUTOMATIC RELAY SWAP TIMER (Every ~7.5 - 9 seconds)
+      swapTimerRef.current -= dt;
+      if (swapTimerRef.current <= 0) {
+        swapTimerRef.current = 7.4 + Math.random() * 2.2;
+        triggerSwapOnSlot(undefined, false);
+      }
+
+      // 2. SOCCER BALL 2D PHYSICS
+      const ballRadius = BALL_SIZE * 0.5;
+      ball.vy -= 960 * dt;
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+
+      if (ball.y <= 0) {
+        ball.y = 0;
+        if (ball.vy < -55) {
+          const impact = Math.min(0.28, Math.abs(ball.vy) / 1500);
+          ball.vy = -ball.vy * 0.74;
+          ball.vsx += impact * 15;
+          ball.vsy -= impact * 15;
+          spawnParticle(
+            'dust',
+            ball.x,
+            2,
+            (Math.random() - 0.5) * 45,
+            18 + Math.random() * 20,
+            '#D8CFC2',
+            7,
+            0.34
+          );
+        } else {
+          ball.vy = 0;
+          ball.userBoosted = false;
+        }
+        ball.vx *= Math.pow(0.42, dt);
+        if (Math.abs(ball.vx) < 4) ball.vx = 0;
+      } else {
+        ball.vx *= Math.pow(0.88, dt);
+      }
+
+      const maxBallY = Math.max(85, height - GROUND_OFFSET_PX - BALL_SIZE - 12);
+      if (ball.y > maxBallY) {
+        ball.y = maxBallY;
+        ball.vy = -Math.abs(ball.vy) * 0.55;
+      }
+
+      const leftWall = ballRadius + 10;
+      const rightWall = Math.max(leftWall + 40, width - ballRadius - 10);
+      if (ball.x < leftWall) {
+        ball.x = leftWall;
+        ball.vx = Math.abs(ball.vx) * 0.82 + 25;
+        ball.vsx -= 3.2;
+        ball.vsy += 3.2;
+      } else if (ball.x > rightWall) {
+        ball.x = rightWall;
+        ball.vx = -Math.abs(ball.vx) * 0.82 - 25;
+        ball.vsx -= 3.2;
+        ball.vsy += 3.2;
+      }
+
+      ball.angle += (ball.vx / ballRadius) * dt * (180 / Math.PI);
+      ball.vsx += ((1 - ball.sx) * 320 - ball.vsx * 20) * dt;
+      ball.vsy += ((1 - ball.sy) * 320 - ball.vsy * 20) * dt;
+      ball.sx = Math.max(0.72, Math.min(1.32, ball.sx + ball.vsx * dt));
+      ball.sy = Math.max(0.72, Math.min(1.32, ball.sy + ball.vsy * dt));
+
+      if (currentMode !== 'parkour' && ball.y === 0 && Math.abs(ball.vx) < 2) {
+        ball.vx = (ball.x < width * 0.5 ? 1 : -1) * 45;
+      }
+
+      // 3. MASCOT AGENTS AI, MOVEMENT, DRAG-LIFT, SPRINGS & BALL INTERACTION
+      const pad = 42;
+      for (let i = 0; i < agents.length; i++) {
+        const a = agents[i];
+        a.stageAge += dt;
+        if (a.kickCooldown > 0) a.kickCooldown -= dt;
+        if (a.dustTimer > 0) a.dustTimer -= dt;
+        if (a.angryTimer > 0) a.angryTimer = Math.max(0, a.angryTimer - dt);
+
+        if (a.isDragged) {
+          // Dangling wiggle in mid-air while lifted by user!
+          a.tilt = Math.sin(now * 0.024) * 14;
+          a.sx = 0.94;
+          a.sy = 1.08;
+        } else {
+          let targetVx = 0;
+
+          if (a.action === 'exit_swap') {
+            targetVx = a.exitDir * 235;
+            const offLeft = a.exitDir === -1 && a.x < -64;
+            const offRight = a.exitDir === 1 && a.x > width + 64;
+
+            if (offLeft || offRight) {
+              const activeIds = new Set(agents.map((ag) => ag.castIdx));
+              let candidate = nextCastPointerRef.current % MASCOT_CAST.length;
+              let tries = 0;
+              while (activeIds.has(candidate) && tries < MASCOT_CAST.length) {
+                candidate = (candidate + 1) % MASCOT_CAST.length;
+                tries++;
+              }
+              nextCastPointerRef.current = (candidate + 1) % MASCOT_CAST.length;
+              a.castIdx = candidate;
+              a.stageAge = 0;
+              a.angryTimer = 0;
+
+              setSlotCast((prev) => {
+                const next = [...prev];
+                next[a.slot] = candidate;
+                return next;
+              });
+
+              const enterFromLeft = Math.random() < 0.5;
+              a.x = enterFromLeft ? -56 : width + 56;
+              a.y = 0;
+              a.vx = enterFromLeft ? 165 : -165;
+              a.vy = 260;
+              a.targetX = enterFromLeft
+                ? 75 + Math.random() * Math.max(60, width * 0.28)
+                : width - 75 - Math.random() * Math.max(60, width * 0.28);
+              a.action = 'enter_swap';
+
+              const newProfile = MASCOT_CAST[candidate];
+              const hello = ENTER_PHRASES[Math.floor(Math.random() * ENTER_PHRASES.length)];
+              showBubble(a.slot, hello, newProfile.color, 1650);
+            }
+          } else if (a.action === 'enter_swap') {
+            const dx = a.targetX - a.x;
+            if (Math.abs(dx) < 24) {
+              pickNextAction(a, width, currentMode);
+            } else {
+              targetVx = Math.sign(dx) * 195;
+            }
+          } else if (a.action === 'jump_crouch') {
+            targetVx = a.vx * 0.35;
+            a.crouchTimer -= dt;
+            if (a.crouchTimer <= 0) {
+              a.vy = a.pendingJumpVy;
+              a.vx = a.pendingJumpVx;
+              a.vsx -= 3.6;
+              a.vsy += 4.2;
+              spawnParticle('dust', a.x - 10, 3, -38, 22, '#D8CFC2', 9, 0.38);
+              spawnParticle('dust', a.x + 10, 3, 38, 22, '#D8CFC2', 9, 0.38);
+              a.action = currentMode === 'parkour' ? 'run' : 'walk';
+              a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
+              a.actionTimer = 1.6 + Math.random() * 1.4;
+            }
+          } else if (a.action === 'play_ball') {
+            a.actionTimer -= dt;
+            const dxBall = ball.x - a.x;
+            const absDx = Math.abs(dxBall);
+
+            if (absDx > 22) {
+              const desiredSpeed = absDx > 110 ? 205 : 135;
+              targetVx = Math.sign(dxBall) * desiredSpeed;
+            } else {
+              targetVx = Math.sign(dxBall || 1) * 60;
+            }
+
+            if (
+              a.y <= 1 &&
+              a.kickCooldown <= 0 &&
+              absDx < 46 &&
+              ball.y > 46 &&
+              ball.y < 105 &&
+              ball.vy < 120
+            ) {
+              a.vy = 370;
+              a.vsx -= 3.0;
+              a.vsy += 3.5;
+            }
+
+            const distToBall = Math.hypot(ball.x - a.x, ball.y + ballRadius - (a.y + 24));
+            if (distToBall < 36 && a.kickCooldown <= 0) {
+              a.kickCooldown = 0.62;
+              ball.lastTouchedBy = a.slot;
+
+              const teammates = agents.filter(
+                (t) =>
+                  t.slot !== a.slot &&
+                  t.action !== 'exit_swap' &&
+                  t.action !== 'enter_swap' &&
+                  !t.isDragged &&
+                  Math.abs(t.x - a.x) > 85
+              );
+
+              let kickVx = (a.x < width * 0.5 ? 1 : -1) * (190 + Math.random() * 110);
+              let kickVy = 250 + Math.random() * 165;
+
+              if (teammates.length > 0 && Math.random() < 0.78) {
+                const targetMate = teammates[Math.floor(Math.random() * teammates.length)];
+                const passDist = targetMate.x - ball.x;
+                kickVy = 285 + Math.random() * 130;
+                const flightTime = (2 * kickVy) / 960;
+                kickVx = Math.max(-330, Math.min(330, passDist / Math.max(0.55, flightTime)));
+              } else if (a.y > 16) {
+                kickVy = 310;
+                kickVx = (a.vx >= 0 ? 1 : -1) * 260;
+              }
+
+              ball.vx = kickVx;
+              ball.vy = kickVy;
+              ball.vsx -= 5.2;
+              ball.vsy += 5.2;
+
+              a.vsx += 3.2;
+              a.vsy -= 2.8;
+              const profile = MASCOT_CAST[a.castIdx];
+              spawnSparkleRing(ball.x, ball.y + 12, profile.color, 5);
+              if (ball.userBoosted) {
+                sfx.playKick(0.11);
+                ball.userBoosted = false;
+              }
+            }
+
+            if (a.actionTimer <= 0 && currentMode !== 'ball') {
+              pickNextAction(a, width, currentMode);
+            }
+          } else {
+            a.actionTimer -= dt;
+            const dx = a.targetX - a.x;
+            const cruiseSpeed = a.action === 'run' ? 185 : 74;
+
+            if (Math.abs(dx) < 18) {
+              if (a.actionTimer <= 0.4) {
+                pickNextAction(a, width, currentMode);
+              } else {
+                a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
+              }
+            } else {
+              const arrivalFactor = Math.min(1, Math.abs(dx) / 55);
+              targetVx = Math.sign(dx) * cruiseSpeed * Math.max(0.35, arrivalFactor);
+            }
+
+            if (
+              a.action === 'run' &&
+              a.y <= 1 &&
+              Math.abs(a.vx) > 135 &&
+              Math.random() < dt * (currentMode === 'parkour' ? 0.95 : 0.35)
+            ) {
+              a.vy = 340 + Math.random() * 80;
+              a.vsx -= 3.2;
+              a.vsy += 3.6;
+              spawnParticle('dust', a.x, 3, -Math.sign(a.vx) * 45, 22, '#D8CFC2', 8, 0.35);
+            }
+
+            if (a.actionTimer <= 0) {
+              pickNextAction(a, width, currentMode);
+            }
+          }
+
+          if (a.action !== 'exit_swap' && a.action !== 'enter_swap') {
+            for (let j = 0; j < agents.length; j++) {
+              if (i === j) continue;
+              const other = agents[j];
+              if (other.action === 'exit_swap' || other.action === 'enter_swap' || other.isDragged) continue;
+              const sepDx = a.x - other.x;
+              const minGap = 48;
+              if (Math.abs(sepDx) < minGap && Math.abs(a.y - other.y) < 34) {
+                const pushDir = sepDx === 0 ? (i < j ? -1 : 1) : Math.sign(sepDx);
+                targetVx += pushDir * ((minGap - Math.abs(sepDx)) / minGap) * 95;
+              }
+            }
+          }
+
+          const accel = a.y > 2 ? 2.4 : 6.8;
+          a.vx += (targetVx - a.vx) * Math.min(1, dt * accel);
+          a.x += a.vx * dt;
+
+          if (a.action !== 'exit_swap' && a.action !== 'enter_swap') {
+            const minX = 34;
+            const maxX = Math.max(minX + 40, width - 34);
+            if (a.x < minX) {
+              a.x = minX;
+              a.vx = Math.abs(a.vx) * 0.5;
+              a.targetX = Math.max(a.targetX, width * 0.45);
+            } else if (a.x > maxX) {
+              a.x = maxX;
+              a.vx = -Math.abs(a.vx) * 0.5;
+              a.targetX = Math.min(a.targetX, width * 0.55);
+            }
+          }
+
+          if (a.y > 0 || a.vy > 0) {
+            a.vy -= 1180 * dt;
+            a.y += a.vy * dt;
+            if (a.y <= 0) {
+              a.y = 0;
+              if (a.vy < -120) {
+                const landImpact = Math.min(0.28, Math.abs(a.vy) / 1700);
+                a.vsx += landImpact * 18;
+                a.vsy -= landImpact * 18;
+                spawnParticle('dust', a.x - 10, 2, -40, 18, '#DDD4C7', 8, 0.36);
+                spawnParticle('dust', a.x + 10, 2, 40, 18, '#DDD4C7', 8, 0.36);
+              }
+              a.vy = 0;
+            }
+          }
+
+          const absVx = Math.abs(a.vx);
+          if (a.y <= 1 && absVx > 135 && a.dustTimer <= 0) {
+            a.dustTimer = 0.16 + Math.random() * 0.08;
+            spawnParticle(
+              'dust',
+              a.x - Math.sign(a.vx) * 14,
+              3,
+              -Math.sign(a.vx) * (25 + Math.random() * 25),
+              14 + Math.random() * 18,
+              '#DDD4C7',
+              6 + Math.random() * 4,
+              0.35
+            );
+          }
+
+          a.stridePhase += dt * (2.6 + absVx * 0.058);
+          const targetBobAmp = a.y <= 1 && a.crouchTimer <= 0 ? Math.min(7.5, absVx * 0.038) : 0;
+          a.bobAmp += (targetBobAmp - a.bobAmp) * Math.min(1, dt * 10);
+
+          const waddle = a.y <= 1 ? Math.sin(a.stridePhase) * Math.min(4.2, absVx * 0.025) : 0;
+          const angryShake = a.angryTimer > 0 ? Math.sin(now * 0.055) * 8 : 0;
+          const targetTilt = (a.vx / 220) * 11 + waddle + angryShake;
+          a.tilt += (targetTilt - a.tilt) * Math.min(1, dt * 9);
+
+          let targetSx = 1;
+          let targetSy = 1;
+          if (a.crouchTimer > 0) {
+            targetSx = 1.24;
+            targetSy = 0.76;
+          } else if (a.y > 4) {
+            const stretch = Math.min(0.18, Math.abs(a.vy) / 2100);
+            targetSx = 1 - stretch * 0.65;
+            targetSy = 1 + stretch;
+          }
+          a.vsx += ((targetSx - a.sx) * 260 - a.vsx * 18) * dt;
+          a.vsy += ((targetSy - a.sy) * 260 - a.vsy * 18) * dt;
+          a.sx = Math.max(0.68, Math.min(1.36, a.sx + a.vsx * dt));
+          a.sy = Math.max(0.68, Math.min(1.36, a.sy + a.vsy * dt));
+        }
+
+        const bobY = a.isDragged ? 0 : -Math.abs(Math.sin(a.stridePhase)) * a.bobAmp;
+
+        let targetEyeX = Math.max(-5.5, Math.min(5.5, a.vx / 32));
+        let targetEyeY = a.y > 10 ? Math.max(-3.5, Math.min(3.5, -a.vy / 140)) : 0;
+        if (!a.isDragged && (a.action === 'play_ball' || (currentMode !== 'parkour' && Math.abs(ball.x - a.x) < 160))) {
+          const dxEye = ball.x - a.x;
+          const dyEye = a.y + 24 - (ball.y + ballRadius);
+          const distEye = Math.max(1, Math.hypot(dxEye, dyEye));
+          targetEyeX = (dxEye / distEye) * 5.2;
+          targetEyeY = (dyEye / distEye) * 3.4;
+        }
+        a.eyeX += (targetEyeX - a.eyeX) * Math.min(1, dt * 11);
+        a.eyeY += (targetEyeY - a.eyeY) * Math.min(1, dt * 11);
+
+        const posEl = mascotPosRefs.current[i];
+        const bodyEl = mascotBodyRefs.current[i];
+        const shadowEl = mascotShadowRefs.current[i];
+        const eyeEl = eyeRefs.current[i]?.current;
+
+        if (posEl) {
+          posEl.style.transform = `translate3d(${a.x - MASCOT_SIZE / 2}px, ${-a.y}px, 0)`;
+        }
+        if (bodyEl) {
+          bodyEl.style.transform = `translate3d(0, ${bobY}px, 0) rotate(${a.tilt}deg) scale(${a.sx}, ${a.sy})`;
+        }
+        if (shadowEl) {
+          const hFactor = Math.max(0.28, 1 - a.y / 170);
+          shadowEl.style.transform = `translate3d(${a.x - 22}px, 0, 0) scale(${hFactor * a.sx}, ${hFactor})`;
+          shadowEl.style.opacity = `${0.26 * hFactor}`;
+        }
+        if (eyeEl) {
+          eyeEl.style.transform = `translate3d(${a.eyeX}px, ${a.eyeY}px, 0)`;
+        }
+      }
+
+      // 4. APPLY BALL DOM TRANSFORMS
+      if (ballPosRef.current) {
+        ballPosRef.current.style.transform = `translate3d(${ball.x - ballRadius}px, ${-ball.y}px, 0)`;
+      }
+      if (ballSpinRef.current) {
+        ballSpinRef.current.style.transform = `scale(${ball.sx}, ${ball.sy}) rotate(${ball.angle}deg)`;
+      }
+      if (ballShadowRef.current) {
+        const bFactor = Math.max(0.28, 1 - ball.y / 180);
+        ballShadowRef.current.style.transform = `translate3d(${ball.x - 13}px, 0, 0) scale(${bFactor}, ${bFactor})`;
+        ballShadowRef.current.style.opacity = `${0.28 * bFactor}`;
+      }
+
+      // 5. UPDATE POOLED PARTICLES
+      const pool = particlesRef.current;
+      for (let i = 0; i < PARTICLE_POOL_SIZE; i++) {
+        const p = pool[i];
+        const el = particleElsRef.current[i];
+        if (!el) continue;
+
+        if (!p.active) {
+          el.style.opacity = '0';
+          continue;
+        }
+
+        p.life -= dt;
+        if (p.life <= 0) {
+          p.active = false;
+          el.style.opacity = '0';
+          continue;
+        }
+
+        if (p.kind === 'sparkle') {
+          p.vy -= 260 * dt;
+          p.rot += 240 * dt;
+        } else {
+          p.vx *= Math.pow(0.25, dt);
+          p.vy *= Math.pow(0.4, dt);
+        }
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+
+        const progress = p.life / p.maxLife;
+        const scale = p.kind === 'dust' ? 0.55 + (1 - progress) * 0.9 : progress * 1.15;
+        el.style.opacity = `${Math.min(1, progress * 1.25)}`;
+        el.style.width = `${p.size}px`;
+        el.style.height = `${p.size}px`;
+        el.style.backgroundColor = p.color;
+        el.style.transform = `translate3d(${p.x - p.size / 2}px, ${-p.y}px, 0) rotate(${p.rot}deg) scale(${scale})`;
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+      bubbleTimersRef.current.forEach((t) => t && window.clearTimeout(t));
+      angryTimersRef.current.forEach((t) => t && window.clearTimeout(t));
+    };
+  }, [spawnParticle, spawnSparkleRing, showBubble, triggerSwapOnSlot]);
+
+  // Global Pointer Move & Up for Dragging & Lifting Mascots smoothly
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      const info = dragInfoRef.current;
+      const stageEl = stageRef.current;
+      if (!info || !stageEl) return;
+
+      const dxFromStart = e.clientX - info.startX;
+      const dyFromStart = e.clientY - info.startY;
+      if (!info.moved && Math.hypot(dxFromStart, dyFromStart) > 6) {
+        info.moved = true;
+        const a = agentsRef.current[info.slot];
+        if (a) {
+          a.isDragged = true;
+          setDraggedSlot(info.slot);
+          const profile = MASCOT_CAST[a.castIdx];
+          if (profile.headphones) {
+            triggerAngryHeadset(info.slot);
+          } else {
+            sfx.playBoing(240, 620);
+            const phrase = LIFT_PHRASES[Math.floor(Math.random() * LIFT_PHRASES.length)];
+            showBubble(info.slot, phrase, profile.color, 2000);
+          }
+        }
+      }
+
+      if (info.moved) {
+        const rect = stageEl.getBoundingClientRect();
+        const a = agentsRef.current[info.slot];
+        if (!a) return;
+
+        const now = performance.now();
+        const dtMove = Math.max(0.008, (now - info.lastTime) / 1000);
+        const newX = Math.max(30, Math.min(rect.width - 30, e.clientX - rect.left));
+        const newY = Math.max(0, Math.min(rect.height - GROUND_OFFSET_PX - 30, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX));
+
+        info.vx = (newX - info.lastX) / dtMove;
+        info.vy = (newY - info.lastY) / dtMove;
+        info.lastX = newX;
+        info.lastY = newY;
+        info.lastTime = now;
+
+        a.x = newX;
+        a.y = newY;
+      }
+    };
+
+    const handlePointerUp = () => {
+      const info = dragInfoRef.current;
+      if (!info) return;
+      dragInfoRef.current = null;
+
+      const a = agentsRef.current[info.slot];
+      if (!a) return;
+      const profile = MASCOT_CAST[a.castIdx];
+
+      if (info.moved) {
+        // Release lifted mascot with real throw velocity!
+        a.isDragged = false;
+        setDraggedSlot(null);
+        a.vx = Math.max(-360, Math.min(360, info.vx * 0.55));
+        a.vy = Math.max(-200, Math.min(380, info.vy * 0.55));
+        a.vsx += 3.5;
+        a.vsy -= 3.5;
+        if (!profile.headphones) {
+          sfx.playBoing(520, 190);
+          const phrase = DROP_PHRASES[Math.floor(Math.random() * DROP_PHRASES.length)];
+          showBubble(info.slot, phrase, profile.color, 1800);
+        }
+      } else {
+        // Quick click / tap interaction
+        if (profile.headphones) {
+          triggerAngryHeadset(info.slot);
+          a.vy = 210;
+        } else {
+          sfx.playBoing(profile.pitch * 0.65, profile.pitch * 1.25);
+          a.crouchTimer = 0;
+          a.vy = 435;
+          a.vx += (Math.random() < 0.5 ? -1 : 1) * 90;
+          a.vsx -= 5.2;
+          a.vsy += 5.8;
+          spawnSparkleRing(a.x, a.y + 34, profile.color, 8);
+          const phrase = CLICK_PHRASES[Math.floor(Math.random() * CLICK_PHRASES.length)];
+          showBubble(info.slot, phrase, profile.color, 1800);
+        }
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [showBubble, spawnSparkleRing, triggerAngryHeadset]);
+
+  // Stage Click/Tap: Toss & bounce the soccer ball toward clicked location!
+  const handleStageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const stageEl = stageRef.current;
+    if (!stageEl) return;
+    const rect = stageEl.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickYFromGround = Math.max(12, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX);
+
+    const ball = ballRef.current;
+    const dx = clickX - ball.x;
+    const dist = Math.abs(dx);
+
+    ball.vx = dist < 24 ? (Math.random() < 0.5 ? -180 : 180) : Math.max(-390, Math.min(390, dx * 2.15));
+    ball.vy = Math.max(250, Math.min(460, 240 + clickYFromGround * 1.35));
+    ball.vsx -= 5.2;
+    ball.vsy += 5.2;
+    ball.userBoosted = true;
+
+    sfx.playKick(0.18);
+    spawnSparkleRing(clickX, Math.max(14, clickYFromGround), '#FBBF24', 6);
+
+    const agents = agentsRef.current
+      .filter((a) => a.action !== 'exit_swap' && a.action !== 'enter_swap' && !a.isDragged)
+      .sort((a, b) => Math.abs(a.x - clickX) - Math.abs(b.x - clickX));
+
+    agents.slice(0, 2).forEach((a) => {
+      a.action = 'play_ball';
+      a.actionTimer = 4.2;
+    });
+  };
+
+  const handleMascotPointerDown = (e: React.PointerEvent, slot: number) => {
+    e.stopPropagation();
+    const a = agentsRef.current[slot];
+    if (!a) return;
+    dragInfoRef.current = {
+      slot,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: a.x,
+      lastY: a.y,
+      lastTime: performance.now(),
+      vx: 0,
+      vy: 0,
+      moved: false,
+    };
+  };
+
+  return (
+    <div className="rounded-[28px] bg-[#FAF7F2] text-[#1E1E24] border-[3px] border-[#FBBF24]/85 p-4 sm:p-5 shadow-[0_7px_0_#0D0D11] relative overflow-hidden">
+      {/* Header & Compact Mode Controls Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-extrabold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
+            <span>Mascot Playground</span>
+          </div>
+
+          <div className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F2ECE1] border border-[#1E1E24]/10 text-xs font-bold text-[#64616C]">
+            <span>Di Arena:</span>
+            {slotCast.map((idx, s) => (
+              <span
+                key={`${s}-${idx}`}
+                style={{ backgroundColor: MASCOT_CAST[idx].color }}
+                title={MASCOT_CAST[idx].name}
+                className="w-2.5 h-2.5 rounded-full inline-block ring-1 ring-white"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Interactive Activity Mode Pills + Swap */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {[
+            { id: 'auto' as PlaygroundMode, label: 'Auto Mix ✨' },
+            { id: 'ball' as PlaygroundMode, label: 'Main Bola ⚽' },
+            { id: 'parkour' as PlaygroundMode, label: 'Lari & Lompat 🏃' },
+          ].map((item) => {
+            const active = mode === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  sfx.playPop(active ? 500 : 640);
+                  setMode(item.id);
+                }}
+                className={`px-3 py-1.5 rounded-full font-display font-bold text-xs transition cursor-pointer border-2 ${
+                  active
+                    ? 'bg-[#1E1E24] text-[#FBBF24] border-[#1E1E24] shadow-[0_2px_0_#0A0A0D]'
+                    : 'bg-white text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/40'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => triggerSwapOnSlot(undefined, true)}
+            className="px-3 py-1.5 rounded-full bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_2px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs inline-flex items-center gap-1 transition cursor-pointer"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Ganti Mascot</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 60FPS PHYSICS PLAYGROUND ARENA STAGE */}
+      <div
+        ref={stageRef}
+        onClick={handleStageClick}
+        className="relative h-48 sm:h-52 rounded-[22px] bg-gradient-to-b from-[#F7F1E7] via-[#F4ECE0] to-[#EFE5D6] border-2 border-dashed border-[#1E1E24]/18 overflow-hidden select-none cursor-crosshair touch-none"
+      >
+        {/* Playful Mini-Scenery */}
+        <svg
+          viewBox="0 0 800 180"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        >
+          <path
+            d="M0,152 Q160,112 340,144 T720,136 L800,145 L800,180 L0,180 Z"
+            fill="#E7DDD0"
+            opacity="0.7"
+          />
+          <path
+            d="M0,162 Q220,126 470,154 T800,148 L800,180 L0,180 Z"
+            fill="#DFD3C2"
+            opacity="0.6"
+          />
+          <g fill="#FFFFFF" opacity="0.75">
+            <rect x="70" y="22" width="54" height="16" rx="8" />
+            <circle cx="90" cy="22" r="10" />
+            <rect x="360" y="16" width="66" height="18" rx="9" />
+            <circle cx="388" cy="16" r="11" />
+            <rect x="640" y="26" width="52" height="15" rx="7.5" />
+            <circle cx="662" cy="26" r="9" />
+          </g>
+        </svg>
+
+        {/* Mini Corner Flags */}
+        <div className="pointer-events-none absolute left-3 bottom-5 flex flex-col items-start opacity-75">
+          <div className="w-3.5 h-2.5 bg-[#EC5A29] rounded-r-xs ml-[2px]" />
+          <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
+        </div>
+        <div className="pointer-events-none absolute right-3 bottom-5 flex flex-col items-end opacity-75">
+          <div className="w-3.5 h-2.5 bg-[#2568EF] rounded-l-xs mr-[2px]" />
+          <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
+        </div>
+
+        {/* Dashed Playground Turf Track Ground */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-[#E6DDD0] border-t-2 border-[#1E1E24]/10 flex items-center justify-center">
+          <div className="w-[92%] border-t-2 border-dashed border-[#1E1E24]/12" />
+        </div>
+
+        {/* Pooled Dust Puffs & Sparkle Stars */}
+        {Array.from({ length: PARTICLE_POOL_SIZE }).map((_, idx) => (
+          <div
+            key={`pt-${idx}`}
+            ref={(el) => {
+              particleElsRef.current[idx] = el;
+            }}
+            style={{
+              bottom: `${GROUND_OFFSET_PX}px`,
+              opacity: 0,
+              borderRadius: idx < 16 ? '9999px' : '3px',
+            }}
+            className="pointer-events-none absolute left-0 will-change-transform z-20"
+          />
+        ))}
+
+        {/* Dynamic Ground Shadows for 4 Mascots */}
+        {[0, 1, 2, 3].map((slot) => (
+          <div
+            key={`shadow-${slot}`}
+            ref={(el) => {
+              mascotShadowRefs.current[slot] = el;
+            }}
+            style={{ bottom: `${GROUND_OFFSET_PX - 4}px` }}
+            className="pointer-events-none absolute left-0 w-11 h-2.5 rounded-full bg-[#1E1E24] will-change-transform z-10"
+          />
+        ))}
+
+        {/* Dynamic Ground Shadow for Soccer Ball */}
+        <div
+          ref={ballShadowRef}
+          style={{ bottom: `${GROUND_OFFSET_PX - 3}px` }}
+          className="pointer-events-none absolute left-0 w-6 h-2 rounded-full bg-[#1E1E24] will-change-transform z-10"
+        />
+
+        {/* 4 Active 60fps Mascot Slots */}
+        {[0, 1, 2, 3].map((slot) => {
+          const profile = MASCOT_CAST[slotCast[slot]];
+          const bubble = bubbles[slot];
+          const isAngry = angrySlots[slot];
+          const isLifted = draggedSlot === slot;
+          const activeMood: MascotMood = isAngry
+            ? 'angry'
+            : isLifted
+            ? 'surprised'
+            : profile.mood;
+
+          return (
+            <div
+              key={`slot-${slot}`}
+              ref={(el) => {
+                mascotPosRefs.current[slot] = el;
+              }}
+              style={{
+                bottom: `${GROUND_OFFSET_PX - 5}px`,
+                width: `${MASCOT_SIZE}px`,
+                height: `${MASCOT_SIZE}px`,
+              }}
+              className="absolute left-0 will-change-transform z-20 pointer-events-none"
+            >
+              {/* Speech Bubble */}
+              <div className="absolute -top-9 left-1/2 -translate-x-1/2 pointer-events-none z-30">
+                <AnimatePresence mode="wait">
+                  {bubble && (
+                    <motion.span
+                      key={bubble.key}
+                      initial={{ opacity: 0, y: 8, scale: 0.72 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.8 }}
+                      transition={{ type: 'spring', stiffness: 460, damping: 22 }}
+                      style={{ backgroundColor: bubble.color }}
+                      className="inline-block px-2.5 py-0.5 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-[0_2px_0_#1E1E24] border border-[#1E1E24]"
+                    >
+                      {bubble.text}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <button
+                ref={(el) => {
+                  mascotBodyRefs.current[slot] = el;
+                }}
+                type="button"
+                onPointerDown={(e) => handleMascotPointerDown(e, slot)}
+                onClick={(e) => e.stopPropagation()}
+                aria-label={`Mascot ${profile.name} — klik lompat atau drag angkat`}
+                style={{ transformOrigin: '50% 92%' }}
+                className="pointer-events-auto cursor-grab active:cursor-grabbing focus:outline-none will-change-transform block w-full h-full"
+              >
+                <GrokMascot
+                  shape={profile.shape}
+                  color={profile.color}
+                  size={MASCOT_SIZE}
+                  mood={activeMood}
+                  foreheadAngry={isAngry}
+                  glasses={profile.glasses}
+                  headphones={profile.headphones}
+                  crown={profile.crown}
+                  detective={profile.detective}
+                  horns={profile.horns}
+                  headband={profile.headband}
+                  blinkDelay={slot * 0.85}
+                  eyeTrackRef={eyeRefs.current[slot]}
+                  stickerBorder
+                />
+              </button>
+            </div>
+          );
+        })}
+
+        {/* Glossy Arcade Soccer Ball (2D Physics) */}
+        <div
+          ref={ballPosRef}
+          style={{
+            bottom: `${GROUND_OFFSET_PX - 1}px`,
+            width: `${BALL_SIZE}px`,
+            height: `${BALL_SIZE}px`,
+          }}
+          className="pointer-events-none absolute left-0 will-change-transform z-30"
+        >
+          <div ref={ballSpinRef} className="w-full h-full will-change-transform">
+            <svg viewBox="0 0 36 36" className="w-full h-full drop-shadow-xs">
+              <circle cx="18" cy="18" r="16" fill="#FFFFFF" stroke="#1E1E24" strokeWidth="2.6" />
+              <polygon points="18,11 24,15.5 21.8,22.5 14.2,22.5 12,15.5" fill="#1E1E24" />
+              <path d="M18,2 L18,11" stroke="#1E1E24" strokeWidth="2" />
+              <path d="M24,15.5 L33,12" stroke="#1E1E24" strokeWidth="2" />
+              <path d="M12,15.5 L3,12" stroke="#1E1E24" strokeWidth="2" />
+              <path d="M21.8,22.5 L28,31" stroke="#1E1E24" strokeWidth="2" />
+              <path d="M14.2,22.5 L8,31" stroke="#1E1E24" strokeWidth="2" />
+              <circle cx="18" cy="17.5" r="2.2" fill="#FBBF24" />
+              <ellipse
+                cx="12.5"
+                cy="9.5"
+                rx="4.2"
+                ry="2.2"
+                fill="#FFFFFF"
+                opacity="0.7"
+                transform="rotate(-28 12.5 9.5)"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Interactive Hint Strip */}
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#64616C]">
+        <span>
+          Klik arena buat lempar bola ⚽ • Drag angkat mascot ✋ • Ganggu yang headset biar marah 💢
+        </span>
+        <span className="inline-flex items-center gap-1 text-[#158467]">
+          <span className="w-2 h-2 rounded-full bg-[#158467] animate-pulse" />
+          <span>10 karakter rotasi otomatis</span>
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// 6. <PlayfulPartyFooter /> — SENSIBLE FOOTER + 60FPS MASCOT PLAYGROUND
+// ============================================================================
 export const PlayfulPartyFooter: React.FC<{
   muted: boolean;
   onToggleMute: () => void;
@@ -785,272 +2237,12 @@ export const PlayfulPartyFooter: React.FC<{
   const [peekLook, setPeekLook] = useState(0);
   const [peekBurst, setPeekBurst] = useState(0);
 
-  // Autonomous Hallway Roaming & Self-Swapping State
-  const [roam, setRoam] = useState<{
-    bouncer: RoamingBotState;
-    chaser: RoamingBotState;
-    juggler: RoamingBotState;
-    chiller: RoamingBotState;
-  }>({
-    bouncer: { walkX: 0, dir: 1, hopping: false, variantIdx: 0, swapping: false },
-    chaser: { walkX: 0, dir: 1, hopping: false, variantIdx: 0, swapping: false },
-    juggler: { walkX: 0, dir: -1, hopping: false, variantIdx: 0, swapping: false },
-    chiller: { walkX: 0, dir: -1, hopping: false, variantIdx: 0, swapping: false },
-  });
-
-  // Interactive Physics & Prank States
-  const [isLifted, setIsLifted] = useState(false);
-  const [justDropped, setJustDropped] = useState(false);
-
-  const [ballX, setBallX] = useState(28);
-  const [chaserX, setChaserX] = useState(0);
-  const [isChasingBall, setIsChasingBall] = useState(false);
-
-  const [isPranked, setIsPranked] = useState(false);
-  const [prankRotation, setPrankRotation] = useState(0);
-  const [starStolen, setStarStolen] = useState(false);
-
-  const [chillerAngry, setChillerAngry] = useState(false);
-  const [chillerShakeKey, setChillerShakeKey] = useState(0);
-
-  const [botStates, setBotStates] = useState<Record<string, PlaygroundMascotState>>({
-    bouncer: { bubble: null, burstKey: 0, squishKey: 0 },
-    chaser: { bubble: null, burstKey: 0, squishKey: 0 },
-    juggler: { bubble: null, burstKey: 0, squishKey: 0 },
-    chiller: { bubble: null, burstKey: 0, squishKey: 0 },
-  });
-
-  const activeBouncer = BOUNCER_VARIANTS[roam.bouncer.variantIdx];
-  const activeChaser = CHASER_VARIANTS[roam.chaser.variantIdx];
-  const activeJuggler = JUGGLER_VARIANTS[roam.juggler.variantIdx];
-  const activeChiller = CHILLER_VARIANTS[roam.chiller.variantIdx];
-
   useEffect(() => {
     const id = window.setInterval(() => {
       setPeekLook((prev) => (prev === 0 ? 4 : prev === 4 ? -4 : 0));
     }, 2600);
     return () => clearInterval(id);
   }, []);
-
-  // Autonomous Hallway Walking, Hopping & Character Cycling Loop
-  useEffect(() => {
-    let stepCount = 0;
-    const slots: Array<'bouncer' | 'chaser' | 'juggler' | 'chiller'> = [
-      'bouncer',
-      'chaser',
-      'juggler',
-      'chiller',
-    ];
-
-    const intervalId = window.setInterval(() => {
-      stepCount += 1;
-
-      setRoam((prev) => {
-        const next = { ...prev };
-
-        slots.forEach((slot, idx) => {
-          // Skip autonomous step if user is actively interacting with this mascot
-          if (slot === 'bouncer' && (isLifted || justDropped)) return;
-          if (slot === 'chaser' && isChasingBall) return;
-          if (slot === 'juggler' && isPranked) return;
-          if (slot === 'chiller' && chillerAngry) return;
-
-          const cur = prev[slot];
-          if (cur.swapping) return;
-
-          // Every few ticks, one slot walks into the hallway door and swaps to a new mascot!
-          const shouldSwap = stepCount % 7 === idx + 1;
-          if (shouldSwap) {
-            next[slot] = {
-              ...cur,
-              swapping: true,
-              hopping: true,
-              walkX: cur.dir * 52,
-            };
-
-            setTimeout(() => {
-              setRoam((latest) => ({
-                ...latest,
-                [slot]: {
-                  walkX: 0,
-                  dir: (latest[slot].dir * -1) as 1 | -1,
-                  hopping: false,
-                  variantIdx: (latest[slot].variantIdx + 1) % 3,
-                  swapping: false,
-                },
-              }));
-            }, 420);
-            return;
-          }
-
-          // Normal autonomous walk & hop along the hallway
-          const stepDelta = (14 + ((stepCount + idx * 5) % 16)) * cur.dir;
-          let nextX = cur.walkX + stepDelta;
-          let nextDir = cur.dir;
-          const limit = slot === 'chiller' ? 24 : 36;
-
-          if (nextX > limit) {
-            nextX = limit;
-            nextDir = -1;
-          } else if (nextX < -limit) {
-            nextX = -limit;
-            nextDir = 1;
-          }
-
-          next[slot] = {
-            ...cur,
-            walkX: nextX,
-            dir: nextDir,
-            hopping: true,
-          };
-
-          // Reset hop state after bounce finishes
-          setTimeout(() => {
-            setRoam((latest) => ({
-              ...latest,
-              [slot]: { ...latest[slot], hopping: false },
-            }));
-          }, 360);
-        });
-
-        return next;
-      });
-    }, 1500);
-
-    return () => clearInterval(intervalId);
-  }, [isLifted, justDropped, isChasingBall, isPranked, chillerAngry]);
-
-  const showBotBubble = (id: string, text: string, duration = 2200, burst = true) => {
-    setBotStates((prev) => ({
-      ...prev,
-      [id]: {
-        bubble: text,
-        burstKey: burst ? prev[id].burstKey + 1 : prev[id].burstKey,
-        squishKey: prev[id].squishKey + 1,
-      },
-    }));
-    setTimeout(() => {
-      setBotStates((prev) => ({
-        ...prev,
-        [id]: { ...prev[id], bubble: null },
-      }));
-    }, duration);
-  };
-
-  // 1. Lift & Drop Mechanic (Mascot 1)
-  const handleLiftStart = () => {
-    sfx.playBoing(220, 620);
-    setIsLifted(true);
-    setJustDropped(false);
-    const panicPhrases = [
-      'WAAAH TURUNIN GUA!! 😱',
-      'Tinggi banget tolonggg! 🛸',
-      'Jangan dilepas woi!! 😭',
-    ];
-    showBotBubble(
-      'bouncer',
-      panicPhrases[Math.floor(Math.random() * panicPhrases.length)],
-      2400,
-      false
-    );
-  };
-
-  const handleLiftEnd = () => {
-    sfx.playBoing(560, 175);
-    setIsLifted(false);
-    setJustDropped(true);
-    const dropPhrases = [
-      'Aduh bokong gua! 😵‍💫',
-      'Buset puyeng mendarat! 🌀',
-      'Untung empuk! 🫧',
-    ];
-    showBotBubble(
-      'bouncer',
-      dropPhrases[Math.floor(Math.random() * dropPhrases.length)],
-      2200,
-      true
-    );
-    setTimeout(() => setJustDropped(false), 1800);
-  };
-
-  // 2. Throw Ball & Bot Chases Mechanic (Mascot 2)
-  const triggerBallThrow = (newBallX: number) => {
-    const clampedX = Math.max(-135, Math.min(165, newBallX));
-    sfx.playPop(680);
-    setBallX(clampedX);
-    setIsChasingBall(true);
-    const chasePhrases = [
-      'BOLA!! KEJARRR! 🏃💨',
-      'Oper sini woi! ⚡',
-      'Gua kejar sampe dapet! ⚽',
-    ];
-    showBotBubble(
-      'chaser',
-      chasePhrases[Math.floor(Math.random() * chasePhrases.length)],
-      2000,
-      false
-    );
-
-    // Bot chases the ball slightly after it lands
-    setTimeout(() => {
-      const targetBotX = clampedX >= 0 ? Math.max(0, clampedX - 30) : Math.min(0, clampedX + 30);
-      setChaserX(targetBotX);
-      sfx.playPop(520);
-    }, 180);
-
-    setTimeout(() => {
-      setIsChasingBall(false);
-      showBotBubble('chaser', 'Dapet bolanya! Lempar lagi! ⚽✨', 1900, true);
-    }, 750);
-  };
-
-  // 3. Prank / Steal Star / Spin Upside Down Mechanic (Mascot 3)
-  const triggerPrankJuggler = (reason: 'star' | 'spin') => {
-    sfx.playBoing(480, 240);
-    setIsPranked(true);
-    setPrankRotation((prev) => prev + (reason === 'star' ? 180 : 360));
-    if (reason === 'star') setStarStolen(true);
-
-    const prankPhrases =
-      reason === 'star'
-        ? ['WOI BINTANG GUA DICOLONG!! 😭', 'Balikin bintang gua!! ⭐💢']
-        : ['PUYENG WOI DIPUTER-PUTER!! 🌀', 'Jangan dijahili napa!! 😵‍💫'];
-
-    showBotBubble(
-      'juggler',
-      prankPhrases[Math.floor(Math.random() * prankPhrases.length)],
-      2500,
-      true
-    );
-
-    setTimeout(() => {
-      setIsPranked(false);
-      setStarStolen(false);
-      setPrankRotation(0);
-    }, 2300);
-  };
-
-  // 4. Disturb Headphone Bot -> Red Forehead Gradient & Rage (Mascot 4)
-  const triggerDisturbChiller = () => {
-    sfx.playAngryBuzz();
-    setChillerAngry(true);
-    setChillerShakeKey((k) => k + 1);
-    const angryPhrases = [
-      'WOI LAGI VIBING JANGAN DIGANGGU!! 💢🔥',
-      'HEADSET GUA JANGAN DITARIK!! 😡',
-      'LAGI ENAK DENGER LAGU!! 💢',
-      'BERISIK AMAT SIH LU!! 🔥',
-    ];
-    showBotBubble(
-      'chiller',
-      angryPhrases[Math.floor(Math.random() * angryPhrases.length)],
-      3200,
-      true
-    );
-    setTimeout(() => {
-      setChillerAngry(false);
-    }, 3200);
-  };
 
   const handlePeekInteract = () => {
     sfx.playPop(640);
@@ -1140,333 +2332,9 @@ export const PlayfulPartyFooter: React.FC<{
       <div className="relative z-20 bg-[#1E1E24] text-[#FAF7F2] pt-6 pb-24 sm:pb-14 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* ============================================================== */}
-          {/* INTERACTIVE MASCOT PLAYGROUND TRACK (LORONG OTOMATIS)          */}
+          {/* 60FPS PHYSICS MASCOT PLAYGROUND CARD                           */}
           {/* ============================================================== */}
-          <div className="rounded-[28px] bg-[#FAF7F2] text-[#1E1E24] border-[3px] border-[#FBBF24]/80 p-4 sm:p-5 shadow-[0_7px_0_#0D0D11] relative overflow-hidden">
-            {/* Top Bar: Badge & Interactive Hints (No manual buttons) */}
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-extrabold uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
-                <span>Mascot Playground</span>
-              </div>
-
-              <span className="text-xs font-bold text-[#64616C]">
-                ✋ Angkat mascot • ⚽ Lempar bola • ⭐ Jahili bintang • 🎧 Ganggu yang headset!
-              </span>
-            </div>
-
-            {/* Autonomous Long Hallway Stage */}
-            <div className="relative h-36 sm:h-40 rounded-[22px] bg-[#F2ECE1] border-2 border-dashed border-[#1E1E24]/15 overflow-hidden flex items-end justify-around px-3 sm:px-8 pb-3.5 select-none">
-              {/* HallwayFloor Strip */}
-              <div className="absolute inset-x-0 bottom-0 h-5 bg-[#E6DDD0] border-t border-[#1E1E24]/10 flex items-center justify-around px-6">
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
-              </div>
-
-              <div className="w-full flex items-end justify-around z-10">
-                {/* ========================================================== */}
-                {/* MASCOT 1: LIFTABLE & DROPPABLE (JALAN & LOMPAT SENDIRI)    */}
-                {/* ========================================================== */}
-                <div className="relative flex flex-col items-center z-20">
-                  <AnimatePresence>
-                    {botStates.bouncer.bubble && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -16 }}
-                        style={{ backgroundColor: activeBouncer.color }}
-                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                      >
-                        {botStates.bouncer.bubble}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div
-                    animate={{
-                      x: isLifted ? 0 : roam.bouncer.walkX,
-                      y: isLifted ? 0 : roam.bouncer.hopping ? -14 : 0,
-                      opacity: roam.bouncer.swapping ? 0 : 1,
-                      scale: roam.bouncer.swapping ? 0.7 : 1,
-                    }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                    className="flex flex-col items-center"
-                  >
-                    <motion.div
-                      drag
-                      dragSnapToOrigin
-                      dragElastic={0.85}
-                      dragConstraints={{ top: -85, bottom: 10, left: -60, right: 60 }}
-                      onDragStart={handleLiftStart}
-                      onDragEnd={handleLiftEnd}
-                      onClick={() => {
-                        if (!isLifted) {
-                          sfx.playBoing(300, 620);
-                          showBotBubble('bouncer', 'Tarik & angkat aku ke atas! ✋🫧', 1900, true);
-                        }
-                      }}
-                      animate={
-                        isLifted
-                          ? { rotate: [-8, 8, -8, 8, 0], scale: 1.1 }
-                          : justDropped
-                          ? { scaleX: [1.32, 0.88, 1], scaleY: [0.68, 1.14, 1] }
-                          : { rotate: roam.bouncer.hopping ? roam.bouncer.dir * 6 : 0, scale: 1 }
-                      }
-                      transition={{ duration: 0.35 }}
-                      whileHover={{ y: -5, scale: 1.05 }}
-                      className="relative cursor-grab active:cursor-grabbing focus:outline-none"
-                      title="Drag angkat mascot ini ke atas lalu lepaskan!"
-                    >
-                      <MiniSparkleBurst burstKey={botStates.bouncer.burstKey} color={activeBouncer.color} />
-                      <GrokMascot
-                        shape={activeBouncer.shape}
-                        color={activeBouncer.color}
-                        size={62}
-                        mood={isLifted ? 'surprised' : justDropped ? 'dizzy' : 'happy'}
-                        lookX={roam.bouncer.dir * 3}
-                      />
-                    </motion.div>
-
-                    {/* Dynamic Floor Shadow */}
-                    <motion.div
-                      animate={{
-                        scale: isLifted ? 0.45 : roam.bouncer.hopping ? 0.7 : 1,
-                        opacity: isLifted ? 0.2 : 0.4,
-                      }}
-                      className="w-10 h-1.5 rounded-full bg-[#1E1E24] -mt-1 pointer-events-none"
-                    />
-                  </motion.div>
-                </div>
-
-                {/* ========================================================== */}
-                {/* MASCOT 2: BALL CHASER + THROWABLE BALL (LEMPAR BOLA)       */}
-                {/* ========================================================== */}
-                <div className="relative flex flex-col items-center z-20">
-                  <AnimatePresence>
-                    {botStates.chaser.bubble && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -16 }}
-                        style={{ backgroundColor: activeChaser.color }}
-                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                      >
-                        {botStates.chaser.bubble}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="relative flex items-end">
-                    {/* Chaser Bot walks & hops autonomously OR sprints to chase thrown ball */}
-                    <motion.div
-                      animate={{
-                        x: isChasingBall ? chaserX : chaserX + roam.chaser.walkX * 0.6,
-                        y: isChasingBall ? [0, -12, 0] : roam.chaser.hopping ? -11 : 0,
-                        rotate: isChasingBall
-                          ? ballX >= chaserX
-                            ? 8
-                            : -8
-                          : roam.chaser.hopping
-                          ? roam.chaser.dir * 5
-                          : 0,
-                        opacity: roam.chaser.swapping ? 0 : 1,
-                        scale: roam.chaser.swapping ? 0.7 : 1,
-                      }}
-                      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                      onClick={() => {
-                        const nextSpot = ballX > 40 ? -95 : 110;
-                        triggerBallThrow(nextSpot);
-                      }}
-                      className="relative cursor-pointer"
-                      title="Klik atau lempar bolanya biar dikejar!"
-                    >
-                      <MiniSparkleBurst burstKey={botStates.chaser.burstKey} color={activeChaser.color} />
-                      <GrokMascot
-                        shape={activeChaser.shape}
-                        color={activeChaser.color}
-                        size={64}
-                        mood={isChasingBall ? 'excited' : 'idle'}
-                        glasses={activeChaser.glasses}
-                        lookX={ballX > chaserX ? 4 : ballX < chaserX ? -4 : roam.chaser.dir * 3}
-                      />
-                    </motion.div>
-
-                    {/* Draggable / Throwable Ball */}
-                    <motion.div
-                      drag="x"
-                      dragMomentum={false}
-                      dragElastic={0.2}
-                      dragConstraints={{ left: -140, right: 170 }}
-                      animate={{
-                        x: isChasingBall ? ballX : ballX + roam.chaser.walkX * 0.45,
-                        rotate: (isChasingBall ? ballX : ballX + roam.chaser.walkX) * 4,
-                      }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                      onDragEnd={(_, info) => {
-                        const thrownX = ballX + info.offset.x + info.velocity.x * 0.12;
-                        triggerBallThrow(thrownX);
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const kickX = ballX >= 30 ? -110 : 125;
-                        triggerBallThrow(kickX);
-                      }}
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.9 }}
-                      title="Drag & lempar bola ini ke kiri/kanan!"
-                      className="w-6 h-6 rounded-full bg-[#FBBF24] border-2 border-[#1E1E24] mb-1.5 shadow-[0_2px_0_#1E1E24] cursor-grab active:cursor-grabbing flex items-center justify-center text-xs z-30"
-                    />
-                  </div>
-                </div>
-
-                {/* ========================================================== */}
-                {/* MASCOT 3: PRANKABLE / JAHILI (JALAN & LOMPAT + BINTANG)    */}
-                {/* ========================================================== */}
-                <div className="relative flex flex-col items-center z-20">
-                  <AnimatePresence>
-                    {botStates.juggler.bubble && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -16 }}
-                        style={{ backgroundColor: activeJuggler.color }}
-                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                      >
-                        {botStates.juggler.bubble}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div
-                    animate={{
-                      x: isPranked ? 0 : roam.juggler.walkX,
-                      y: isPranked ? -8 : roam.juggler.hopping ? -13 : 0,
-                      opacity: roam.juggler.swapping ? 0 : 1,
-                      scale: roam.juggler.swapping ? 0.7 : 1,
-                    }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                    className="flex flex-col items-center"
-                  >
-                    {/* Draggable Floating Star */}
-                    <motion.div
-                      drag
-                      dragSnapToOrigin
-                      dragElastic={0.9}
-                      onDragStart={() => triggerPrankJuggler('star')}
-                      onClick={() => triggerPrankJuggler('star')}
-                      animate={
-                        starStolen
-                          ? { scale: 1.3, rotate: 145 }
-                          : { y: roam.juggler.hopping ? -5 : 0, rotate: 0, scale: 1 }
-                      }
-                      className="mb-1 text-[#FBBF24] cursor-grab active:cursor-grabbing z-30"
-                      title="Drag / curi bintangnya buat jahilin mascot ini!"
-                    >
-                      <Star className="w-5 h-5 fill-[#FBBF24] stroke-[#1E1E24]" strokeWidth={2.5} />
-                    </motion.div>
-
-                    <motion.div
-                      drag
-                      dragSnapToOrigin
-                      dragElastic={0.6}
-                      onDragStart={() => triggerPrankJuggler('spin')}
-                      onClick={() => triggerPrankJuggler('spin')}
-                      animate={{
-                        rotate: isPranked ? prankRotation : roam.juggler.hopping ? roam.juggler.dir * 5 : 0,
-                      }}
-                      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                      whileHover={{ y: -5, rotate: -6 }}
-                      className="relative cursor-grab active:cursor-grabbing focus:outline-none"
-                      title="Klik atau drag buat puter-puter & jahilin mascot ini!"
-                    >
-                      <MiniSparkleBurst burstKey={botStates.juggler.burstKey} color={activeJuggler.color} />
-                      <GrokMascot
-                        shape={activeJuggler.shape}
-                        color={activeJuggler.color}
-                        size={62}
-                        mood={isPranked ? 'dizzy' : 'excited'}
-                        coffeeCup={activeJuggler.coffeeCup}
-                        lookX={roam.juggler.dir * 3}
-                      />
-                    </motion.div>
-                  </motion.div>
-                </div>
-
-                {/* ========================================================== */}
-                {/* MASCOT 4: HEADSET BOT (MARAH & DAHI GRADIENT MERAH)        */}
-                {/* ========================================================== */}
-                <div className="relative flex flex-col items-center z-20">
-                  <AnimatePresence>
-                    {botStates.chiller.bubble && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -16 }}
-                        className={`absolute -top-11 right-0 sm:right-auto px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none ${
-                          chillerAngry ? 'bg-[#DC2626]' : 'bg-[#9D71E8]'
-                        }`}
-                      >
-                        {botStates.chiller.bubble}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  <motion.div
-                    animate={{
-                      x: chillerAngry ? 0 : roam.chiller.walkX,
-                      y: chillerAngry ? 0 : roam.chiller.hopping ? -8 : 0,
-                      opacity: roam.chiller.swapping ? 0 : 1,
-                      scale: roam.chiller.swapping ? 0.7 : 1,
-                    }}
-                    transition={{ type: 'spring', stiffness: 240, damping: 20 }}
-                    className="relative flex flex-col items-center"
-                  >
-                    <span
-                      className={`absolute -top-5 right-0 font-display font-bold text-xs pointer-events-none ${
-                        chillerAngry ? 'text-[#DC2626] animate-bounce' : 'text-[#9D71E8]'
-                      }`}
-                    >
-                      {chillerAngry ? '💢🔥' : 'zZz'}
-                    </span>
-
-                    <motion.div
-                      key={`chiller-${chillerShakeKey}`}
-                      drag
-                      dragSnapToOrigin
-                      dragElastic={0.5}
-                      onDragStart={triggerDisturbChiller}
-                      onClick={triggerDisturbChiller}
-                      animate={
-                        chillerAngry
-                          ? { x: [-6, 6, -6, 6, -4, 4, 0], y: [0, -8, 0], scale: 1.08 }
-                          : { x: 0, y: 0, scale: 1 }
-                      }
-                      transition={{ duration: 0.45 }}
-                      whileHover={{ y: -4, scale: 1.05 }}
-                      className="relative cursor-pointer focus:outline-none"
-                      title="Klik atau tarik headsetnya buat gangguin dia!"
-                    >
-                      <MiniSparkleBurst
-                        burstKey={botStates.chiller.burstKey}
-                        color={chillerAngry ? '#DC2626' : activeChiller.color}
-                      />
-                      <GrokMascot
-                        shape={activeChiller.shape}
-                        color={activeChiller.color}
-                        size={64}
-                        mood={chillerAngry ? 'angry' : 'chill'}
-                        foreheadAngry={chillerAngry}
-                        headphones
-                        lookX={roam.chiller.dir * 2}
-                      />
-                    </motion.div>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <InteractiveMascotPlayground />
 
           {/* ============================================================== */}
           {/* SENSIBLE, WELL-STRUCTURED 3-COLUMN FOOTER CONTENT              */}
