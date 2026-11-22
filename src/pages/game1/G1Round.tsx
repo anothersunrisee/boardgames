@@ -261,9 +261,9 @@ export default function G1Round() {
       onUndo={phase === 'scoring' ? handleUndoScoring : undefined}
       undoLabel="Undo ke Timer"
     >
-      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between gap-3.5">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between gap-3">
         {/* Category Card (Compact, always visible at top) */}
-        <div className="rounded-[24px] bg-[#158467] text-white p-4 md:p-5 shadow-[0_6px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden shrink-0">
+        <div className="rounded-[22px] bg-[#158467] text-white p-3.5 md:p-4 shadow-[0_6px_0_#0F5E49] border-2 border-[#1E1E24]/10 text-center relative overflow-hidden shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-extrabold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-[#5CE6C0]" />
@@ -366,7 +366,7 @@ export default function G1Round() {
                 </div>
 
                 {/* RIGHT COLUMN: Mode Status / Player Roster */}
-                <div className="md:col-span-7 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-5 flex flex-col justify-center">
+                <div className="md:col-span-7 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-4 sm:p-5 flex flex-col justify-between gap-3">
                   {playMode === 'multi_device' ? (
                     <div className="flex-1 flex flex-col min-h-0">
                       <div className="flex items-center justify-between mb-3 text-xs font-bold">
@@ -379,13 +379,13 @@ export default function G1Round() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[260px] overflow-y-auto pr-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[250px] overflow-y-auto pr-1">
                         {players.map((p) => {
                           const isSubmitted = !!phoneAnswers[p.id]
                           return (
                             <div
                               key={p.id}
-                              className={`p-2 rounded-xl border flex items-center gap-2 transition-all ${
+                              className={`p-2.5 rounded-2xl border-2 flex items-center gap-2.5 transition-all ${
                                 isSubmitted
                                   ? 'bg-[#D6F5EC]/60 border-[#12B76A]/40 text-[#0F5E49]'
                                   : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
@@ -393,11 +393,13 @@ export default function G1Round() {
                             >
                               <PlayerProfileAvatar
                                 character={getCharacterById(p.avatarId || 'c01')}
-                                size={26}
+                                size={32}
                               />
                               <div className="min-w-0 flex-1 text-left">
-                                <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
-                                <span className="text-xs font-semibold block">
+                                <p className="font-display text-sm font-black truncate leading-tight text-[#1E1E24]">
+                                  {p.name}
+                                </p>
+                                <span className="text-xs font-bold block">
                                   {isSubmitted ? 'Terkunci' : 'Mengetik...'}
                                 </span>
                               </div>
@@ -407,34 +409,48 @@ export default function G1Round() {
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-display text-base font-black text-[#1E1E24] flex items-center gap-1.5">
-                          <span>📝 Mode 1 Layar Offline</span>
+                    <>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-display text-base font-black text-[#1E1E24] flex items-center gap-1.5">
+                            <span>📝 Mode 1 Layar Offline</span>
+                          </p>
+                          <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#D6F5EC] text-[#0F5E49] border border-[#158467]/20">
+                            {players.length} Pemain Siap
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-[#64616C] font-semibold leading-snug">
+                          Semua pemain menulis 1 jawaban unik di kertas atau catatan HP masing-masing sebelum waktu habis.
                         </p>
-                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F2ECE1] text-[#1E1E24]">
-                          {players.length} Pemain
-                        </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-[#64616C] font-semibold leading-relaxed">
-                        Semua pemain menulis 1 jawaban unik di kertas atau catatan HP masing-masing sebelum timer 30 detik habis.
-                      </p>
-                      <div className="flex flex-wrap gap-2 pt-1 max-h-[220px] overflow-y-auto pr-1">
+
+                      <div
+                        className={`grid gap-2.5 max-h-[240px] overflow-y-auto pr-1 my-auto ${
+                          players.length > 8 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'
+                        }`}
+                      >
                         {players.map((p) => (
                           <div
                             key={p.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24]"
+                            className="px-3 py-2.5 rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/10 flex items-center gap-2.5 shadow-2xs"
                           >
                             <PlayerProfileAvatar
                               character={getCharacterById(p.avatarId || 'c01')}
-                              size={22}
+                              size={34}
                               animated={false}
                             />
-                            <span>{p.name}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-display text-sm sm:text-base font-black text-[#1E1E24] truncate leading-tight">
+                                {p.name}
+                              </p>
+                              <span className="text-xs font-bold text-[#64616C] block truncate">
+                                {p.kubu}
+                              </span>
+                            </div>
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               </motion.div>

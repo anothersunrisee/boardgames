@@ -494,13 +494,13 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-3 sm:px-6 py-4 md:py-6 flex flex-col justify-between">
-      <div className="max-w-[1440px] mx-auto w-full flex-1 flex flex-col space-y-6">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-3 sm:px-5 py-3 md:py-4 flex flex-col justify-between">
+      <div className="max-w-[1440px] mx-auto w-full flex-1 flex flex-col space-y-4">
 
         {/* ========================================================================= */}
         {/* UNIFIED TOP NAVIGATION HEADER BAR ACROSS ALL DEVICES                      */}
         {/* ========================================================================= */}
-        <header className="rounded-[24px] bg-white border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+        <header className="rounded-[22px] bg-white border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] px-3 sm:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
           {/* LEFT: Contextual Back & Menu Utama */}
           <div className="flex items-center gap-2">
             <button
@@ -644,16 +644,16 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
               </div>
 
               {/* MINI LIVE STEPPED PODIUM 1-2-3 (#2 Left — #1 Center — #3 Right) */}
-              <div className="px-4 pt-4 pb-0 bg-[#FAF7F2]/60 border-b-2 border-[#1E1E24]">
+              <div className="px-4 pt-3 pb-0 bg-[#FAF7F2]/60 border-b-2 border-[#1E1E24]">
                 <div className="flex items-end gap-2 justify-center">
-                  {renderMiniPodiumSlot(top2, 2, 'h-[52px]', 'bg-[#F2ECE1]')}
-                  {renderMiniPodiumSlot(top1, 1, 'h-[72px]', 'bg-[#FDE68A]')}
-                  {renderMiniPodiumSlot(top3, 3, 'h-[42px]', 'bg-[#FED7AA]')}
+                  {renderMiniPodiumSlot(top2, 2, 'h-[46px]', 'bg-[#F2ECE1]')}
+                  {renderMiniPodiumSlot(top1, 1, 'h-[64px]', 'bg-[#FDE68A]')}
+                  {renderMiniPodiumSlot(top3, 3, 'h-[38px]', 'bg-[#FED7AA]')}
                 </div>
               </div>
 
               {/* Tabs: Individu | Skor Kubu */}
-              <div className="px-4 pt-3.5 pb-2">
+              <div className="px-4 pt-3 pb-1.5">
                 <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#F2ECE1] border border-[#1E1E24]/10">
                   <button
                     type="button"
@@ -687,7 +687,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
               </div>
 
               {/* Scrollable Ranking Rows */}
-              <div className="px-4 py-2 space-y-2 max-h-[320px] overflow-y-auto custom-scroll">
+              <div className="px-4 py-2 space-y-2 max-h-[210px] xl:max-h-[230px] overflow-y-auto custom-scroll">
                 {sidebarTab === 'individu' ? (
                   sortedPlayers.map((player, idx) => {
                     const rank = idx + 1;
