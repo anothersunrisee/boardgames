@@ -33,22 +33,24 @@ class SoundEffects {
   private ctx: AudioContext | null = null;
   public muted = false;
 
-  private ensureCtx(): AudioContext | null {
+  private ensureCtx(onlyIfRunning = false): AudioContext | null {
     if (typeof window === 'undefined') return null;
     if (!this.ctx) {
+      if (onlyIfRunning) return null;
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) this.ctx = new AudioCtx();
     }
     if (this.ctx && this.ctx.state === 'suspended') {
+      if (onlyIfRunning) return null;
       this.ctx.resume().catch(() => {});
     }
     return this.ctx;
   }
 
   /** Crisp bubbly tactile pop for buttons and playful mascots */
-  playPop(pitch = 540) {
+  playPop(pitch = 540, vol = 0.16) {
     if (this.muted) return;
     try {
       const ctx = this.ensureCtx();
@@ -61,7 +63,7 @@ class SoundEffects {
       osc.frequency.setValueAtTime(pitch, now);
       osc.frequency.exponentialRampToValueAtTime(pitch * 1.55, now + 0.08);
 
-      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.setValueAtTime(vol, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
 
       osc.connect(gain);
@@ -217,6 +219,186 @@ class SoundEffects {
     } catch {}
   }
 
+  /** Soft bubble thump for ball bounce / stage tap toss */
+  playBounce(vol = 0.14, subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(115, now + 0.09);
+      gain.gain.setValueAtTime(subtle ? vol * 0.45 : vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } catch {}
+  }
+
+  /** Sci-fi Kamehameha / laser beam sweep */
+  playLaser(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const peak = subtle ? 0.045 : 0.11;
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(980, now);
+      osc.frequency.exponentialRampToValueAtTime(210, now + 0.34);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1480, now);
+      osc2.frequency.exponentialRampToValueAtTime(340, now + 0.34);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+      osc.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc2.start(now);
+      osc.stop(now + 0.37);
+      osc2.stop(now + 0.37);
+    } catch {}
+  }
+
+  /** Classic Mario-style golden coin ding */
+  playCoin(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.055 : 0.13;
+      [
+        { f: 987.77, t: 0, d: 0.085 },
+        { f: 1318.51, t: 0.075, d: 0.24 },
+      ].forEach(({ f, t, d }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + t);
+        gain.gain.setValueAtTime(vol, now + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t + d);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + t);
+        osc.stop(now + t + d + 0.01);
+      });
+    } catch {}
+  }
+
+  /** Rising energetic synth for Super Saiyan power-up */
+  playPowerUp(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.045 : 0.11;
+      [330, 440, 554.37, 659.25, 880].forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = now + idx * 0.045;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, start);
+        osc.frequency.exponentialRampToValueAtTime(f * 1.15, start + 0.12);
+        gain.gain.setValueAtTime(vol, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.16);
+      });
+    } catch {}
+  }
+
+  /** Smooth sci-fi warble for Portal teleport */
+  playPortal(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(340, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.24);
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(22, now);
+      lfoGain.gain.setValueAtTime(55, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(subtle ? 0.05 : 0.12, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      lfo.start(now);
+      osc.stop(now + 0.29);
+      lfo.stop(now + 0.29);
+    } catch {}
+  }
+
+  /** Revving Sonic Spin-Dash pitch zip */
+  playSpinDash(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.045 : 0.11;
+      for (let i = 0; i < 3; i++) {
+        const start = now + i * 0.055;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280 + i * 150, start);
+        osc.frequency.exponentialRampToValueAtTime(560 + i * 240, start + 0.055);
+        gain.gain.setValueAtTime(vol, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.065);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.07);
+      }
+    } catch {}
+  }
+
+  /** Playful metallic hatch clunk for Among Us floor vent */
+  playVent(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.05 : 0.12;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(190, now);
+      osc.frequency.exponentialRampToValueAtTime(95, now + 0.07);
+      gain.gain.setValueAtTime(vol * 0.65, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } catch {}
+  }
+
   /** Grumpy comic buzz when the headphone mascot gets annoyed */
   playAngryBuzz() {
     if (this.muted) return;
@@ -295,17 +477,6 @@ const MASCOT_CAST: MascotProfile[] = [
   { id: 'coral', name: 'Kori', shape: 'flame', color: '#F43F5E', mood: 'excited', horns: true, pitch: 560 },
   { id: 'sky', name: 'Skai', shape: 'hexagon', color: '#0284C7', mood: 'idle', glasses: true, pitch: 500 },
   { id: 'rose', name: 'Rosi', shape: 'scallop', color: '#EC4899', mood: 'happy', crown: true, pitch: 740 },
-];
-
-const CLICK_PHRASES = [
-  'Boop! 🫧',
-  'Oper sini! ⚽',
-  'Wuss~ ⚡',
-  'Hap! 🦘',
-  'Gacor! ✨',
-  'Hehe geli! 😆',
-  'Gas lari! 🏃',
-  'Gol yuk! 🥅',
 ];
 
 const EXIT_PHRASES = [
@@ -937,14 +1108,44 @@ export const StylizedQrisSvg: React.FC = () => {
 };
 
 // ============================================================================
-// 5B. BUTTERY-SMOOTH 60FPS PHYSICS MASCOT PLAYGROUND ENGINE
+// 5B. BUTTERY-SMOOTH 60FPS PHYSICS + POP-CULTURE SKILLS MASCOT PLAYGROUND
 //     - Zero per-frame React setState (direct DOM transform updates via refs)
-//     - Smooth velocity easing, damped spring squash-and-stretch, continuous stride
-//     - Real 2D bouncing arcade soccer ball with kicks, passes & headers
+//     - 11 Pop-Culture Skills & VFX:
+//       1) Kamehameha / Laser Beam + stage micro-shake + dodge reactions
+//       2) Super Mario "?" Coin Block bonk + spinning golden coin
+//       3) Sonic Spin-Dash + cyan speed ring + speed lines
+//       4) Portal Teleport (Glowing Blue & Orange Portals)
+//       5) Among Us Sus Floor Vent (peek & swap)
+//       6) Matrix Neo Bullet-Time Dodge (-38deg lean + green digital motes)
+//       7) Naruto Run (dynamic forward lean + anime speed lines)
+//       8) Super Saiyan Power-Up (levitation + spiky golden energy aura)
+//       9) Moonwalk (smooth backward glide + floating musical notes)
+//      10) Kirby Puff Float (inflated buoyant air float)
+//      11) 360° Parkour Backflip Salto & 2D Bouncing Soccer Ball Play
 //     - Drag & lift any mascot into the air + angry red forehead on headphone bot
-//     - Seamless edge-to-edge mascot relay swap across 10 unique characters
 // ============================================================================
-type AgentAction = 'walk' | 'run' | 'jump_crouch' | 'play_ball' | 'exit_swap' | 'enter_swap';
+type AgentAction =
+  | 'walk'
+  | 'run'
+  | 'jump_crouch'
+  | 'play_ball'
+  | 'laser_charge'
+  | 'laser_fire'
+  | 'coin_seek'
+  | 'spin_charge'
+  | 'spin_dash'
+  | 'portal_enter'
+  | 'portal_exit'
+  | 'vent_peek'
+  | 'vent_exit'
+  | 'vent_enter'
+  | 'matrix_dodge'
+  | 'naruto_run'
+  | 'saiyan_power'
+  | 'moonwalk'
+  | 'kirby_float'
+  | 'exit_swap'
+  | 'enter_swap';
 
 interface MascotAgent {
   slot: number;
@@ -953,28 +1154,37 @@ interface MascotAgent {
   y: number;
   vx: number;
   vy: number;
+  facing: -1 | 1;
   targetX: number;
   action: AgentAction;
   actionTimer: number;
+  subTimer: number;
   crouchTimer: number;
   pendingJumpVy: number;
   pendingJumpVx: number;
+  pendingBackflip: boolean;
   kickCooldown: number;
-  dustTimer: number;
+  vfxTimer: number;
   stageAge: number;
   isDragged: boolean;
   angryTimer: number;
-  // Smooth animation springs & oscillators
+  // Smooth animation springs & continuous angles
   sx: number;
   sy: number;
   vsx: number;
   vsy: number;
   tilt: number;
+  spinAngle: number;
+  spinSpeed: number;
+  visibilityScale: number;
   stridePhase: number;
   bobAmp: number;
   eyeX: number;
   eyeY: number;
   exitDir: -1 | 1;
+  portalTargetX: number;
+  portalSwap: boolean;
+  triggeredByUser: boolean;
 }
 
 interface BallState {
@@ -987,13 +1197,61 @@ interface BallState {
   sy: number;
   vsx: number;
   vsy: number;
-  lastTouchedBy: number;
   userBoosted: boolean;
 }
 
+interface LaserState {
+  active: boolean;
+  slot: number;
+  phase: 'charge' | 'fire';
+  dir: -1 | 1;
+  originX: number;
+  originY: number;
+  color: string;
+  progress: number;
+  timer: number;
+}
+
+interface CoinBlockState {
+  active: boolean;
+  slot: number;
+  x: number;
+  y: number;
+  scale: number;
+  hit: boolean;
+  bumpOffset: number;
+  bumpVel: number;
+  coinActive: boolean;
+  coinY: number;
+  coinVy: number;
+  coinRot: number;
+  coinAlpha: number;
+  timer: number;
+  triggeredByUser: boolean;
+}
+
+interface PortalPairState {
+  active: boolean;
+  inX: number;
+  outX: number;
+  scale: number;
+  timer: number;
+  spin: number;
+}
+
+interface VentState {
+  active: boolean;
+  x: number;
+  openAmt: number;
+  opacity: number;
+  timer: number;
+}
+
+type ParticleKind = 'dust' | 'sparkle' | 'matrix' | 'aura' | 'note';
+
 interface Particle {
   active: boolean;
-  kind: 'dust' | 'sparkle';
+  kind: ParticleKind;
   x: number;
   y: number;
   vx: number;
@@ -1005,13 +1263,22 @@ interface Particle {
   rot: number;
 }
 
+interface Ripple {
+  active: boolean;
+  x: number;
+  y: number;
+  life: number;
+  maxLife: number;
+}
+
 interface BubbleState {
   text: string;
   color: string;
   key: number;
 }
 
-const PARTICLE_POOL_SIZE = 28;
+const PARTICLE_POOL_SIZE = 38; // 0..15 dust, 16..31 sparkles/matrix/aura, 32..37 music notes
+const RIPPLE_POOL_SIZE = 4;
 const MASCOT_SIZE = 62;
 const BALL_SIZE = 28;
 const GROUND_OFFSET_PX = 20;
@@ -1026,9 +1293,12 @@ const InteractiveMascotPlayground: React.FC = () => {
   // Refs synced for zero-stale-closure RAF loop
   const modeRef = useRef<PlaygroundMode>('auto');
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const stageShakeRef = useRef<HTMLDivElement | null>(null);
   const stageSizeRef = useRef({ width: 760, height: 210 });
   const nextCastPointerRef = useRef(4);
-  const swapTimerRef = useRef(6.5);
+  const swapTimerRef = useRef(7.2);
+  const specialEventTimerRef = useRef(3.2);
+  const shakeIntensityRef = useRef(0);
   const bubbleTimersRef = useRef<(number | null)[]>([null, null, null, null]);
   const angryTimersRef = useRef<(number | null)[]>([null, null, null, null]);
   const dragInfoRef = useRef<{
@@ -1047,6 +1317,9 @@ const InteractiveMascotPlayground: React.FC = () => {
   const mascotPosRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   const mascotBodyRefs = useRef<(HTMLButtonElement | null)[]>([null, null, null, null]);
   const mascotShadowRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const auraRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const spinRingRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const speedLineRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   const eyeRefs = useRef<React.RefObject<SVGGElement | null>[]>([
     React.createRef<SVGGElement | null>(),
     React.createRef<SVGGElement | null>(),
@@ -1057,9 +1330,22 @@ const InteractiveMascotPlayground: React.FC = () => {
   const ballPosRef = useRef<HTMLDivElement | null>(null);
   const ballSpinRef = useRef<HTMLDivElement | null>(null);
   const ballShadowRef = useRef<HTMLDivElement | null>(null);
-  const particleElsRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Physics simulation state in refs (ZERO per-frame React re-renders)
+  // Dedicated Pop-Culture VFX DOM Refs
+  const laserOrbRef = useRef<HTMLDivElement | null>(null);
+  const laserBeamRef = useRef<HTMLDivElement | null>(null);
+  const laserCoreRef = useRef<HTMLDivElement | null>(null);
+  const coinBlockElRef = useRef<HTMLDivElement | null>(null);
+  const coinBlockBoxRef = useRef<HTMLDivElement | null>(null);
+  const coinElRef = useRef<HTMLDivElement | null>(null);
+  const bluePortalRef = useRef<HTMLDivElement | null>(null);
+  const orangePortalRef = useRef<HTMLDivElement | null>(null);
+  const ventWrapRef = useRef<HTMLDivElement | null>(null);
+  const ventLidRef = useRef<HTMLDivElement | null>(null);
+  const particleElsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const rippleElsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Physics & VFX Simulation Refs (ZERO per-frame React re-renders)
   const agentsRef = useRef<MascotAgent[]>([]);
   const ballRef = useRef<BallState>({
     x: 340,
@@ -1071,13 +1357,55 @@ const InteractiveMascotPlayground: React.FC = () => {
     sy: 1,
     vsx: 0,
     vsy: 0,
-    lastTouchedBy: -1,
     userBoosted: false,
+  });
+  const laserRef = useRef<LaserState>({
+    active: false,
+    slot: -1,
+    phase: 'charge',
+    dir: 1,
+    originX: 0,
+    originY: 0,
+    color: '#38BDF8',
+    progress: 0,
+    timer: 0,
+  });
+  const coinBlockRef = useRef<CoinBlockState>({
+    active: false,
+    slot: -1,
+    x: 320,
+    y: 94,
+    scale: 0,
+    hit: false,
+    bumpOffset: 0,
+    bumpVel: 0,
+    coinActive: false,
+    coinY: 0,
+    coinVy: 0,
+    coinRot: 0,
+    coinAlpha: 0,
+    timer: 0,
+    triggeredByUser: false,
+  });
+  const portalRef = useRef<PortalPairState>({
+    active: false,
+    inX: 160,
+    outX: 580,
+    scale: 0,
+    timer: 0,
+    spin: 0,
+  });
+  const ventRef = useRef<VentState>({
+    active: false,
+    x: 300,
+    openAmt: 0,
+    opacity: 0,
+    timer: 0,
   });
   const particlesRef = useRef<Particle[]>(
     Array.from({ length: PARTICLE_POOL_SIZE }).map((_, i) => ({
       active: false,
-      kind: i < 16 ? 'dust' : 'sparkle',
+      kind: i < 16 ? 'dust' : i < 32 ? 'sparkle' : 'note',
       x: -100,
       y: -100,
       vx: 0,
@@ -1089,13 +1417,34 @@ const InteractiveMascotPlayground: React.FC = () => {
       rot: 0,
     }))
   );
+  const ripplesRef = useRef<Ripple[]>(
+    Array.from({ length: RIPPLE_POOL_SIZE }).map(() => ({
+      active: false,
+      x: 0,
+      y: 0,
+      life: 0,
+      maxLife: 0.48,
+    }))
+  );
 
   // Sync mode ref
   useEffect(() => {
     modeRef.current = mode;
     const width = stageSizeRef.current.width;
+    const busyActions: AgentAction[] = [
+      'exit_swap',
+      'enter_swap',
+      'laser_charge',
+      'laser_fire',
+      'coin_seek',
+      'portal_enter',
+      'portal_exit',
+      'vent_peek',
+      'vent_exit',
+      'vent_enter',
+    ];
     agentsRef.current.forEach((a, idx) => {
-      if (a.action === 'exit_swap' || a.action === 'enter_swap' || a.isDragged) return;
+      if (busyActions.includes(a.action) || a.isDragged) return;
       if (mode === 'ball') {
         a.action = 'play_ball';
         a.actionTimer = 4 + idx * 0.8;
@@ -1110,7 +1459,7 @@ const InteractiveMascotPlayground: React.FC = () => {
     });
   }, [mode]);
 
-  const showBubble = useCallback((slot: number, text: string, color: string, duration = 1850) => {
+  const showBubble = useCallback((slot: number, text: string, color: string, duration = 1800) => {
     const existing = bubbleTimersRef.current[slot];
     if (existing) window.clearTimeout(existing);
 
@@ -1132,12 +1481,12 @@ const InteractiveMascotPlayground: React.FC = () => {
   const triggerAngryHeadset = useCallback(
     (slot: number) => {
       const a = agentsRef.current[slot];
-      if (a) a.angryTimer = 3.2;
-
-      const existing = angryTimersRef.current[slot];
-      if (existing) window.clearTimeout(existing);
-
+      if (!a) return;
+      a.angryTimer = 2.6;
+      a.vsx += 4.5;
+      a.vsy -= 4.5;
       sfx.playAngryBuzz();
+
       setAngrySlots((prev) => {
         const next = [...prev];
         next[slot] = true;
@@ -1145,33 +1494,35 @@ const InteractiveMascotPlayground: React.FC = () => {
       });
 
       const phrase = ANGRY_HEADSET_PHRASES[Math.floor(Math.random() * ANGRY_HEADSET_PHRASES.length)];
-      showBubble(slot, phrase, '#DC2626', 3000);
+      showBubble(slot, phrase, '#EF4444', 2400);
 
+      const existing = angryTimersRef.current[slot];
+      if (existing) window.clearTimeout(existing);
       angryTimersRef.current[slot] = window.setTimeout(() => {
         setAngrySlots((prev) => {
           const next = [...prev];
           next[slot] = false;
           return next;
         });
-      }, 3200);
+      }, 2600);
     },
     [showBubble]
   );
 
   const spawnParticle = useCallback(
     (
-      kind: 'dust' | 'sparkle',
+      kind: ParticleKind,
       x: number,
       y: number,
       vx: number,
       vy: number,
       color: string,
       size: number,
-      maxLife = 0.48
+      maxLife = 0.5
     ) => {
       const pool = particlesRef.current;
-      const start = kind === 'dust' ? 0 : 16;
-      const end = kind === 'dust' ? 16 : PARTICLE_POOL_SIZE;
+      const start = kind === 'dust' ? 0 : kind === 'note' ? 32 : 16;
+      const end = kind === 'dust' ? 16 : kind === 'note' ? PARTICLE_POOL_SIZE : 32;
       for (let i = start; i < end; i++) {
         if (!pool[i].active) {
           const p = pool[i];
@@ -1194,58 +1545,334 @@ const InteractiveMascotPlayground: React.FC = () => {
   );
 
   const spawnSparkleRing = useCallback(
-    (x: number, y: number, color: string, count = 6) => {
-      const colors = [color, '#FBBF24', '#FFFFFF', '#4AE3B5'];
+    (x: number, y: number, color: string, count = 7) => {
+      const palette = [color, '#FBBF24', '#FFFFFF', '#4AE3B5', '#FF8AC2'];
       for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-        const speed = 70 + Math.random() * 75;
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.35;
+        const speed = 75 + Math.random() * 85;
         spawnParticle(
           'sparkle',
           x,
           y,
           Math.cos(angle) * speed,
           Math.sin(angle) * speed + 45,
-          colors[i % colors.length],
-          6 + Math.random() * 4,
-          0.45 + Math.random() * 0.2
+          palette[i % palette.length],
+          6 + Math.random() * 3.5,
+          0.46 + Math.random() * 0.2
         );
       }
     },
     [spawnParticle]
   );
 
-  const triggerSwapOnSlot = useCallback(
-    (slotIdx?: number, withSound = false) => {
-      const agents = agentsRef.current;
-      if (!agents.length) return;
+  const spawnRipple = useCallback((x: number, y: number) => {
+    const list = ripplesRef.current;
+    const target = list.find((r) => !r.active) || list[0];
+    target.active = true;
+    target.x = x;
+    target.y = y;
+    target.life = 0.48;
+    target.maxLife = 0.48;
+  }, []);
 
-      let chosen: MascotAgent | undefined;
-      if (typeof slotIdx === 'number') {
-        chosen = agents[slotIdx];
-      } else {
-        const eligible = agents.filter(
-          (a) => a.action !== 'exit_swap' && a.action !== 'enter_swap' && !a.isDragged
-        );
-        if (!eligible.length) return;
-        eligible.sort((a, b) => b.stageAge - a.stageAge);
-        chosen = eligible[0];
-      }
+  const pickNextCastIndex = useCallback(() => {
+    const activeIds = new Set(agentsRef.current.map((ag) => ag.castIdx));
+    let candidate = nextCastPointerRef.current % MASCOT_CAST.length;
+    let tries = 0;
+    while (activeIds.has(candidate) && tries < MASCOT_CAST.length) {
+      candidate = (candidate + 1) % MASCOT_CAST.length;
+      tries++;
+    }
+    nextCastPointerRef.current = (candidate + 1) % MASCOT_CAST.length;
+    return candidate;
+  }, []);
 
-      if (!chosen || chosen.action === 'exit_swap' || chosen.action === 'enter_swap' || chosen.isDragged) return;
+  const swapMascotCharacter = useCallback(
+    (agent: MascotAgent) => {
+      const nextIdx = pickNextCastIndex();
+      agent.castIdx = nextIdx;
+      agent.stageAge = 0;
+      agent.angryTimer = 0;
+      setAngrySlots((prev) => {
+        const copy = [...prev];
+        copy[agent.slot] = false;
+        return copy;
+      });
+      setSlotCast((prev) => {
+        const copy = [...prev];
+        copy[agent.slot] = nextIdx;
+        return copy;
+      });
+      return MASCOT_CAST[nextIdx];
+    },
+    [pickNextCastIndex]
+  );
 
+  // Trigger a specific skill or famous pop-culture Easter Egg on a mascot!
+  const triggerSpecialSkill = useCallback(
+    (a: MascotAgent, fromUser: boolean) => {
       const width = stageSizeRef.current.width;
-      const profile = MASCOT_CAST[chosen.castIdx];
-      chosen.action = 'exit_swap';
-      chosen.exitDir = chosen.x < width * 0.5 ? -1 : 1;
-      chosen.crouchTimer = 0;
-      const phrase = EXIT_PHRASES[Math.floor(Math.random() * EXIT_PHRASES.length)];
-      showBubble(chosen.slot, phrase, profile.color, 1300);
-      if (withSound) sfx.playWhoosh();
+      const profile = MASCOT_CAST[a.castIdx];
+      a.triggeredByUser = fromUser;
+      a.crouchTimer = 0;
+      a.spinSpeed = 0;
+      a.spinAngle = 0;
+
+      const options: string[] = [
+        'spin_dash',
+        'saiyan',
+        'naruto',
+        'moonwalk',
+        'kirby',
+        'backflip',
+        'matrix',
+      ];
+      if (!laserRef.current.active) options.push('laser', 'laser');
+      if (!coinBlockRef.current.active) options.push('coin', 'coin');
+      if (!portalRef.current.active) options.push('portal');
+      if (!ventRef.current.active) options.push('vent_peek');
+
+      const choice = options[Math.floor(Math.random() * options.length)];
+
+      switch (choice) {
+        case 'laser': {
+          const dir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = dir;
+          a.action = 'laser_charge';
+          a.actionTimer = 0.58;
+          a.vx *= 0.15;
+          laserRef.current = {
+            active: true,
+            slot: a.slot,
+            phase: 'charge',
+            dir,
+            originX: a.x + dir * 26,
+            originY: a.y + 26,
+            color: profile.color,
+            progress: 0,
+            timer: 0.58,
+          };
+          showBubble(
+            a.slot,
+            Math.random() < 0.55 ? 'KAMEHAME...!' : 'CHARGE ⚡',
+            '#0284C7',
+            1350
+          );
+          if (fromUser) sfx.playPop(720, 0.12);
+          break;
+        }
+
+        case 'coin': {
+          const bx = Math.max(70, Math.min(width - 70, a.x + (Math.random() < 0.5 ? -36 : 36)));
+          a.action = 'coin_seek';
+          a.targetX = bx;
+          a.actionTimer = 2.6;
+          coinBlockRef.current = {
+            active: true,
+            slot: a.slot,
+            x: bx,
+            y: 94,
+            scale: 0.05,
+            hit: false,
+            bumpOffset: 0,
+            bumpVel: 0,
+            coinActive: false,
+            coinY: 94,
+            coinVy: 0,
+            coinRot: 0,
+            coinAlpha: 0,
+            timer: 3.1,
+            triggeredByUser: fromUser,
+          };
+          showBubble(a.slot, 'BLOK ? 🪙', '#D97706', 1100);
+          if (fromUser) sfx.playPop(640, 0.12);
+          break;
+        }
+
+        case 'spin_dash': {
+          const dir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = dir;
+          a.action = 'spin_charge';
+          a.actionTimer = 0.52;
+          a.vx = 0;
+          a.spinSpeed = 1480 * dir;
+          showBubble(a.slot, 'GOTTA GO FAST! 💨', '#0284C7', 1650);
+          sfx.playSpinDash(!fromUser);
+          break;
+        }
+
+        case 'portal': {
+          const inX = Math.max(66, Math.min(width - 66, a.x + (a.x < width * 0.5 ? 62 : -62)));
+          const outX = inX < width * 0.5 ? Math.max(84, width - 78) : 78;
+          a.action = 'portal_enter';
+          a.targetX = inX;
+          a.portalTargetX = outX;
+          a.portalSwap = false;
+          a.actionTimer = 2.4;
+          portalRef.current = {
+            active: true,
+            inX,
+            outX,
+            scale: 0.05,
+            timer: 2.8,
+            spin: 0,
+          };
+          showBubble(a.slot, 'NOW WITH PORTALS! 🌀', '#2568EF', 1800);
+          sfx.playPortal(!fromUser);
+          break;
+        }
+
+        case 'vent_peek': {
+          const vx = Math.max(70, Math.min(width - 70, a.x));
+          a.action = 'vent_peek';
+          a.targetX = vx;
+          a.subTimer = 0;
+          a.actionTimer = 2.2;
+          ventRef.current = {
+            active: true,
+            x: vx,
+            openAmt: 0,
+            opacity: 1,
+            timer: 2.5,
+          };
+          showBubble(a.slot, 'SUS?! 👀', '#F43F5E', 1750);
+          sfx.playVent(!fromUser);
+          break;
+        }
+
+        case 'saiyan': {
+          a.action = 'saiyan_power';
+          a.actionTimer = 1.85;
+          a.vx *= 0.2;
+          a.vy = 135;
+          showBubble(a.slot, 'OVER 9000! 🔥', '#D97706', 1800);
+          sfx.playPowerUp(!fromUser);
+          break;
+        }
+
+        case 'naruto': {
+          const dir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = dir;
+          a.action = 'naruto_run';
+          a.targetX = dir === 1 ? width - 54 : 54;
+          a.actionTimer = 1.9;
+          showBubble(a.slot, 'DATTEBAYO! 🍥', '#EC5A29', 1650);
+          if (fromUser) sfx.playPop(700, 0.13);
+          break;
+        }
+
+        case 'moonwalk': {
+          const moveDir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = (moveDir * -1) as -1 | 1;
+          a.action = 'moonwalk';
+          a.targetX = moveDir === 1 ? Math.min(width - 54, a.x + 175) : Math.max(54, a.x - 175);
+          a.actionTimer = 2.1;
+          showBubble(a.slot, 'HEE-HEE! 🕺', '#9D71E8', 1750);
+          if (fromUser) sfx.playPop(620, 0.13);
+          break;
+        }
+
+        case 'kirby': {
+          const dir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = dir;
+          a.action = 'kirby_float';
+          a.targetX = dir === 1 ? Math.min(width - 58, a.x + 190) : Math.max(58, a.x - 190);
+          a.vy = 140;
+          a.actionTimer = 2.3;
+          showBubble(a.slot, 'POYO! 🌸', '#EC4899', 1800);
+          if (fromUser) sfx.playPop(780, 0.14);
+          break;
+        }
+
+        case 'matrix': {
+          a.action = 'matrix_dodge';
+          a.actionTimer = 1.25;
+          a.vx *= 0.2;
+          showBubble(a.slot, 'WHOA 🕶️', '#158467', 1450);
+          if (fromUser) sfx.playPop(460, 0.13);
+          break;
+        }
+
+        case 'backflip':
+        default: {
+          const dir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+          a.facing = dir;
+          a.action = 'jump_crouch';
+          a.crouchTimer = 0.11;
+          a.pendingJumpVy = 415;
+          a.pendingJumpVx = dir * 135;
+          a.pendingBackflip = true;
+          a.actionTimer = 1.1;
+          showBubble(a.slot, 'PARKOUR! 🤸', profile.color, 1500);
+          if (fromUser) sfx.playPop(680, 0.14);
+          break;
+        }
+      }
     },
     [showBubble]
   );
 
-  // Main 60fps ResizeObserver + Physics RAF Loop
+  // Trigger smooth mascot swap (via Edge Sprint, Glowing Portal Dive, or Among Us Floor Vent!)
+  const triggerSwapOnSlot = useCallback(
+    (preferredSlot?: number, withSound = false) => {
+      const agents = agentsRef.current;
+      const width = stageSizeRef.current.width;
+      const busyActions: AgentAction[] = [
+        'exit_swap',
+        'enter_swap',
+        'laser_charge',
+        'laser_fire',
+        'coin_seek',
+        'portal_enter',
+        'portal_exit',
+        'vent_peek',
+        'vent_exit',
+        'vent_enter',
+      ];
+      let chosen: MascotAgent | undefined;
+      if (preferredSlot !== undefined) {
+        chosen = agents[preferredSlot];
+      } else {
+        const eligible = agents.filter((a) => !busyActions.includes(a.action) && !a.isDragged);
+        if (!eligible.length) return;
+        eligible.sort((a, b) => b.stageAge - a.stageAge);
+        chosen = eligible[0];
+      }
+      if (!chosen || busyActions.includes(chosen.action) || chosen.isDragged) return;
+
+      const profile = MASCOT_CAST[chosen.castIdx];
+      const roll = Math.random();
+      if (roll < 0.34 && !ventRef.current.active) {
+        const vx = Math.max(68, Math.min(width - 68, chosen.x));
+        chosen.action = 'vent_exit';
+        chosen.targetX = vx;
+        chosen.subTimer = 0;
+        ventRef.current = { active: true, x: vx, openAmt: 0, opacity: 1, timer: 2.8 };
+        showBubble(chosen.slot, 'VENTING 📮', '#F43F5E', 1350);
+        sfx.playVent(!withSound);
+      } else if (roll < 0.66 && !portalRef.current.active) {
+        const inX = Math.max(66, Math.min(width - 66, chosen.x + (chosen.x < width * 0.5 ? 55 : -55)));
+        const outX = inX < width * 0.5 ? Math.max(84, width - 78) : 78;
+        chosen.action = 'portal_enter';
+        chosen.targetX = inX;
+        chosen.portalTargetX = outX;
+        chosen.portalSwap = true;
+        portalRef.current = { active: true, inX, outX, scale: 0.05, timer: 3.0, spin: 0 };
+        showBubble(chosen.slot, 'PORTAL SWAP! 🌀', '#2568EF', 1400);
+        sfx.playPortal(!withSound);
+      } else {
+        chosen.action = 'exit_swap';
+        chosen.exitDir = chosen.x < width * 0.5 ? -1 : 1;
+        chosen.facing = chosen.exitDir;
+        const phrase = EXIT_PHRASES[Math.floor(Math.random() * EXIT_PHRASES.length)];
+        showBubble(chosen.slot, phrase, profile.color, 1300);
+        if (withSound) sfx.playWhoosh();
+      }
+    },
+    [showBubble]
+  );
+
+  // Main 60fps ResizeObserver + Physics & Pop-Culture RAF Loop
   useEffect(() => {
     const stageEl = stageRef.current;
     if (!stageEl) return;
@@ -1268,17 +1895,20 @@ const InteractiveMascotPlayground: React.FC = () => {
         castIdx: slot,
         x: (w0 / 5) * (slot + 1),
         y: 0,
-        vx: (slot % 2 === 0 ? 1 : -1) * 55,
+        vx: (slot % 2 === 0 ? 1 : -1) * 60,
         vy: 0,
+        facing: slot % 2 === 0 ? 1 : -1,
         targetX: (w0 / 5) * (slot + 1),
         action: slot < 2 ? 'play_ball' : slot === 2 ? 'run' : 'walk',
-        actionTimer: 2.2 + slot * 1.1,
+        actionTimer: 2.0 + slot * 0.9,
+        subTimer: 0,
         crouchTimer: 0,
         pendingJumpVy: 0,
         pendingJumpVx: 0,
+        pendingBackflip: false,
         kickCooldown: 0.4,
-        dustTimer: 0,
-        stageAge: slot * 2.1,
+        vfxTimer: 0,
+        stageAge: slot * 2.2,
         isDragged: false,
         angryTimer: 0,
         sx: 1,
@@ -1286,42 +1916,52 @@ const InteractiveMascotPlayground: React.FC = () => {
         vsx: 0,
         vsy: 0,
         tilt: 0,
+        spinAngle: 0,
+        spinSpeed: 0,
+        visibilityScale: 1,
         stridePhase: slot * 1.4,
         bobAmp: 0,
         eyeX: 0,
         eyeY: 0,
         exitDir: 1,
+        portalTargetX: w0 * 0.5,
+        portalSwap: false,
+        triggeredByUser: false,
       }));
       ballRef.current.x = w0 * 0.48;
-      ballRef.current.y = 75;
+      ballRef.current.y = 64;
     }
 
     let rafId = 0;
     let lastTime = performance.now();
 
-    const pickNextAction = (a: MascotAgent, width: number, currentMode: PlaygroundMode) => {
-      const pad = 48;
+    const pickRoutineAction = (a: MascotAgent, width: number) => {
+      const curMode = modeRef.current;
+      const pad = 44;
       const span = Math.max(80, width - pad * 2);
 
-      if (currentMode === 'ball') {
+      if (curMode === 'ball') {
         a.action = 'play_ball';
-        a.actionTimer = 3.5 + Math.random() * 2.5;
+        a.actionTimer = 3.2 + Math.random() * 2.5;
         return;
       }
 
-      if (currentMode === 'parkour') {
+      if (curMode === 'parkour') {
         const roll = Math.random();
-        if (roll < 0.42 && a.y <= 1) {
-          a.action = 'jump_crouch';
-          a.crouchTimer = 0.13;
-          a.pendingJumpVy = 365 + Math.random() * 90;
-          const dir = a.x < width * 0.25 ? 1 : a.x > width * 0.75 ? -1 : Math.random() < 0.5 ? -1 : 1;
-          a.pendingJumpVx = dir * (130 + Math.random() * 90);
-          a.actionTimer = 1.1;
-        } else {
+        if (roll < 0.42) {
           a.action = 'run';
           a.targetX = pad + Math.random() * span;
-          a.actionTimer = 1.6 + Math.random() * 1.8;
+          a.actionTimer = 1.4 + Math.random() * 1.6;
+        } else if (roll < 0.76 && a.y <= 1) {
+          a.action = 'jump_crouch';
+          a.crouchTimer = 0.11;
+          a.pendingJumpVy = 355 + Math.random() * 75;
+          const dir = a.x < width * 0.3 ? 1 : a.x > width * 0.7 ? -1 : Math.random() < 0.5 ? -1 : 1;
+          a.pendingJumpVx = dir * (95 + Math.random() * 90);
+          a.pendingBackflip = Math.random() < 0.65;
+          a.actionTimer = 1.1;
+        } else {
+          triggerSpecialSkill(a, false);
         }
         return;
       }
@@ -1331,70 +1971,96 @@ const InteractiveMascotPlayground: React.FC = () => {
       ).length;
 
       const roll = Math.random();
-      if (ballPlayers < 2 && roll < 0.44) {
+      if (ballPlayers < 2 && roll < 0.36) {
         a.action = 'play_ball';
-        a.actionTimer = 3.2 + Math.random() * 2.8;
-      } else if (roll < 0.66) {
+        a.actionTimer = 3.0 + Math.random() * 2.6;
+      } else if (roll < 0.58) {
         a.action = 'run';
         a.targetX = pad + Math.random() * span;
-        a.actionTimer = 1.8 + Math.random() * 2.0;
-      } else if (roll < 0.84) {
+        a.actionTimer = 1.6 + Math.random() * 1.9;
+      } else if (roll < 0.78) {
         a.action = 'walk';
         a.targetX = pad + Math.random() * span;
-        a.actionTimer = 2.4 + Math.random() * 2.6;
-      } else if (a.y <= 1) {
+        a.actionTimer = 2.0 + Math.random() * 2.4;
+      } else if (roll < 0.9 && a.y <= 1) {
         a.action = 'jump_crouch';
-        a.crouchTimer = 0.14;
-        a.pendingJumpVy = 350 + Math.random() * 85;
+        a.crouchTimer = 0.12;
+        a.pendingJumpVy = 345 + Math.random() * 75;
         const dir = a.x < width * 0.3 ? 1 : a.x > width * 0.7 ? -1 : Math.random() < 0.5 ? -1 : 1;
-        a.pendingJumpVx = dir * (65 + Math.random() * 95);
-        a.actionTimer = 1.25;
+        a.pendingJumpVx = dir * (80 + Math.random() * 90);
+        a.pendingBackflip = Math.random() < 0.45;
+        a.actionTimer = 1.1;
       } else {
-        a.action = 'walk';
-        a.targetX = pad + Math.random() * span;
-        a.actionTimer = 2.0;
+        triggerSpecialSkill(a, false);
       }
     };
 
     const tick = (now: number) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.04);
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
       const { width, height } = stageSizeRef.current;
-      const currentMode = modeRef.current;
       const agents = agentsRef.current;
       const ball = ballRef.current;
+      const laser = laserRef.current;
+      const coinBlock = coinBlockRef.current;
+      const portal = portalRef.current;
+      const vent = ventRef.current;
 
-      // 1. AUTOMATIC RELAY SWAP TIMER (Every ~7.5 - 9 seconds)
+      // ------------------------------------------------------------------
+      // 1. AUTOMATIC CHARACTER ROTATION & SPECIAL POP-CULTURE SCHEDULER
+      // ------------------------------------------------------------------
       swapTimerRef.current -= dt;
       if (swapTimerRef.current <= 0) {
-        swapTimerRef.current = 7.4 + Math.random() * 2.2;
+        swapTimerRef.current = 7.4 + Math.random() * 3.2;
         triggerSwapOnSlot(undefined, false);
       }
 
+      if (modeRef.current !== 'ball') {
+        specialEventTimerRef.current -= dt;
+        if (specialEventTimerRef.current <= 0) {
+          specialEventTimerRef.current = modeRef.current === 'parkour' ? 2.6 + Math.random() * 1.8 : 3.4 + Math.random() * 2.4;
+          const free = agents.filter(
+            (a) =>
+              !a.isDragged &&
+              (a.action === 'walk' || a.action === 'run' || a.action === 'play_ball')
+          );
+          if (free.length > 0) {
+            const picked = free[Math.floor(Math.random() * free.length)];
+            triggerSpecialSkill(picked, false);
+          }
+        }
+      }
+
+      // Stage micro-shake decay
+      if (shakeIntensityRef.current > 0.05) {
+        shakeIntensityRef.current *= Math.pow(0.015, dt);
+        const sx = (Math.random() - 0.5) * 2 * shakeIntensityRef.current;
+        const sy = (Math.random() - 0.5) * 2 * shakeIntensityRef.current;
+        if (stageShakeRef.current) {
+          stageShakeRef.current.style.transform = `translate3d(${sx}px, ${sy}px, 0)`;
+        }
+      } else if (stageShakeRef.current) {
+        shakeIntensityRef.current = 0;
+        stageShakeRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
+
+      // ------------------------------------------------------------------
       // 2. SOCCER BALL 2D PHYSICS
+      // ------------------------------------------------------------------
       const ballRadius = BALL_SIZE * 0.5;
-      ball.vy -= 960 * dt;
+      ball.vy -= 940 * dt;
       ball.x += ball.vx * dt;
       ball.y += ball.vy * dt;
 
       if (ball.y <= 0) {
         ball.y = 0;
-        if (ball.vy < -55) {
-          const impact = Math.min(0.28, Math.abs(ball.vy) / 1500);
+        if (ball.vy < -50) {
+          const impact = Math.min(0.28, Math.abs(ball.vy) / 1450);
           ball.vy = -ball.vy * 0.74;
           ball.vsx += impact * 15;
           ball.vsy -= impact * 15;
-          spawnParticle(
-            'dust',
-            ball.x,
-            2,
-            (Math.random() - 0.5) * 45,
-            18 + Math.random() * 20,
-            '#D8CFC2',
-            7,
-            0.34
-          );
+          spawnParticle('dust', ball.x, 2, (Math.random() - 0.5) * 40, 16, '#D8CFC2', 6, 0.3);
         } else {
           ball.vy = 0;
           ball.userBoosted = false;
@@ -1402,27 +2068,27 @@ const InteractiveMascotPlayground: React.FC = () => {
         ball.vx *= Math.pow(0.42, dt);
         if (Math.abs(ball.vx) < 4) ball.vx = 0;
       } else {
-        ball.vx *= Math.pow(0.88, dt);
+        ball.vx *= Math.pow(0.9, dt);
       }
 
-      const maxBallY = Math.max(85, height - GROUND_OFFSET_PX - BALL_SIZE - 12);
+      const maxBallY = Math.max(84, height - GROUND_OFFSET_PX - BALL_SIZE - 8);
       if (ball.y > maxBallY) {
         ball.y = maxBallY;
         ball.vy = -Math.abs(ball.vy) * 0.55;
       }
 
-      const leftWall = ballRadius + 10;
-      const rightWall = Math.max(leftWall + 40, width - ballRadius - 10);
+      const leftWall = ballRadius + 8;
+      const rightWall = Math.max(leftWall + 40, width - ballRadius - 8);
       if (ball.x < leftWall) {
         ball.x = leftWall;
-        ball.vx = Math.abs(ball.vx) * 0.82 + 25;
-        ball.vsx -= 3.2;
-        ball.vsy += 3.2;
+        ball.vx = Math.abs(ball.vx) * 0.82 + 24;
+        ball.vsx -= 3;
+        ball.vsy += 3;
       } else if (ball.x > rightWall) {
         ball.x = rightWall;
-        ball.vx = -Math.abs(ball.vx) * 0.82 - 25;
-        ball.vsx -= 3.2;
-        ball.vsy += 3.2;
+        ball.vx = -Math.abs(ball.vx) * 0.82 - 24;
+        ball.vsx -= 3;
+        ball.vsy += 3;
       }
 
       ball.angle += (ball.vx / ballRadius) * dt * (180 / Math.PI);
@@ -1431,208 +2097,706 @@ const InteractiveMascotPlayground: React.FC = () => {
       ball.sx = Math.max(0.72, Math.min(1.32, ball.sx + ball.vsx * dt));
       ball.sy = Math.max(0.72, Math.min(1.32, ball.sy + ball.vsy * dt));
 
-      if (currentMode !== 'parkour' && ball.y === 0 && Math.abs(ball.vx) < 2) {
-        ball.vx = (ball.x < width * 0.5 ? 1 : -1) * 45;
+      if (ball.y === 0 && Math.abs(ball.vx) < 2) {
+        ball.vx = (ball.x < width * 0.5 ? 1 : -1) * 42;
       }
 
-      // 3. MASCOT AGENTS AI, MOVEMENT, DRAG-LIFT, SPRINGS & BALL INTERACTION
-      const pad = 42;
+      // ------------------------------------------------------------------
+      // 3. GLOBAL POP-CULTURE VFX UPDATES (LASER, MARIO BLOCK, PORTAL, VENT)
+      // ------------------------------------------------------------------
+      // A) Laser Beam VFX
+      if (laser.active) {
+        laser.timer -= dt;
+        const shooter = agents[laser.slot];
+        if (shooter) {
+          laser.originX = shooter.x + laser.dir * 28;
+          laser.originY = shooter.y + 26;
+        }
+        if (laser.phase === 'charge') {
+          laser.progress = Math.min(1, laser.progress + dt * 2.2);
+          if (Math.random() < dt * 16) {
+            const ang = Math.random() * Math.PI * 2;
+            spawnParticle(
+              'sparkle',
+              laser.originX + Math.cos(ang) * 24,
+              laser.originY + Math.sin(ang) * 24,
+              -Math.cos(ang) * 75,
+              -Math.sin(ang) * 75,
+              '#38BDF8',
+              5,
+              0.28
+            );
+          }
+          if (laser.timer <= 0) {
+            laser.phase = 'fire';
+            laser.timer = 0.72;
+            laser.progress = 0;
+            shakeIntensityRef.current = 4.2;
+            if (shooter && !shooter.isDragged) {
+              shooter.action = 'laser_fire';
+              shooter.actionTimer = 0.72;
+              shooter.vx = -laser.dir * 85;
+              shooter.vsx -= 3.8;
+              shooter.vsy += 3.8;
+              sfx.playLaser(!shooter.triggeredByUser);
+              showBubble(shooter.slot, 'HAAAA!! 💥', '#0284C7', 1100);
+            }
+            agents.forEach((other) => {
+              if (other.slot === laser.slot || other.isDragged) return;
+              const inPath =
+                laser.dir === 1 ? other.x > laser.originX - 10 : other.x < laser.originX + 10;
+              if (
+                inPath &&
+                (other.action === 'walk' || other.action === 'run' || other.action === 'play_ball')
+              ) {
+                if (Math.random() < 0.55) {
+                  other.action = 'matrix_dodge';
+                  other.actionTimer = 1.05;
+                  other.vx *= 0.15;
+                  showBubble(other.slot, 'WHOA 🕶️', '#158467', 1200);
+                } else if (other.y <= 2) {
+                  other.vy = 395;
+                  other.vsx -= 3.5;
+                  other.vsy += 4.0;
+                  showBubble(other.slot, 'HAP! 🦘', '#FBBF24', 1000);
+                }
+              }
+            });
+          }
+        } else {
+          laser.progress = Math.min(1, laser.progress + dt * 9);
+          if (laser.timer <= 0) {
+            laser.active = false;
+          }
+        }
+      }
+
+      if (laserOrbRef.current && laserBeamRef.current && laserCoreRef.current) {
+        if (!laser.active) {
+          laserOrbRef.current.style.opacity = '0';
+          laserBeamRef.current.style.opacity = '0';
+        } else if (laser.phase === 'charge') {
+          const pulse = 0.45 + laser.progress * 0.75 + Math.sin(now * 0.04) * 0.16;
+          laserOrbRef.current.style.opacity = '1';
+          laserOrbRef.current.style.transform = `translate3d(${laser.originX - 16}px, ${-laser.originY - 4}px, 0) scale(${pulse})`;
+          laserBeamRef.current.style.opacity = '0';
+        } else {
+          const fade = Math.min(1, laser.timer * 4.5);
+          const beamW =
+            laser.dir === 1 ? Math.max(40, width - laser.originX) : Math.max(40, laser.originX);
+          const beamLeft = laser.dir === 1 ? laser.originX : 0;
+          const beamScaleY = 0.72 + Math.sin(now * 0.06) * 0.22;
+
+          laserOrbRef.current.style.opacity = `${fade}`;
+          laserOrbRef.current.style.transform = `translate3d(${laser.originX - 16}px, ${-laser.originY - 4}px, 0) scale(${1.15 * fade})`;
+
+          laserBeamRef.current.style.opacity = `${fade}`;
+          laserBeamRef.current.style.left = `${beamLeft}px`;
+          laserBeamRef.current.style.width = `${beamW}px`;
+          laserBeamRef.current.style.transformOrigin = laser.dir === 1 ? '0% 50%' : '100% 50%';
+          laserBeamRef.current.style.transform = `translate3d(0, ${-laser.originY - 1}px, 0) scaleX(${laser.progress}) scaleY(${beamScaleY * fade})`;
+        }
+      }
+
+      // B) Mario "?" Coin Block VFX
+      if (coinBlock.active) {
+        coinBlock.timer -= dt;
+        const targetScale = coinBlock.timer > 0.3 ? 1 : 0;
+        coinBlock.scale += (targetScale - coinBlock.scale) * Math.min(1, dt * 13);
+
+        if (coinBlock.bumpOffset > 0 || coinBlock.bumpVel !== 0) {
+          coinBlock.bumpVel -= 1400 * dt;
+          coinBlock.bumpOffset += coinBlock.bumpVel * dt;
+          if (coinBlock.bumpOffset <= 0) {
+            coinBlock.bumpOffset = 0;
+            coinBlock.bumpVel = 0;
+          }
+        }
+
+        if (coinBlock.coinActive) {
+          coinBlock.coinVy -= 760 * dt;
+          coinBlock.coinY += coinBlock.coinVy * dt;
+          coinBlock.coinRot += 780 * dt;
+          if (coinBlock.coinVy < -110) {
+            coinBlock.coinAlpha = Math.max(0, coinBlock.coinAlpha - dt * 5);
+            if (coinBlock.coinAlpha <= 0) coinBlock.coinActive = false;
+          }
+        }
+
+        if (coinBlock.timer <= 0) {
+          coinBlock.active = false;
+        }
+      }
+
+      if (coinBlockElRef.current && coinBlockBoxRef.current && coinElRef.current) {
+        if (!coinBlock.active) {
+          coinBlockElRef.current.style.opacity = '0';
+          coinElRef.current.style.opacity = '0';
+        } else {
+          coinBlockElRef.current.style.opacity = `${Math.min(1, coinBlock.scale * 1.4)}`;
+          coinBlockElRef.current.style.transform = `translate3d(${coinBlock.x - 15}px, ${-(coinBlock.y + coinBlock.bumpOffset)}px, 0) scale(${coinBlock.scale})`;
+          coinBlockBoxRef.current.style.backgroundColor = coinBlock.hit ? '#B47B48' : '#FBBF24';
+
+          if (coinBlock.coinActive) {
+            coinElRef.current.style.opacity = `${coinBlock.coinAlpha}`;
+            const spinScaleX = Math.max(0.22, Math.abs(Math.cos((coinBlock.coinRot * Math.PI) / 180)));
+            coinElRef.current.style.transform = `translate3d(${coinBlock.x - 10}px, ${-coinBlock.coinY}px, 0) scaleX(${spinScaleX})`;
+          } else {
+            coinElRef.current.style.opacity = '0';
+          }
+        }
+      }
+
+      // C) Blue & Orange Portals VFX
+      if (portal.active) {
+        portal.timer -= dt;
+        portal.spin += dt * 260;
+        const tScale = portal.timer > 0.32 ? 1 : 0;
+        portal.scale += (tScale - portal.scale) * Math.min(1, dt * 11);
+        if (portal.timer <= 0) portal.active = false;
+      }
+
+      if (bluePortalRef.current && orangePortalRef.current) {
+        if (!portal.active) {
+          bluePortalRef.current.style.opacity = '0';
+          orangePortalRef.current.style.opacity = '0';
+        } else {
+          const pulse = 1 + Math.sin(now * 0.014) * 0.06;
+          bluePortalRef.current.style.opacity = `${Math.min(1, portal.scale * 1.3)}`;
+          bluePortalRef.current.style.transform = `translate3d(${portal.inX - 15}px, -16px, 0) scale(${portal.scale * pulse})`;
+          orangePortalRef.current.style.opacity = `${Math.min(1, portal.scale * 1.3)}`;
+          orangePortalRef.current.style.transform = `translate3d(${portal.outX - 15}px, -16px, 0) scale(${portal.scale * pulse})`;
+        }
+      }
+
+      // D) Among Us Floor Vent VFX
+      if (vent.active) {
+        vent.timer -= dt;
+        const targetOpen = vent.timer > 0.45 ? 1 : 0;
+        vent.openAmt += (targetOpen - vent.openAmt) * Math.min(1, dt * 12);
+        vent.opacity = vent.timer < 0.25 ? Math.max(0, vent.timer / 0.25) : 1;
+        if (vent.timer <= 0) vent.active = false;
+      }
+
+      if (ventWrapRef.current && ventLidRef.current) {
+        if (!vent.active) {
+          ventWrapRef.current.style.opacity = '0';
+        } else {
+          ventWrapRef.current.style.opacity = `${vent.opacity}`;
+          ventWrapRef.current.style.transform = `translate3d(${vent.x - 24}px, 0, 0)`;
+          ventLidRef.current.style.transform = `rotate(${-vent.openAmt * 62}deg)`;
+        }
+      }
+
+      // ------------------------------------------------------------------
+      // 4. MASCOT AGENTS AI, PHYSICS, DRAG-LIFT, ANGRY HEADSET & SKILLS
+      // ------------------------------------------------------------------
+      const pad = 40;
       for (let i = 0; i < agents.length; i++) {
         const a = agents[i];
         a.stageAge += dt;
         if (a.kickCooldown > 0) a.kickCooldown -= dt;
-        if (a.dustTimer > 0) a.dustTimer -= dt;
-        if (a.angryTimer > 0) a.angryTimer = Math.max(0, a.angryTimer - dt);
+        if (a.vfxTimer > 0) a.vfxTimer -= dt;
+        if (a.angryTimer > 0) a.angryTimer -= dt;
+
+        let targetVx = 0;
+        let customGravity = 1140;
+        let customTilt: number | null = null;
+        let targetSx = 1;
+        let targetSy = 1;
+        let showAura = false;
+        let showSpinRing = false;
+        let showSpeedLines = false;
+        let targetVisScale = 1;
 
         if (a.isDragged) {
-          // Dangling wiggle in mid-air while lifted by user!
-          a.tilt = Math.sin(now * 0.024) * 14;
-          a.sx = 0.94;
-          a.sy = 1.08;
+          a.vx = 0;
+          a.vy = 0;
+          a.spinSpeed = 0;
+          a.spinAngle = 0;
+          targetSx = 1.08;
+          targetSy = 0.94;
+          customTilt = Math.sin(now * 0.025) * 14;
         } else {
-          let targetVx = 0;
-
-          if (a.action === 'exit_swap') {
-            targetVx = a.exitDir * 235;
-            const offLeft = a.exitDir === -1 && a.x < -64;
-            const offRight = a.exitDir === 1 && a.x > width + 64;
-
-            if (offLeft || offRight) {
-              const activeIds = new Set(agents.map((ag) => ag.castIdx));
-              let candidate = nextCastPointerRef.current % MASCOT_CAST.length;
-              let tries = 0;
-              while (activeIds.has(candidate) && tries < MASCOT_CAST.length) {
-                candidate = (candidate + 1) % MASCOT_CAST.length;
-                tries++;
+          switch (a.action) {
+            case 'exit_swap': {
+              targetVx = a.exitDir * 240;
+              a.facing = a.exitDir;
+              const offLeft = a.exitDir === -1 && a.x < -64;
+              const offRight = a.exitDir === 1 && a.x > width + 64;
+              if (offLeft || offRight) {
+                const newProfile = swapMascotCharacter(a);
+                const fromLeft = Math.random() < 0.5;
+                a.x = fromLeft ? -56 : width + 56;
+                a.y = 0;
+                a.vx = fromLeft ? 175 : -175;
+                a.vy = 250;
+                a.facing = fromLeft ? 1 : -1;
+                a.targetX = fromLeft
+                  ? 76 + Math.random() * Math.max(60, width * 0.25)
+                  : width - 76 - Math.random() * Math.max(60, width * 0.25);
+                a.action = 'enter_swap';
+                const hi = ENTER_PHRASES[Math.floor(Math.random() * ENTER_PHRASES.length)];
+                showBubble(a.slot, hi, newProfile.color, 1600);
               }
-              nextCastPointerRef.current = (candidate + 1) % MASCOT_CAST.length;
-              a.castIdx = candidate;
-              a.stageAge = 0;
-              a.angryTimer = 0;
-
-              setSlotCast((prev) => {
-                const next = [...prev];
-                next[a.slot] = candidate;
-                return next;
-              });
-
-              const enterFromLeft = Math.random() < 0.5;
-              a.x = enterFromLeft ? -56 : width + 56;
-              a.y = 0;
-              a.vx = enterFromLeft ? 165 : -165;
-              a.vy = 260;
-              a.targetX = enterFromLeft
-                ? 75 + Math.random() * Math.max(60, width * 0.28)
-                : width - 75 - Math.random() * Math.max(60, width * 0.28);
-              a.action = 'enter_swap';
-
-              const newProfile = MASCOT_CAST[candidate];
-              const hello = ENTER_PHRASES[Math.floor(Math.random() * ENTER_PHRASES.length)];
-              showBubble(a.slot, hello, newProfile.color, 1650);
-            }
-          } else if (a.action === 'enter_swap') {
-            const dx = a.targetX - a.x;
-            if (Math.abs(dx) < 24) {
-              pickNextAction(a, width, currentMode);
-            } else {
-              targetVx = Math.sign(dx) * 195;
-            }
-          } else if (a.action === 'jump_crouch') {
-            targetVx = a.vx * 0.35;
-            a.crouchTimer -= dt;
-            if (a.crouchTimer <= 0) {
-              a.vy = a.pendingJumpVy;
-              a.vx = a.pendingJumpVx;
-              a.vsx -= 3.6;
-              a.vsy += 4.2;
-              spawnParticle('dust', a.x - 10, 3, -38, 22, '#D8CFC2', 9, 0.38);
-              spawnParticle('dust', a.x + 10, 3, 38, 22, '#D8CFC2', 9, 0.38);
-              a.action = currentMode === 'parkour' ? 'run' : 'walk';
-              a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
-              a.actionTimer = 1.6 + Math.random() * 1.4;
-            }
-          } else if (a.action === 'play_ball') {
-            a.actionTimer -= dt;
-            const dxBall = ball.x - a.x;
-            const absDx = Math.abs(dxBall);
-
-            if (absDx > 22) {
-              const desiredSpeed = absDx > 110 ? 205 : 135;
-              targetVx = Math.sign(dxBall) * desiredSpeed;
-            } else {
-              targetVx = Math.sign(dxBall || 1) * 60;
+              break;
             }
 
-            if (
-              a.y <= 1 &&
-              a.kickCooldown <= 0 &&
-              absDx < 46 &&
-              ball.y > 46 &&
-              ball.y < 105 &&
-              ball.vy < 120
-            ) {
-              a.vy = 370;
-              a.vsx -= 3.0;
-              a.vsy += 3.5;
-            }
-
-            const distToBall = Math.hypot(ball.x - a.x, ball.y + ballRadius - (a.y + 24));
-            if (distToBall < 36 && a.kickCooldown <= 0) {
-              a.kickCooldown = 0.62;
-              ball.lastTouchedBy = a.slot;
-
-              const teammates = agents.filter(
-                (t) =>
-                  t.slot !== a.slot &&
-                  t.action !== 'exit_swap' &&
-                  t.action !== 'enter_swap' &&
-                  !t.isDragged &&
-                  Math.abs(t.x - a.x) > 85
-              );
-
-              let kickVx = (a.x < width * 0.5 ? 1 : -1) * (190 + Math.random() * 110);
-              let kickVy = 250 + Math.random() * 165;
-
-              if (teammates.length > 0 && Math.random() < 0.78) {
-                const targetMate = teammates[Math.floor(Math.random() * teammates.length)];
-                const passDist = targetMate.x - ball.x;
-                kickVy = 285 + Math.random() * 130;
-                const flightTime = (2 * kickVy) / 960;
-                kickVx = Math.max(-330, Math.min(330, passDist / Math.max(0.55, flightTime)));
-              } else if (a.y > 16) {
-                kickVy = 310;
-                kickVx = (a.vx >= 0 ? 1 : -1) * 260;
-              }
-
-              ball.vx = kickVx;
-              ball.vy = kickVy;
-              ball.vsx -= 5.2;
-              ball.vsy += 5.2;
-
-              a.vsx += 3.2;
-              a.vsy -= 2.8;
-              const profile = MASCOT_CAST[a.castIdx];
-              spawnSparkleRing(ball.x, ball.y + 12, profile.color, 5);
-              if (ball.userBoosted) {
-                sfx.playKick(0.11);
-                ball.userBoosted = false;
-              }
-            }
-
-            if (a.actionTimer <= 0 && currentMode !== 'ball') {
-              pickNextAction(a, width, currentMode);
-            }
-          } else {
-            a.actionTimer -= dt;
-            const dx = a.targetX - a.x;
-            const cruiseSpeed = a.action === 'run' ? 185 : 74;
-
-            if (Math.abs(dx) < 18) {
-              if (a.actionTimer <= 0.4) {
-                pickNextAction(a, width, currentMode);
+            case 'enter_swap': {
+              const dx = a.targetX - a.x;
+              if (Math.abs(dx) < 22) {
+                pickRoutineAction(a, width);
               } else {
-                a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
+                targetVx = Math.sign(dx) * 195;
+                a.facing = Math.sign(dx) >= 0 ? 1 : -1;
               }
-            } else {
-              const arrivalFactor = Math.min(1, Math.abs(dx) / 55);
-              targetVx = Math.sign(dx) * cruiseSpeed * Math.max(0.35, arrivalFactor);
+              break;
             }
 
-            if (
-              a.action === 'run' &&
-              a.y <= 1 &&
-              Math.abs(a.vx) > 135 &&
-              Math.random() < dt * (currentMode === 'parkour' ? 0.95 : 0.35)
-            ) {
-              a.vy = 340 + Math.random() * 80;
-              a.vsx -= 3.2;
-              a.vsy += 3.6;
-              spawnParticle('dust', a.x, 3, -Math.sign(a.vx) * 45, 22, '#D8CFC2', 8, 0.35);
+            case 'jump_crouch': {
+              targetVx = a.vx * 0.3;
+              targetSx = 1.25;
+              targetSy = 0.75;
+              a.crouchTimer -= dt;
+              if (a.crouchTimer <= 0) {
+                a.vy = a.pendingJumpVy;
+                a.vx = a.pendingJumpVx;
+                a.vsx -= 3.6;
+                a.vsy += 4.2;
+                if (a.pendingBackflip) {
+                  a.spinSpeed = (a.facing === 1 ? -1 : 1) * 760;
+                  a.pendingBackflip = false;
+                }
+                spawnParticle('dust', a.x - 10, 3, -38, 22, '#D8CFC2', 8, 0.35);
+                spawnParticle('dust', a.x + 10, 3, 38, 22, '#D8CFC2', 8, 0.35);
+                a.action = 'run';
+                a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
+                a.actionTimer = 1.6;
+              }
+              break;
             }
 
-            if (a.actionTimer <= 0) {
-              pickNextAction(a, width, currentMode);
+            case 'laser_charge': {
+              targetVx = 0;
+              targetSx = 1.12 + Math.sin(now * 0.05) * 0.06;
+              targetSy = 0.88 - Math.sin(now * 0.05) * 0.06;
+              customTilt = -a.facing * 8 + Math.sin(now * 0.07) * 4;
+              break;
+            }
+
+            case 'laser_fire': {
+              targetVx = 0;
+              a.actionTimer -= dt;
+              customTilt = -a.facing * 12;
+              targetSx = 1.06;
+              targetSy = 0.94;
+              if (a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'coin_seek': {
+              a.actionTimer -= dt;
+              const dx = coinBlock.x - a.x;
+              if (!coinBlock.active || coinBlock.hit || a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              } else if (Math.abs(dx) > 16) {
+                targetVx = Math.sign(dx) * 210;
+                a.facing = Math.sign(dx) >= 0 ? 1 : -1;
+              } else if (a.y <= 1) {
+                a.vx = dx * 2;
+                a.vy = 405;
+                a.vsx -= 4.0;
+                a.vsy += 4.5;
+              }
+              if (
+                coinBlock.active &&
+                !coinBlock.hit &&
+                Math.abs(a.x - coinBlock.x) < 30 &&
+                a.y > 46 &&
+                a.vy > 0
+              ) {
+                coinBlock.hit = true;
+                coinBlock.bumpVel = 220;
+                coinBlock.coinActive = true;
+                coinBlock.coinY = coinBlock.y + 24;
+                coinBlock.coinVy = 285;
+                coinBlock.coinRot = 0;
+                coinBlock.coinAlpha = 1;
+                coinBlock.timer = Math.min(coinBlock.timer, 1.35);
+                a.vy = -80;
+                a.vsx += 4.2;
+                a.vsy -= 4.2;
+                sfx.playCoin(!coinBlock.triggeredByUser);
+                spawnSparkleRing(coinBlock.x, coinBlock.y + 18, '#FBBF24', 7);
+                showBubble(a.slot, 'DING! 🪙', '#D97706', 1500);
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'spin_charge': {
+              targetVx = 0;
+              targetSx = 0.88;
+              targetSy = 0.88;
+              showSpinRing = true;
+              a.actionTimer -= dt;
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.08;
+                spawnParticle('dust', a.x - a.facing * 14, 3, -a.facing * 65, 22, '#BAE6FD', 7, 0.28);
+              }
+              if (a.actionTimer <= 0) {
+                a.action = 'spin_dash';
+                a.actionTimer = 1.15;
+                a.vx = a.facing * 430;
+              }
+              break;
+            }
+
+            case 'spin_dash': {
+              targetVx = a.facing * 410;
+              targetSx = 0.92;
+              targetSy = 0.92;
+              showSpinRing = true;
+              showSpeedLines = true;
+              a.spinSpeed = 1620 * a.facing;
+              a.actionTimer -= dt;
+              if (a.x <= 40 && a.facing === -1) {
+                a.facing = 1;
+                a.vx = 380;
+              } else if (a.x >= width - 40 && a.facing === 1) {
+                a.facing = -1;
+                a.vx = -380;
+              }
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.06;
+                spawnParticle('sparkle', a.x - a.facing * 18, 12, -a.facing * 50, 24, '#38BDF8', 6, 0.28);
+              }
+              if (a.actionTimer <= 0) {
+                a.spinSpeed = 0;
+                a.spinAngle = 0;
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'portal_enter': {
+              const dx = a.targetX - a.x;
+              if (Math.abs(dx) > 18) {
+                targetVx = Math.sign(dx) * 225;
+                a.facing = Math.sign(dx) >= 0 ? 1 : -1;
+              } else {
+                targetVisScale = 0.08;
+                targetVx = 0;
+                if (a.visibilityScale < 0.22) {
+                  if (a.portalSwap) {
+                    const newProfile = swapMascotCharacter(a);
+                    const hi = ENTER_PHRASES[Math.floor(Math.random() * ENTER_PHRASES.length)];
+                    showBubble(a.slot, hi, newProfile.color, 1600);
+                  }
+                  a.x = a.portalTargetX;
+                  a.y = 22;
+                  const shootDir: -1 | 1 = a.x < width * 0.5 ? 1 : -1;
+                  a.facing = shootDir;
+                  a.vx = shootDir * 215;
+                  a.vy = 250;
+                  a.action = 'portal_exit';
+                  a.actionTimer = 0.45;
+                  spawnSparkleRing(a.x, 30, '#EC5A29', 7);
+                }
+              }
+              break;
+            }
+
+            case 'portal_exit': {
+              a.actionTimer -= dt;
+              targetVx = a.facing * 150;
+              if (a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'vent_peek': {
+              a.subTimer += dt;
+              targetVx = (a.targetX - a.x) * 4;
+              if (a.subTimer < 0.45) {
+                targetVisScale = 0.55;
+                a.y = 0;
+              } else if (a.subTimer < 1.35) {
+                targetVisScale = 0.85;
+                a.facing = Math.sin(a.subTimer * 9) > 0 ? 1 : -1;
+              } else {
+                a.vy = 270;
+                a.vx = (Math.random() < 0.5 ? -1 : 1) * 115;
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'vent_exit': {
+              const dx = a.targetX - a.x;
+              if (Math.abs(dx) > 12) {
+                targetVx = Math.sign(dx) * 190;
+              } else {
+                targetVx = 0;
+                targetVisScale = 0.04;
+                if (a.visibilityScale < 0.16) {
+                  const newProfile = swapMascotCharacter(a);
+                  a.action = 'vent_enter';
+                  a.subTimer = 0;
+                  showBubble(a.slot, 'NOT SUS! 👀', newProfile.color, 1600);
+                }
+              }
+              break;
+            }
+
+            case 'vent_enter': {
+              a.subTimer += dt;
+              targetVx = 0;
+              if (a.subTimer > 0.25) {
+                a.vy = 320;
+                a.vx = (Math.random() < 0.5 ? -1 : 1) * 125;
+                spawnSparkleRing(a.x, 18, '#FBBF24', 6);
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'matrix_dodge': {
+              a.actionTimer -= dt;
+              targetVx = 0;
+              customTilt = -38 * a.facing;
+              targetSx = 1.06;
+              targetSy = 0.92;
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.1;
+                spawnParticle(
+                  'matrix',
+                  a.x + (Math.random() - 0.5) * 44,
+                  10 + Math.random() * 44,
+                  (Math.random() - 0.5) * 18,
+                  35 + Math.random() * 35,
+                  '#10B981',
+                  5,
+                  0.55
+                );
+              }
+              if (a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'naruto_run': {
+              a.actionTimer -= dt;
+              const dx = a.targetX - a.x;
+              targetVx = a.facing * 295;
+              customTilt = a.facing * 24;
+              showSpeedLines = true;
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.08;
+                spawnParticle('dust', a.x - a.facing * 18, 3, -a.facing * 55, 18, '#DDD4C7', 7, 0.3);
+              }
+              if (Math.abs(dx) < 26 || a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'saiyan_power': {
+              a.actionTimer -= dt;
+              targetVx = 0;
+              customGravity = 0;
+              showAura = true;
+              const targetHoverY = 28 + Math.sin(now * 0.015) * 6;
+              a.y += (targetHoverY - a.y) * Math.min(1, dt * 8);
+              a.vy = 0;
+              targetSx = 1.04 + Math.sin(now * 0.05) * 0.04;
+              targetSy = 1.04 - Math.sin(now * 0.05) * 0.04;
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.07;
+                spawnParticle(
+                  'aura',
+                  a.x + (Math.random() - 0.5) * 44,
+                  a.y + 6,
+                  (Math.random() - 0.5) * 24,
+                  75 + Math.random() * 55,
+                  Math.random() < 0.5 ? '#FBBF24' : '#FEF08A',
+                  6,
+                  0.42
+                );
+              }
+              if (a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'moonwalk': {
+              a.actionTimer -= dt;
+              const moveDir = -a.facing;
+              targetVx = moveDir * 92;
+              customTilt = a.facing * 7;
+              if (a.vfxTimer <= 0) {
+                a.vfxTimer = 0.32;
+                spawnParticle(
+                  'note',
+                  a.x + (Math.random() - 0.5) * 20,
+                  a.y + 44,
+                  (Math.random() - 0.5) * 22,
+                  42,
+                  '#9D71E8',
+                  13,
+                  0.78
+                );
+              }
+              if (a.x <= 44 || a.x >= width - 44 || a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'kirby_float': {
+              a.actionTimer -= dt;
+              customGravity = 0;
+              const dx = a.targetX - a.x;
+              targetVx = a.facing * 95;
+              targetSx = 1.28;
+              targetSy = 1.22;
+              const floatTargetY = 62 + Math.sin(now * 0.008 + a.slot) * 12;
+              a.y += (floatTargetY - a.y) * Math.min(1, dt * 4.5);
+              a.vy = 0;
+              if (Math.abs(dx) < 22 || a.actionTimer <= 0) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'play_ball': {
+              a.actionTimer -= dt;
+              const dxBall = ball.x - a.x;
+              const absDx = Math.abs(dxBall);
+
+              if (absDx > 20) {
+                targetVx = Math.sign(dxBall) * (absDx > 100 ? 205 : 135);
+                a.facing = Math.sign(dxBall) >= 0 ? 1 : -1;
+              } else {
+                targetVx = Math.sign(dxBall || 1) * 55;
+              }
+
+              if (a.y <= 1 && a.kickCooldown <= 0 && absDx < 44 && ball.y > 42 && ball.y < 96 && ball.vy < 120) {
+                a.vy = 355;
+                a.vsx -= 3.0;
+                a.vsy += 3.5;
+              }
+
+              if (absDx < 48 && Math.abs(ball.vx) > 310 && ball.y > 18 && a.kickCooldown <= 0 && Math.random() < 0.08) {
+                a.action = 'matrix_dodge';
+                a.actionTimer = 0.95;
+                showBubble(a.slot, 'WHOA 🕶️', '#158467', 1100);
+                break;
+              }
+
+              const distToBall = Math.hypot(ball.x - a.x, ball.y + ballRadius - (a.y + 24));
+              if (distToBall < 36 && a.kickCooldown <= 0) {
+                a.kickCooldown = 0.6;
+                const mates = agents.filter(
+                  (t) =>
+                    t.slot !== a.slot &&
+                    !t.isDragged &&
+                    t.action !== 'exit_swap' &&
+                    t.action !== 'enter_swap' &&
+                    Math.abs(t.x - a.x) > 80
+                );
+
+                let kickVx = (a.x < width * 0.5 ? 1 : -1) * (185 + Math.random() * 115);
+                let kickVy = 240 + Math.random() * 155;
+
+                if (mates.length > 0 && Math.random() < 0.78) {
+                  const mate = mates[Math.floor(Math.random() * mates.length)];
+                  const passDist = mate.x - ball.x;
+                  kickVy = 270 + Math.random() * 125;
+                  const flightTime = (2 * kickVy) / 940;
+                  kickVx = Math.max(-330, Math.min(330, passDist / Math.max(0.55, flightTime)));
+                }
+
+                ball.vx = kickVx;
+                ball.vy = kickVy;
+                ball.vsx -= 5.0;
+                ball.vsy += 5.0;
+                a.vsx += 3.2;
+                a.vsy -= 2.8;
+                spawnSparkleRing(ball.x, ball.y + 10, MASCOT_CAST[a.castIdx].color, 5);
+                if (ball.userBoosted) {
+                  sfx.playBounce(0.11, false);
+                  ball.userBoosted = false;
+                }
+              }
+
+              if (a.actionTimer <= 0) pickRoutineAction(a, width);
+              break;
+            }
+
+            case 'walk':
+            case 'run':
+            default: {
+              a.actionTimer -= dt;
+              const dx = a.targetX - a.x;
+              const cruise = a.action === 'run' ? 185 : 74;
+
+              if (Math.abs(dx) < 18) {
+                if (a.actionTimer <= 0.4) {
+                  pickRoutineAction(a, width);
+                } else {
+                  a.targetX = pad + Math.random() * Math.max(80, width - pad * 2);
+                }
+              } else {
+                const arrival = Math.min(1, Math.abs(dx) / 55);
+                targetVx = Math.sign(dx) * cruise * Math.max(0.35, arrival);
+                a.facing = Math.sign(dx) >= 0 ? 1 : -1;
+              }
+
+              if (a.action === 'run' && a.y <= 1 && Math.abs(a.vx) > 130 && Math.random() < dt * 0.35) {
+                a.vy = 325 + Math.random() * 75;
+                a.vsx -= 3.0;
+                a.vsy += 3.4;
+                spawnParticle('dust', a.x, 3, -Math.sign(a.vx) * 42, 20, '#D8CFC2', 7, 0.34);
+              }
+
+              if (a.actionTimer <= 0) pickRoutineAction(a, width);
+              break;
             }
           }
 
-          if (a.action !== 'exit_swap' && a.action !== 'enter_swap') {
+          // Soft separation so mascots don't stack on top of each other
+          const ignoreSep =
+            a.action === 'exit_swap' ||
+            a.action === 'enter_swap' ||
+            a.action === 'portal_enter' ||
+            a.action === 'vent_exit' ||
+            a.action === 'vent_peek';
+          if (!ignoreSep) {
             for (let j = 0; j < agents.length; j++) {
               if (i === j) continue;
               const other = agents[j];
-              if (other.action === 'exit_swap' || other.action === 'enter_swap' || other.isDragged) continue;
+              if (other.isDragged || other.action === 'exit_swap' || other.action === 'enter_swap') continue;
               const sepDx = a.x - other.x;
               const minGap = 48;
               if (Math.abs(sepDx) < minGap && Math.abs(a.y - other.y) < 34) {
                 const pushDir = sepDx === 0 ? (i < j ? -1 : 1) : Math.sign(sepDx);
-                targetVx += pushDir * ((minGap - Math.abs(sepDx)) / minGap) * 95;
+                targetVx += pushDir * ((minGap - Math.abs(sepDx)) / minGap) * 90;
               }
             }
           }
 
-          const accel = a.y > 2 ? 2.4 : 6.8;
+          // Smooth velocity easing
+          const accel = a.y > 2 && customGravity > 0 ? 2.4 : 7.0;
           a.vx += (targetVx - a.vx) * Math.min(1, dt * accel);
           a.x += a.vx * dt;
 
+          // Soft stage bounds (except edge swap)
           if (a.action !== 'exit_swap' && a.action !== 'enter_swap') {
             const minX = 34;
             const maxX = Math.max(minX + 40, width - 34);
@@ -1647,98 +2811,146 @@ const InteractiveMascotPlayground: React.FC = () => {
             }
           }
 
-          if (a.y > 0 || a.vy > 0) {
-            a.vy -= 1180 * dt;
+          // Vertical gravity & landing squash
+          if (customGravity > 0 && (a.y > 0 || a.vy > 0)) {
+            a.vy -= customGravity * dt;
             a.y += a.vy * dt;
             if (a.y <= 0) {
               a.y = 0;
-              if (a.vy < -120) {
-                const landImpact = Math.min(0.28, Math.abs(a.vy) / 1700);
+              if (a.vy < -115) {
+                const landImpact = Math.min(0.28, Math.abs(a.vy) / 1650);
                 a.vsx += landImpact * 18;
                 a.vsy -= landImpact * 18;
-                spawnParticle('dust', a.x - 10, 2, -40, 18, '#DDD4C7', 8, 0.36);
-                spawnParticle('dust', a.x + 10, 2, 40, 18, '#DDD4C7', 8, 0.36);
+                spawnParticle('dust', a.x - 9, 2, -38, 16, '#DDD4C7', 7, 0.34);
+                spawnParticle('dust', a.x + 9, 2, 38, 16, '#DDD4C7', 7, 0.34);
               }
               a.vy = 0;
+              if (a.action !== 'spin_dash' && a.action !== 'spin_charge') {
+                a.spinSpeed = 0;
+                a.spinAngle = 0;
+              }
             }
           }
-
-          const absVx = Math.abs(a.vx);
-          if (a.y <= 1 && absVx > 135 && a.dustTimer <= 0) {
-            a.dustTimer = 0.16 + Math.random() * 0.08;
-            spawnParticle(
-              'dust',
-              a.x - Math.sign(a.vx) * 14,
-              3,
-              -Math.sign(a.vx) * (25 + Math.random() * 25),
-              14 + Math.random() * 18,
-              '#DDD4C7',
-              6 + Math.random() * 4,
-              0.35
-            );
-          }
-
-          a.stridePhase += dt * (2.6 + absVx * 0.058);
-          const targetBobAmp = a.y <= 1 && a.crouchTimer <= 0 ? Math.min(7.5, absVx * 0.038) : 0;
-          a.bobAmp += (targetBobAmp - a.bobAmp) * Math.min(1, dt * 10);
-
-          const waddle = a.y <= 1 ? Math.sin(a.stridePhase) * Math.min(4.2, absVx * 0.025) : 0;
-          const angryShake = a.angryTimer > 0 ? Math.sin(now * 0.055) * 8 : 0;
-          const targetTilt = (a.vx / 220) * 11 + waddle + angryShake;
-          a.tilt += (targetTilt - a.tilt) * Math.min(1, dt * 9);
-
-          let targetSx = 1;
-          let targetSy = 1;
-          if (a.crouchTimer > 0) {
-            targetSx = 1.24;
-            targetSy = 0.76;
-          } else if (a.y > 4) {
-            const stretch = Math.min(0.18, Math.abs(a.vy) / 2100);
-            targetSx = 1 - stretch * 0.65;
-            targetSy = 1 + stretch;
-          }
-          a.vsx += ((targetSx - a.sx) * 260 - a.vsx * 18) * dt;
-          a.vsy += ((targetSy - a.sy) * 260 - a.vsy * 18) * dt;
-          a.sx = Math.max(0.68, Math.min(1.36, a.sx + a.vsx * dt));
-          a.sy = Math.max(0.68, Math.min(1.36, a.sy + a.vsy * dt));
         }
 
-        const bobY = a.isDragged ? 0 : -Math.abs(Math.sin(a.stridePhase)) * a.bobAmp;
+        // Running dust puffs
+        const absVx = Math.abs(a.vx);
+        if (!a.isDragged && a.y <= 1 && absVx > 140 && a.vfxTimer <= 0 && a.action === 'run') {
+          a.vfxTimer = 0.17 + Math.random() * 0.08;
+          spawnParticle(
+            'dust',
+            a.x - Math.sign(a.vx) * 13,
+            3,
+            -Math.sign(a.vx) * (24 + Math.random() * 24),
+            14 + Math.random() * 14,
+            '#DDD4C7',
+            6 + Math.random() * 3,
+            0.34
+          );
+        }
 
-        let targetEyeX = Math.max(-5.5, Math.min(5.5, a.vx / 32));
-        let targetEyeY = a.y > 10 ? Math.max(-3.5, Math.min(3.5, -a.vy / 140)) : 0;
-        if (!a.isDragged && (a.action === 'play_ball' || (currentMode !== 'parkour' && Math.abs(ball.x - a.x) < 160))) {
+        // Spin angle (backflips & Sonic Spin-Dash)
+        if (Math.abs(a.spinSpeed) > 1) {
+          a.spinAngle += a.spinSpeed * dt;
+        } else {
+          a.spinAngle += (0 - a.spinAngle) * Math.min(1, dt * 12);
+        }
+
+        // Visibility scale (for smooth Portal dive & Among Us Vent slip)
+        a.visibilityScale += (targetVisScale - a.visibilityScale) * Math.min(1, dt * 13);
+
+        // Continuous stride bob
+        a.stridePhase += dt * (2.6 + absVx * 0.06);
+        const bobTarget =
+          !a.isDragged &&
+          a.y <= 1 &&
+          a.crouchTimer <= 0 &&
+          a.action !== 'spin_charge' &&
+          a.action !== 'matrix_dodge'
+            ? Math.min(6.5, absVx * 0.036)
+            : 0;
+        a.bobAmp += (bobTarget - a.bobAmp) * Math.min(1, dt * 10);
+        const bobY = -Math.abs(Math.sin(a.stridePhase)) * a.bobAmp;
+
+        // Smooth body tilt + angry grumpy vibration
+        const angryShake = a.angryTimer > 0 ? Math.sin(now * 0.065) * 6.5 : 0;
+        const waddle = !a.isDragged && a.y <= 1 ? Math.sin(a.stridePhase) * Math.min(3.8, absVx * 0.022) : 0;
+        const desiredTilt = (customTilt !== null ? customTilt : (a.vx / 220) * 10 + waddle) + angryShake;
+        a.tilt += (desiredTilt - a.tilt) * Math.min(1, dt * 10);
+
+        // Squash-and-stretch spring
+        if (!a.isDragged && a.y > 4 && customGravity > 0 && a.action !== 'kirby_float') {
+          const stretch = Math.min(0.18, Math.abs(a.vy) / 2000);
+          targetSx *= 1 - stretch * 0.6;
+          targetSy *= 1 + stretch;
+        }
+        a.vsx += ((targetSx - a.sx) * 260 - a.vsx * 18) * dt;
+        a.vsy += ((targetSy - a.sy) * 260 - a.vsy * 18) * dt;
+        a.sx = Math.max(0.66, Math.min(1.42, a.sx + a.vsx * dt));
+        a.sy = Math.max(0.66, Math.min(1.42, a.sy + a.vsy * dt));
+
+        // Smooth eye tracking
+        let targetEyeX = a.facing * 3.8;
+        let targetEyeY = a.y > 10 ? Math.max(-3.5, Math.min(3.5, -a.vy / 150)) : 0;
+        if (a.action === 'play_ball' || Math.abs(ball.x - a.x) < 145) {
           const dxEye = ball.x - a.x;
           const dyEye = a.y + 24 - (ball.y + ballRadius);
           const distEye = Math.max(1, Math.hypot(dxEye, dyEye));
           targetEyeX = (dxEye / distEye) * 5.2;
-          targetEyeY = (dyEye / distEye) * 3.4;
+          targetEyeY = (dyEye / distEye) * 3.2;
         }
         a.eyeX += (targetEyeX - a.eyeX) * Math.min(1, dt * 11);
         a.eyeY += (targetEyeY - a.eyeY) * Math.min(1, dt * 11);
 
+        // Apply direct GPU-composited transforms
         const posEl = mascotPosRefs.current[i];
         const bodyEl = mascotBodyRefs.current[i];
         const shadowEl = mascotShadowRefs.current[i];
         const eyeEl = eyeRefs.current[i]?.current;
+        const auraEl = auraRefs.current[i];
+        const spinRingEl = spinRingRefs.current[i];
+        const speedLineEl = speedLineRefs.current[i];
 
         if (posEl) {
           posEl.style.transform = `translate3d(${a.x - MASCOT_SIZE / 2}px, ${-a.y}px, 0)`;
         }
         if (bodyEl) {
-          bodyEl.style.transform = `translate3d(0, ${bobY}px, 0) rotate(${a.tilt}deg) scale(${a.sx}, ${a.sy})`;
+          const totalRot = a.tilt + a.spinAngle;
+          const vs = a.visibilityScale;
+          bodyEl.style.transform = `translate3d(0, ${bobY}px, 0) rotate(${totalRot}deg) scale(${a.sx * vs}, ${a.sy * vs})`;
         }
         if (shadowEl) {
-          const hFactor = Math.max(0.28, 1 - a.y / 170);
+          const hFactor = Math.max(0.28, 1 - a.y / 165) * a.visibilityScale;
           shadowEl.style.transform = `translate3d(${a.x - 22}px, 0, 0) scale(${hFactor * a.sx}, ${hFactor})`;
-          shadowEl.style.opacity = `${0.26 * hFactor}`;
+          shadowEl.style.opacity = `${0.25 * hFactor}`;
         }
         if (eyeEl) {
           eyeEl.style.transform = `translate3d(${a.eyeX}px, ${a.eyeY}px, 0)`;
         }
+        if (auraEl) {
+          auraEl.style.opacity = showAura ? '1' : '0';
+          if (showAura) {
+            const ap = 1.05 + Math.sin(now * 0.03) * 0.1;
+            auraEl.style.transform = `scale(${ap}) rotate(${Math.sin(now * 0.02) * 8}deg)`;
+          }
+        }
+        if (spinRingEl) {
+          spinRingEl.style.opacity = showSpinRing ? '1' : '0';
+          if (showSpinRing) {
+            spinRingEl.style.transform = `rotate(${(now * 0.9) % 360}deg) scale(${1.05 + Math.sin(now * 0.04) * 0.08})`;
+          }
+        }
+        if (speedLineEl) {
+          speedLineEl.style.opacity = showSpeedLines ? '0.9' : '0';
+          if (showSpeedLines) {
+            speedLineEl.style.transform = `scaleX(${a.facing}) translate3d(-24px, 0, 0)`;
+          }
+        }
       }
 
-      // 4. APPLY BALL DOM TRANSFORMS
+      // ------------------------------------------------------------------
+      // 5. APPLY BALL DOM TRANSFORMS
+      // ------------------------------------------------------------------
       if (ballPosRef.current) {
         ballPosRef.current.style.transform = `translate3d(${ball.x - ballRadius}px, ${-ball.y}px, 0)`;
       }
@@ -1746,12 +2958,14 @@ const InteractiveMascotPlayground: React.FC = () => {
         ballSpinRef.current.style.transform = `scale(${ball.sx}, ${ball.sy}) rotate(${ball.angle}deg)`;
       }
       if (ballShadowRef.current) {
-        const bFactor = Math.max(0.28, 1 - ball.y / 180);
-        ballShadowRef.current.style.transform = `translate3d(${ball.x - 13}px, 0, 0) scale(${bFactor}, ${bFactor})`;
-        ballShadowRef.current.style.opacity = `${0.28 * bFactor}`;
+        const bFactor = Math.max(0.28, 1 - ball.y / 170);
+        ballShadowRef.current.style.transform = `translate3d(${ball.x - 12}px, 0, 0) scale(${bFactor}, ${bFactor})`;
+        ballShadowRef.current.style.opacity = `${0.26 * bFactor}`;
       }
 
-      // 5. UPDATE POOLED PARTICLES
+      // ------------------------------------------------------------------
+      // 6. UPDATE POOLED PARTICLES & CLICK RIPPLES
+      // ------------------------------------------------------------------
       const pool = particlesRef.current;
       for (let i = 0; i < PARTICLE_POOL_SIZE; i++) {
         const p = pool[i];
@@ -1771,8 +2985,10 @@ const InteractiveMascotPlayground: React.FC = () => {
         }
 
         if (p.kind === 'sparkle') {
-          p.vy -= 260 * dt;
+          p.vy -= 250 * dt;
           p.rot += 240 * dt;
+        } else if (p.kind === 'matrix' || p.kind === 'aura' || p.kind === 'note') {
+          p.vx *= Math.pow(0.55, dt);
         } else {
           p.vx *= Math.pow(0.25, dt);
           p.vy *= Math.pow(0.4, dt);
@@ -1783,11 +2999,35 @@ const InteractiveMascotPlayground: React.FC = () => {
 
         const progress = p.life / p.maxLife;
         const scale = p.kind === 'dust' ? 0.55 + (1 - progress) * 0.9 : progress * 1.15;
-        el.style.opacity = `${Math.min(1, progress * 1.25)}`;
-        el.style.width = `${p.size}px`;
-        el.style.height = `${p.size}px`;
-        el.style.backgroundColor = p.color;
-        el.style.transform = `translate3d(${p.x - p.size / 2}px, ${-p.y}px, 0) rotate(${p.rot}deg) scale(${scale})`;
+        el.style.opacity = `${Math.min(1, progress * 1.3)}`;
+        if (p.kind !== 'note') {
+          el.style.width = `${p.size}px`;
+          el.style.height = `${p.size}px`;
+          el.style.backgroundColor = p.color;
+        } else {
+          el.style.color = p.color;
+        }
+        el.style.transform = `translate3d(${p.x - p.size / 2}px, ${-p.y}px, 0) rotate(${p.kind === 'note' ? Math.sin(now * 0.01 + i) * 14 : p.rot}deg) scale(${scale})`;
+      }
+
+      const ripples = ripplesRef.current;
+      for (let i = 0; i < RIPPLE_POOL_SIZE; i++) {
+        const r = ripples[i];
+        const el = rippleElsRef.current[i];
+        if (!el) continue;
+        if (!r.active) {
+          el.style.opacity = '0';
+          continue;
+        }
+        r.life -= dt;
+        if (r.life <= 0) {
+          r.active = false;
+          el.style.opacity = '0';
+          continue;
+        }
+        const prog = 1 - r.life / r.maxLife;
+        el.style.opacity = `${(1 - prog) * 0.85}`;
+        el.style.transform = `translate3d(${r.x - 22}px, ${-r.y - 22}px, 0) scale(${0.25 + prog * 1.75})`;
       }
 
       rafId = requestAnimationFrame(tick);
@@ -1801,9 +3041,9 @@ const InteractiveMascotPlayground: React.FC = () => {
       bubbleTimersRef.current.forEach((t) => t && window.clearTimeout(t));
       angryTimersRef.current.forEach((t) => t && window.clearTimeout(t));
     };
-  }, [spawnParticle, spawnSparkleRing, showBubble, triggerSwapOnSlot]);
+  }, [spawnParticle, spawnSparkleRing, showBubble, triggerSpecialSkill, triggerSwapOnSlot, swapMascotCharacter]);
 
-  // Global Pointer Move & Up for Dragging & Lifting Mascots smoothly
+  // Global Pointer Move & Up for Dragging & Lifting Mascots smoothly + Tap-to-Skill!
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       const info = dragInfoRef.current;
@@ -1817,6 +3057,7 @@ const InteractiveMascotPlayground: React.FC = () => {
         const a = agentsRef.current[info.slot];
         if (a) {
           a.isDragged = true;
+          a.action = 'walk';
           setDraggedSlot(info.slot);
           const profile = MASCOT_CAST[a.castIdx];
           if (profile.headphones) {
@@ -1837,7 +3078,10 @@ const InteractiveMascotPlayground: React.FC = () => {
         const now = performance.now();
         const dtMove = Math.max(0.008, (now - info.lastTime) / 1000);
         const newX = Math.max(30, Math.min(rect.width - 30, e.clientX - rect.left));
-        const newY = Math.max(0, Math.min(rect.height - GROUND_OFFSET_PX - 30, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX));
+        const newY = Math.max(
+          0,
+          Math.min(rect.height - GROUND_OFFSET_PX - 30, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX)
+        );
 
         info.vx = (newX - info.lastX) / dtMove;
         info.vy = (newY - info.lastY) / dtMove;
@@ -1860,7 +3104,6 @@ const InteractiveMascotPlayground: React.FC = () => {
       const profile = MASCOT_CAST[a.castIdx];
 
       if (info.moved) {
-        // Release lifted mascot with real throw velocity!
         a.isDragged = false;
         setDraggedSlot(null);
         a.vx = Math.max(-360, Math.min(360, info.vx * 0.55));
@@ -1873,20 +3116,15 @@ const InteractiveMascotPlayground: React.FC = () => {
           showBubble(info.slot, phrase, profile.color, 1800);
         }
       } else {
-        // Quick click / tap interaction
+        // Quick click / tap -> headphone bot gets angry; others unleash a random pop-culture skill!
         if (profile.headphones) {
           triggerAngryHeadset(info.slot);
           a.vy = 210;
         } else {
-          sfx.playBoing(profile.pitch * 0.65, profile.pitch * 1.25);
-          a.crouchTimer = 0;
-          a.vy = 435;
-          a.vx += (Math.random() < 0.5 ? -1 : 1) * 90;
-          a.vsx -= 5.2;
-          a.vsy += 5.8;
-          spawnSparkleRing(a.x, a.y + 34, profile.color, 8);
-          const phrase = CLICK_PHRASES[Math.floor(Math.random() * CLICK_PHRASES.length)];
-          showBubble(info.slot, phrase, profile.color, 1800);
+          a.vsx += 5.4;
+          a.vsy -= 5.0;
+          spawnSparkleRing(a.x, a.y + 32, profile.color, 9);
+          triggerSpecialSkill(a, true);
         }
       }
     };
@@ -1897,15 +3135,19 @@ const InteractiveMascotPlayground: React.FC = () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [showBubble, spawnSparkleRing, triggerAngryHeadset]);
+  }, [showBubble, spawnSparkleRing, triggerAngryHeadset, triggerSpecialSkill]);
 
-  // Stage Click/Tap: Toss & bounce the soccer ball toward clicked location!
+  // Stage Click/Tap: Ripple + Toss & bounce the soccer ball toward clicked location!
   const handleStageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const stageEl = stageRef.current;
     if (!stageEl) return;
     const rect = stageEl.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
-    const clickYFromGround = Math.max(12, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX);
+    const clickYFromGround = Math.max(10, rect.height - (e.clientY - rect.top) - GROUND_OFFSET_PX);
+
+    spawnRipple(clickX, clickYFromGround);
+    spawnSparkleRing(clickX, Math.max(14, clickYFromGround), '#FBBF24', 6);
+    sfx.playBounce(0.16, false);
 
     const ball = ballRef.current;
     const dx = clickX - ball.x;
@@ -1917,14 +3159,11 @@ const InteractiveMascotPlayground: React.FC = () => {
     ball.vsy += 5.2;
     ball.userBoosted = true;
 
-    sfx.playKick(0.18);
-    spawnSparkleRing(clickX, Math.max(14, clickYFromGround), '#FBBF24', 6);
-
-    const agents = agentsRef.current
-      .filter((a) => a.action !== 'exit_swap' && a.action !== 'enter_swap' && !a.isDragged)
+    const freeAgents = agentsRef.current
+      .filter((a) => !a.isDragged && (a.action === 'walk' || a.action === 'run' || a.action === 'play_ball'))
       .sort((a, b) => Math.abs(a.x - clickX) - Math.abs(b.x - clickX));
 
-    agents.slice(0, 2).forEach((a) => {
+    freeAgents.slice(0, 2).forEach((a) => {
       a.action = 'play_ball';
       a.actionTimer = 4.2;
     });
@@ -2014,188 +3253,327 @@ const InteractiveMascotPlayground: React.FC = () => {
         onClick={handleStageClick}
         className="relative h-48 sm:h-52 rounded-[22px] bg-gradient-to-b from-[#F7F1E7] via-[#F4ECE0] to-[#EFE5D6] border-2 border-dashed border-[#1E1E24]/18 overflow-hidden select-none cursor-crosshair touch-none"
       >
-        {/* Playful Mini-Scenery */}
-        <svg
-          viewBox="0 0 800 180"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        >
-          <path
-            d="M0,152 Q160,112 340,144 T720,136 L800,145 L800,180 L0,180 Z"
-            fill="#E7DDD0"
-            opacity="0.7"
-          />
-          <path
-            d="M0,162 Q220,126 470,154 T800,148 L800,180 L0,180 Z"
-            fill="#DFD3C2"
-            opacity="0.6"
-          />
-          <g fill="#FFFFFF" opacity="0.75">
-            <rect x="70" y="22" width="54" height="16" rx="8" />
-            <circle cx="90" cy="22" r="10" />
-            <rect x="360" y="16" width="66" height="18" rx="9" />
-            <circle cx="388" cy="16" r="11" />
-            <rect x="640" y="26" width="52" height="15" rx="7.5" />
-            <circle cx="662" cy="26" r="9" />
-          </g>
-        </svg>
+        {/* Micro-Shake Inner Wrapper (for Kamehameha laser impact!) */}
+        <div ref={stageShakeRef} className="absolute inset-0 will-change-transform">
+          {/* Playful Mini-Scenery */}
+          <svg
+            viewBox="0 0 800 180"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          >
+            <path
+              d="M0,152 Q160,112 340,144 T720,136 L800,145 L800,180 L0,180 Z"
+              fill="#E7DDD0"
+              opacity="0.7"
+            />
+            <path
+              d="M0,162 Q220,126 470,154 T800,148 L800,180 L0,180 Z"
+              fill="#DFD3C2"
+              opacity="0.6"
+            />
+            <g fill="#FFFFFF" opacity="0.75">
+              <rect x="70" y="22" width="54" height="16" rx="8" />
+              <circle cx="90" cy="22" r="10" />
+              <rect x="360" y="16" width="66" height="18" rx="9" />
+              <circle cx="388" cy="16" r="11" />
+              <rect x="640" y="26" width="52" height="15" rx="7.5" />
+              <circle cx="662" cy="26" r="9" />
+            </g>
+          </svg>
 
-        {/* Mini Corner Flags */}
-        <div className="pointer-events-none absolute left-3 bottom-5 flex flex-col items-start opacity-75">
-          <div className="w-3.5 h-2.5 bg-[#EC5A29] rounded-r-xs ml-[2px]" />
-          <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
-        </div>
-        <div className="pointer-events-none absolute right-3 bottom-5 flex flex-col items-end opacity-75">
-          <div className="w-3.5 h-2.5 bg-[#2568EF] rounded-l-xs mr-[2px]" />
-          <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
-        </div>
+          {/* Mini Corner Flags */}
+          <div className="pointer-events-none absolute left-3 bottom-5 flex flex-col items-start opacity-75">
+            <div className="w-3.5 h-2.5 bg-[#EC5A29] rounded-r-xs ml-[2px]" />
+            <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
+          </div>
+          <div className="pointer-events-none absolute right-3 bottom-5 flex flex-col items-end opacity-75">
+            <div className="w-3.5 h-2.5 bg-[#2568EF] rounded-l-xs mr-[2px]" />
+            <div className="w-[2.5px] h-7 bg-[#1E1E24]/50 rounded-full" />
+          </div>
 
-        {/* Dashed Playground Turf Track Ground */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-[#E6DDD0] border-t-2 border-[#1E1E24]/10 flex items-center justify-center">
-          <div className="w-[92%] border-t-2 border-dashed border-[#1E1E24]/12" />
-        </div>
+          {/* Dashed Playground Turf Track Ground */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-[#E6DDD0] border-t-2 border-[#1E1E24]/10 flex items-center justify-center">
+            <div className="w-[92%] border-t-2 border-dashed border-[#1E1E24]/12" />
+          </div>
 
-        {/* Pooled Dust Puffs & Sparkle Stars */}
-        {Array.from({ length: PARTICLE_POOL_SIZE }).map((_, idx) => (
+          {/* Among Us Floor Vent Hatch VFX */}
           <div
-            key={`pt-${idx}`}
-            ref={(el) => {
-              particleElsRef.current[idx] = el;
-            }}
-            style={{
-              bottom: `${GROUND_OFFSET_PX}px`,
-              opacity: 0,
-              borderRadius: idx < 16 ? '9999px' : '3px',
-            }}
-            className="pointer-events-none absolute left-0 will-change-transform z-20"
-          />
-        ))}
-
-        {/* Dynamic Ground Shadows for 4 Mascots */}
-        {[0, 1, 2, 3].map((slot) => (
-          <div
-            key={`shadow-${slot}`}
-            ref={(el) => {
-              mascotShadowRefs.current[slot] = el;
-            }}
-            style={{ bottom: `${GROUND_OFFSET_PX - 4}px` }}
-            className="pointer-events-none absolute left-0 w-11 h-2.5 rounded-full bg-[#1E1E24] will-change-transform z-10"
-          />
-        ))}
-
-        {/* Dynamic Ground Shadow for Soccer Ball */}
-        <div
-          ref={ballShadowRef}
-          style={{ bottom: `${GROUND_OFFSET_PX - 3}px` }}
-          className="pointer-events-none absolute left-0 w-6 h-2 rounded-full bg-[#1E1E24] will-change-transform z-10"
-        />
-
-        {/* 4 Active 60fps Mascot Slots */}
-        {[0, 1, 2, 3].map((slot) => {
-          const profile = MASCOT_CAST[slotCast[slot]];
-          const bubble = bubbles[slot];
-          const isAngry = angrySlots[slot];
-          const isLifted = draggedSlot === slot;
-          const activeMood: MascotMood = isAngry
-            ? 'angry'
-            : isLifted
-            ? 'surprised'
-            : profile.mood;
-
-          return (
+            ref={ventWrapRef}
+            style={{ bottom: `${GROUND_OFFSET_PX - 10}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-12 h-3.5 z-10 will-change-transform"
+          >
+            <div className="absolute inset-x-1 bottom-0 h-2.5 rounded-full bg-[#1E1E24]" />
             <div
-              key={`slot-${slot}`}
-              ref={(el) => {
-                mascotPosRefs.current[slot] = el;
-              }}
-              style={{
-                bottom: `${GROUND_OFFSET_PX - 5}px`,
-                width: `${MASCOT_SIZE}px`,
-                height: `${MASCOT_SIZE}px`,
-              }}
-              className="absolute left-0 will-change-transform z-20 pointer-events-none"
+              ref={ventLidRef}
+              style={{ transformOrigin: '8% 80%' }}
+              className="absolute inset-x-0 bottom-0.5 h-3 rounded-md bg-[#94A3B8] border-2 border-[#1E1E24] flex items-center justify-evenly px-1 will-change-transform"
             >
-              {/* Speech Bubble */}
-              <div className="absolute -top-9 left-1/2 -translate-x-1/2 pointer-events-none z-30">
-                <AnimatePresence mode="wait">
-                  {bubble && (
-                    <motion.span
-                      key={bubble.key}
-                      initial={{ opacity: 0, y: 8, scale: 0.72 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.8 }}
-                      transition={{ type: 'spring', stiffness: 460, damping: 22 }}
-                      style={{ backgroundColor: bubble.color }}
-                      className="inline-block px-2.5 py-0.5 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-[0_2px_0_#1E1E24] border border-[#1E1E24]"
-                    >
-                      {bubble.text}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <button
-                ref={(el) => {
-                  mascotBodyRefs.current[slot] = el;
-                }}
-                type="button"
-                onPointerDown={(e) => handleMascotPointerDown(e, slot)}
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`Mascot ${profile.name} — klik lompat atau drag angkat`}
-                style={{ transformOrigin: '50% 92%' }}
-                className="pointer-events-auto cursor-grab active:cursor-grabbing focus:outline-none will-change-transform block w-full h-full"
-              >
-                <GrokMascot
-                  shape={profile.shape}
-                  color={profile.color}
-                  size={MASCOT_SIZE}
-                  mood={activeMood}
-                  foreheadAngry={isAngry}
-                  glasses={profile.glasses}
-                  headphones={profile.headphones}
-                  crown={profile.crown}
-                  detective={profile.detective}
-                  horns={profile.horns}
-                  headband={profile.headband}
-                  blinkDelay={slot * 0.85}
-                  eyeTrackRef={eyeRefs.current[slot]}
-                  stickerBorder
-                />
-              </button>
+              <span className="w-1 h-1.5 bg-[#334155] rounded-xs" />
+              <span className="w-1 h-1.5 bg-[#334155] rounded-xs" />
+              <span className="w-1 h-1.5 bg-[#334155] rounded-xs" />
             </div>
-          );
-        })}
+          </div>
 
-        {/* Glossy Arcade Soccer Ball (2D Physics) */}
-        <div
-          ref={ballPosRef}
-          style={{
-            bottom: `${GROUND_OFFSET_PX - 1}px`,
-            width: `${BALL_SIZE}px`,
-            height: `${BALL_SIZE}px`,
-          }}
-          className="pointer-events-none absolute left-0 will-change-transform z-30"
-        >
-          <div ref={ballSpinRef} className="w-full h-full will-change-transform">
-            <svg viewBox="0 0 36 36" className="w-full h-full drop-shadow-xs">
-              <circle cx="18" cy="18" r="16" fill="#FFFFFF" stroke="#1E1E24" strokeWidth="2.6" />
-              <polygon points="18,11 24,15.5 21.8,22.5 14.2,22.5 12,15.5" fill="#1E1E24" />
-              <path d="M18,2 L18,11" stroke="#1E1E24" strokeWidth="2" />
-              <path d="M24,15.5 L33,12" stroke="#1E1E24" strokeWidth="2" />
-              <path d="M12,15.5 L3,12" stroke="#1E1E24" strokeWidth="2" />
-              <path d="M21.8,22.5 L28,31" stroke="#1E1E24" strokeWidth="2" />
-              <path d="M14.2,22.5 L8,31" stroke="#1E1E24" strokeWidth="2" />
-              <circle cx="18" cy="17.5" r="2.2" fill="#FBBF24" />
-              <ellipse
-                cx="12.5"
-                cy="9.5"
-                rx="4.2"
-                ry="2.2"
-                fill="#FFFFFF"
-                opacity="0.7"
-                transform="rotate(-28 12.5 9.5)"
-              />
-            </svg>
+          {/* Glowing Blue & Orange Portal Pair VFX */}
+          <div
+            ref={bluePortalRef}
+            style={{ bottom: `${GROUND_OFFSET_PX - 4}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-8 h-14 rounded-full bg-[#38BDF8]/25 border-[3.5px] border-[#0EA5E9] shadow-[0_0_16px_rgba(14,165,233,0.85)] z-10 will-change-transform"
+          >
+            <div className="w-full h-full rounded-full border-2 border-dashed border-white/80 animate-spin" />
+          </div>
+          <div
+            ref={orangePortalRef}
+            style={{ bottom: `${GROUND_OFFSET_PX - 4}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-8 h-14 rounded-full bg-[#FB923C]/25 border-[3.5px] border-[#F97316] shadow-[0_0_16px_rgba(249,115,22,0.85)] z-10 will-change-transform"
+          >
+            <div className="w-full h-full rounded-full border-2 border-dashed border-white/80 animate-spin" />
+          </div>
+
+          {/* Super Mario "?" Coin Block + Spinning Golden Coin VFX */}
+          <div
+            ref={coinBlockElRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-[30px] h-[30px] z-30 will-change-transform"
+          >
+            <div
+              ref={coinBlockBoxRef}
+              className="w-full h-full rounded-lg bg-[#FBBF24] border-[2.5px] border-[#1E1E24] shadow-[0_3px_0_#1E1E24] flex items-center justify-center relative"
+            >
+              <span className="w-1 h-1 rounded-full bg-[#1E1E24]/45 absolute top-0.5 left-0.5" />
+              <span className="w-1 h-1 rounded-full bg-[#1E1E24]/45 absolute top-0.5 right-0.5" />
+              <span className="w-1 h-1 rounded-full bg-[#1E1E24]/45 absolute bottom-0.5 left-0.5" />
+              <span className="w-1 h-1 rounded-full bg-[#1E1E24]/45 absolute bottom-0.5 right-0.5" />
+              <span className="font-display font-bold text-sm text-[#1E1E24] leading-none">?</span>
+            </div>
+          </div>
+          <div
+            ref={coinElRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-5 h-5 rounded-full bg-[#FDE047] border-2 border-[#B45309] shadow-[0_0_10px_rgba(250,204,21,0.85)] flex items-center justify-center z-20 will-change-transform"
+          >
+            <div className="w-1.5 h-3 rounded-full bg-[#F59E0B]" />
+          </div>
+
+          {/* Expanding Tactile Click Ripples */}
+          {Array.from({ length: RIPPLE_POOL_SIZE }).map((_, idx) => (
+            <div
+              key={`rip-${idx}`}
+              ref={(el) => {
+                rippleElsRef.current[idx] = el;
+              }}
+              style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+              className="pointer-events-none absolute left-0 w-11 h-11 rounded-full border-[3px] border-[#FBBF24] z-20 will-change-transform"
+            />
+          ))}
+
+          {/* Pooled Particles (Dust, Sparkles, Matrix Motes, Saiyan Sparks, Moonwalk Notes) */}
+          {Array.from({ length: PARTICLE_POOL_SIZE }).map((_, idx) => {
+            const isNote = idx >= 32;
+            return (
+              <div
+                key={`pt-${idx}`}
+                ref={(el) => {
+                  particleElsRef.current[idx] = el;
+                }}
+                style={{
+                  bottom: `${GROUND_OFFSET_PX}px`,
+                  opacity: 0,
+                  borderRadius: idx < 16 ? '9999px' : '2.5px',
+                }}
+                className={`pointer-events-none absolute left-0 will-change-transform z-30 ${
+                  isNote ? 'font-display font-bold text-sm leading-none' : ''
+                }`}
+              >
+                {isNote ? (idx % 2 === 0 ? '♪' : '♫') : null}
+              </div>
+            );
+          })}
+
+          {/* Dynamic Ground Shadows for 4 Mascots */}
+          {[0, 1, 2, 3].map((slot) => (
+            <div
+              key={`shadow-${slot}`}
+              ref={(el) => {
+                mascotShadowRefs.current[slot] = el;
+              }}
+              style={{ bottom: `${GROUND_OFFSET_PX - 4}px` }}
+              className="pointer-events-none absolute left-0 w-11 h-2.5 rounded-full bg-[#1E1E24] will-change-transform z-10"
+            />
+          ))}
+
+          {/* Dynamic Ground Shadow for Soccer Ball */}
+          <div
+            ref={ballShadowRef}
+            style={{ bottom: `${GROUND_OFFSET_PX - 3}px` }}
+            className="pointer-events-none absolute left-0 w-6 h-2 rounded-full bg-[#1E1E24] will-change-transform z-10"
+          />
+
+          {/* 4 Active 60fps Mascot Slots */}
+          {[0, 1, 2, 3].map((slot) => {
+            const profile = MASCOT_CAST[slotCast[slot]];
+            const bubble = bubbles[slot];
+            const isAngry = angrySlots[slot];
+            const isLifted = draggedSlot === slot;
+            const activeMood: MascotMood = isAngry
+              ? 'angry'
+              : isLifted
+              ? 'surprised'
+              : profile.mood;
+
+            return (
+              <div
+                key={`slot-${slot}`}
+                ref={(el) => {
+                  mascotPosRefs.current[slot] = el;
+                }}
+                style={{
+                  bottom: `${GROUND_OFFSET_PX - 5}px`,
+                  width: `${MASCOT_SIZE}px`,
+                  height: `${MASCOT_SIZE}px`,
+                }}
+                className="absolute left-0 will-change-transform z-20 pointer-events-none"
+              >
+                {/* Speech Bubble */}
+                <div className="absolute -top-9 left-1/2 -translate-x-1/2 pointer-events-none z-40">
+                  <AnimatePresence mode="wait">
+                    {bubble && (
+                      <motion.span
+                        key={bubble.key}
+                        initial={{ opacity: 0, y: 8, scale: 0.72 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.8 }}
+                        transition={{ type: 'spring', stiffness: 460, damping: 22 }}
+                        style={{ backgroundColor: bubble.color }}
+                        className="inline-block px-2.5 py-0.5 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-[0_2px_0_#1E1E24] border border-[#1E1E24]"
+                      >
+                        {bubble.text}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Super Saiyan Spiky Golden Aura (behind mascot) */}
+                <div
+                  ref={(el) => {
+                    auraRefs.current[slot] = el;
+                  }}
+                  style={{ opacity: 0 }}
+                  className="pointer-events-none absolute -inset-3 flex items-center justify-center will-change-transform"
+                >
+                  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_12px_rgba(251,191,36,0.95)]">
+                    <path
+                      d="M50,4 L60,24 L82,14 L74,36 L96,46 L76,60 L88,82 L64,78 L54,96 L42,78 L18,86 L26,62 L6,50 L26,38 L16,16 L38,24 Z"
+                      fill="#FDE047"
+                      opacity="0.72"
+                    />
+                    <path
+                      d="M50,15 L58,31 L74,24 L68,42 L84,50 L68,60 L75,76 L58,72 L50,86 L42,72 L25,76 L32,60 L16,50 L32,42 L26,24 L42,31 Z"
+                      fill="#FEF9C3"
+                      opacity="0.9"
+                    />
+                  </svg>
+                </div>
+
+                {/* Anime Speed Lines (Naruto Run / Spin-Dash) */}
+                <div
+                  ref={(el) => {
+                    speedLineRefs.current[slot] = el;
+                  }}
+                  style={{ opacity: 0 }}
+                  className="pointer-events-none absolute inset-y-2 left-0 w-12 flex flex-col justify-evenly will-change-transform"
+                >
+                  <span className="h-[2.5px] w-10 rounded-full bg-white/90 shadow-xs" />
+                  <span className="h-[2.5px] w-7 rounded-full bg-[#38BDF8]/90 ml-2" />
+                  <span className="h-[2.5px] w-9 rounded-full bg-[#FBBF24]/90" />
+                </div>
+
+                {/* Sonic Spin-Dash Energy Ring */}
+                <div
+                  ref={(el) => {
+                    spinRingRefs.current[slot] = el;
+                  }}
+                  style={{ opacity: 0 }}
+                  className="pointer-events-none absolute -inset-1.5 rounded-full border-[3.5px] border-dashed border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.8)] will-change-transform z-30"
+                />
+
+                <button
+                  ref={(el) => {
+                    mascotBodyRefs.current[slot] = el;
+                  }}
+                  type="button"
+                  onPointerDown={(e) => handleMascotPointerDown(e, slot)}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={`Mascot ${profile.name} — tap skill atau drag angkat`}
+                  style={{ transformOrigin: '50% 92%' }}
+                  className="pointer-events-auto cursor-grab active:cursor-grabbing focus:outline-none will-change-transform block w-full h-full relative z-20"
+                >
+                  <GrokMascot
+                    shape={profile.shape}
+                    color={profile.color}
+                    size={MASCOT_SIZE}
+                    mood={activeMood}
+                    foreheadAngry={isAngry}
+                    glasses={profile.glasses}
+                    headphones={profile.headphones}
+                    crown={profile.crown}
+                    detective={profile.detective}
+                    horns={profile.horns}
+                    headband={profile.headband}
+                    blinkDelay={slot * 0.85}
+                    eyeTrackRef={eyeRefs.current[slot]}
+                    stickerBorder
+                  />
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Kamehameha / Laser Beam Multi-Layered Glowing VFX */}
+          <div
+            ref={laserOrbRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-8 h-8 rounded-full bg-white border-[3px] border-[#38BDF8] shadow-[0_0_20px_#0EA5E9,0_0_10px_#FFFFFF] z-30 will-change-transform"
+          />
+          <div
+            ref={laserBeamRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute h-6 rounded-full bg-gradient-to-b from-[#0EA5E9] via-[#7DD3FC] to-[#0EA5E9] shadow-[0_0_20px_#0EA5E9,0_0_32px_rgba(56,189,248,0.85)] flex items-center z-30 will-change-transform"
+          >
+            <div ref={laserCoreRef} className="w-full h-2.5 rounded-full bg-white/95 shadow-[0_0_8px_#FFFFFF]" />
+          </div>
+
+          {/* Glossy Arcade Soccer Ball (2D Physics) */}
+          <div
+            ref={ballPosRef}
+            style={{
+              bottom: `${GROUND_OFFSET_PX - 1}px`,
+              width: `${BALL_SIZE}px`,
+              height: `${BALL_SIZE}px`,
+            }}
+            className="pointer-events-none absolute left-0 will-change-transform z-30"
+          >
+            <div ref={ballSpinRef} className="w-full h-full will-change-transform">
+              <svg viewBox="0 0 36 36" className="w-full h-full drop-shadow-xs">
+                <circle cx="18" cy="18" r="16" fill="#FFFFFF" stroke="#1E1E24" strokeWidth="2.6" />
+                <polygon points="18,11 24,15.5 21.8,22.5 14.2,22.5 12,15.5" fill="#1E1E24" />
+                <path d="M18,2 L18,11" stroke="#1E1E24" strokeWidth="2" />
+                <path d="M24,15.5 L33,12" stroke="#1E1E24" strokeWidth="2" />
+                <path d="M12,15.5 L3,12" stroke="#1E1E24" strokeWidth="2" />
+                <path d="M21.8,22.5 L28,31" stroke="#1E1E24" strokeWidth="2" />
+                <path d="M14.2,22.5 L8,31" stroke="#1E1E24" strokeWidth="2" />
+                <circle cx="18" cy="17.5" r="2.2" fill="#FBBF24" />
+                <ellipse
+                  cx="12.5"
+                  cy="9.5"
+                  rx="4.2"
+                  ry="2.2"
+                  fill="#FFFFFF"
+                  opacity="0.7"
+                  transform="rotate(-28 12.5 9.5)"
+                />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -2203,7 +3581,7 @@ const InteractiveMascotPlayground: React.FC = () => {
       {/* Live Interactive Hint Strip */}
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#64616C]">
         <span>
-          Klik arena buat lempar bola ⚽ • Drag angkat mascot ✋ • Ganggu yang headset biar marah 💢
+          Klik arena lempar bola ⚽ • Tap mascot keluarin skill ⚡ • Drag angkat ✋ • Ganggu headset 💢
         </span>
         <span className="inline-flex items-center gap-1 text-[#158467]">
           <span className="w-2 h-2 rounded-full bg-[#158467] animate-pulse" />
