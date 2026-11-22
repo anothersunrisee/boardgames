@@ -2217,6 +2217,61 @@ const InteractiveMascotPlayground: React.FC = () => {
 // ============================================================================
 // 6. <PlayfulPartyFooter /> — SENSIBLE FOOTER + 60FPS MASCOT PLAYGROUND
 // ============================================================================
+interface PeekingBotConfig {
+  id: string;
+  shape: MascotShape;
+  color: string;
+  accent: string;
+  size: number;
+  glasses?: boolean;
+  crown?: boolean;
+  pitch: number;
+  phrases: string[];
+}
+
+const PEEKING_BOTS: PeekingBotConfig[] = [
+  {
+    id: 'peek-cloud',
+    shape: 'cloud',
+    color: '#158467',
+    accent: '#4AE3B5',
+    size: 82,
+    pitch: 640,
+    phrases: ['Cilukba! 👀', 'Hai! 👋', 'Ngintip dikit~', 'Boop! 😆'],
+  },
+  {
+    id: 'peek-berry',
+    shape: 'circle',
+    color: '#D8317E',
+    accent: '#FF8AC2',
+    size: 74,
+    crown: true,
+    pitch: 720,
+    phrases: ['Ketahuan! 🙈', 'Ayo main! 🎉', 'Hehe halo~', 'Pindah ah! 💨'],
+  },
+  {
+    id: 'peek-cobalt',
+    shape: 'squircle',
+    color: '#2568EF',
+    accent: '#60A5FA',
+    size: 76,
+    glasses: true,
+    pitch: 540,
+    phrases: ['Lagi pantau~ 🕵️', 'Ngopi yuk ☕', 'Woi liat sini!', 'Kabur dulu! 🏃'],
+  },
+];
+
+const PEEK_SPOTS_PERCENT = [8, 23, 38, 53, 68, 83];
+
+interface PeekingBotState {
+  spotIdx: number;
+  visible: boolean;
+  lookX: number;
+  bubble: string | null;
+  burstKey: number;
+  booped: boolean;
+}
+
 export const PlayfulPartyFooter: React.FC<{
   muted: boolean;
   onToggleMute: () => void;
@@ -2232,77 +2287,180 @@ export const PlayfulPartyFooter: React.FC<{
   onOpenQrisModal,
   onSelectGame,
 }) => {
-  const [peekDucking, setPeekDucking] = useState(false);
-  const [peekBubble, setPeekBubble] = useState<string | null>(null);
-  const [peekLook, setPeekLook] = useState(0);
-  const [peekBurst, setPeekBurst] = useState(0);
+  const [peekStates, setPeekStates] = useState<PeekingBotState[]>([
+    { spotIdx: 5, visible: true, lookX: 0, bubble: null, burstKey: 0, booped: false },
+    { spotIdx: 1, visible: false, lookX: 0, bubble: null, burstKey: 0, booped: false },
+    { spotIdx: 3, visible: true, lookX: 0, bubble: null, burstKey: 0, booped: false },
+  ]);
 
+  // Autonomous pop-up, look-around, hide & teleport to new spot loop for all 3 peeking mascots
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setPeekLook((prev) => (prev === 0 ? 4 : prev === 4 ? -4 : 0));
-    }, 2600);
-    return () => clearInterval(id);
+    const timers: number[] = [];
+
+    // Gentle eye-look loop
+    const lookId = window.setInterval(() => {
+      setPeekStates((prev) =>
+        prev.map((st, idx) => ({
+          ...st,
+          lookX:
+            st.lookX === 0
+              ? idx % 2 === 0
+                ? 4
+                : -4
+              : st.lookX > 0
+              ? -4
+              : 0,
+        }))
+      );
+    }, 2200);
+    timers.push(lookId);
+
+    // Staggered hide & move cycles per mascot so they pop up and relocate organically
+    const cycleDurations = [4300, 5200, 6100];
+    cycleDurations.forEach((ms, botIdx) => {
+      const cycleId = window.setInterval(() => {
+        // Step 1: Duck down behind the scalloped border
+        setPeekStates((prev) =>
+          prev.map((st, idx) => (idx === botIdx ? { ...st, visible: false, booped: false } : st))
+        );
+
+        // Step 2: While hidden, teleport to a random unoccupied spot and pop back up!
+        const popTimeout = window.setTimeout(() => {
+          setPeekStates((prev) => {
+            const occupied = new Set(
+              prev.filter((_, i) => i !== botIdx).map((st) => st.spotIdx)
+            );
+            const candidates = PEEK_SPOTS_PERCENT.map((_, i) => i).filter(
+              (i) => !occupied.has(i) && i !== prev[botIdx].spotIdx
+            );
+            const nextSpot =
+              candidates.length > 0
+                ? candidates[Math.floor(Math.random() * candidates.length)]
+                : (prev[botIdx].spotIdx + 2) % PEEK_SPOTS_PERCENT.length;
+
+            return prev.map((st, idx) =>
+              idx === botIdx
+                ? { ...st, spotIdx: nextSpot, visible: true, booped: false }
+                : st
+            );
+          });
+        }, 720);
+        timers.push(popTimeout);
+      }, ms);
+      timers.push(cycleId);
+    });
+
+    return () => {
+      timers.forEach((id) => {
+        window.clearInterval(id);
+        window.clearTimeout(id);
+      });
+    };
   }, []);
 
-  const handlePeekInteract = () => {
-    sfx.playPop(640);
-    const phrases = ['Hai! 👋', 'Ayo main!', 'Boop! 😆', 'Ngopi yuk ☕', 'Cilukba!'];
-    const nextPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-    setPeekBubble(nextPhrase);
-    setPeekDucking(true);
-    setPeekBurst((k) => k + 1);
-    setTimeout(() => setPeekDucking(false), 380);
-    setTimeout(() => setPeekBubble(null), 1900);
+  const handlePeekInteract = (botIdx: number) => {
+    const cfg = PEEKING_BOTS[botIdx];
+    sfx.playPop(cfg.pitch);
+    const nextPhrase = cfg.phrases[Math.floor(Math.random() * cfg.phrases.length)];
+
+    setPeekStates((prev) =>
+      prev.map((st, idx) =>
+        idx === botIdx
+          ? {
+              ...st,
+              bubble: nextPhrase,
+              burstKey: st.burstKey + 1,
+              booped: true,
+            }
+          : st
+      )
+    );
+
+    // Briefly duck & relocate right after being booped!
+    window.setTimeout(() => {
+      setPeekStates((prev) =>
+        prev.map((st, idx) => (idx === botIdx ? { ...st, visible: false, booped: false } : st))
+      );
+    }, 520);
+
+    window.setTimeout(() => {
+      setPeekStates((prev) => {
+        const occupied = new Set(
+          prev.filter((_, i) => i !== botIdx).map((st) => st.spotIdx)
+        );
+        const candidates = PEEK_SPOTS_PERCENT.map((_, i) => i).filter(
+          (i) => !occupied.has(i) && i !== prev[botIdx].spotIdx
+        );
+        const nextSpot =
+          candidates.length > 0
+            ? candidates[Math.floor(Math.random() * candidates.length)]
+            : (prev[botIdx].spotIdx + 1) % PEEK_SPOTS_PERCENT.length;
+
+        return prev.map((st, idx) =>
+          idx === botIdx ? { ...st, spotIdx: nextSpot, visible: true, bubble: null } : st
+        );
+      });
+    }, 1350);
   };
 
   return (
     <footer id="playful-party-footer" className="relative mt-20 sm:mt-24 pt-10">
-      {/* PEEKING MASCOT POPPING UP FROM BEHIND THE SCALLOPED TOP BORDER */}
+      {/* 3 PEEKING MASCOTS POPPING UP & MOVING RANDOMLY BEHIND THE SCALLOPED BORDER */}
       <div className="max-w-5xl mx-auto px-6 relative h-0">
-        <div className="absolute right-8 sm:right-20 -top-[58px] z-10 flex flex-col items-center">
-          <AnimatePresence>
-            {peekBubble && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.7 }}
-                animate={{ opacity: 1, y: -12, scale: 1 }}
-                exit={{ opacity: 0, y: -18, scale: 0.8 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 20 }}
-                className="mb-1 px-3.5 py-1.5 rounded-2xl bg-[#FBBF24] text-[#1E1E24] font-display font-bold text-xs sm:text-sm border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] whitespace-nowrap"
-              >
-                {peekBubble}
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {PEEKING_BOTS.map((bot, botIdx) => {
+          const st = peekStates[botIdx];
+          const leftPercent = PEEK_SPOTS_PERCENT[st.spotIdx];
 
-          <motion.button
-            type="button"
-            onClick={handlePeekInteract}
-            onMouseEnter={() => {
-              if (!peekBubble) setPeekBubble('Hai! Klik aku!');
-            }}
-            onMouseLeave={() => {
-              if (peekBubble === 'Hai! Klik aku!') setPeekBubble(null);
-            }}
-            animate={{
-              y: peekDucking ? 26 : 0,
-              scaleY: peekDucking ? 0.82 : 1,
-              scaleX: peekDucking ? 1.14 : 1,
-            }}
-            transition={{ type: 'spring', stiffness: 420, damping: 16 }}
-            aria-label="Mascot mengintip"
-            className="relative cursor-pointer focus:outline-none hover:-translate-y-1 transition-transform"
-          >
-            <MiniSparkleBurst burstKey={peekBurst} color="#4AE3B5" />
-            <GrokMascot
-              shape="cloud"
-              color="#158467"
-              size={84}
-              mood={peekDucking ? 'happy' : 'idle'}
-              lookX={peekLook}
-              stickerBorder
-            />
-          </motion.button>
-        </div>
+          return (
+            <div
+              key={bot.id}
+              style={{ left: `${leftPercent}%` }}
+              className="absolute -top-[58px] z-10 flex flex-col items-center -translate-x-1/2"
+            >
+              <AnimatePresence>
+                {st.bubble && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.7 }}
+                    animate={{ opacity: 1, y: -12, scale: 1 }}
+                    exit={{ opacity: 0, y: -18, scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 20 }}
+                    className="mb-1 px-3 py-1 rounded-2xl bg-[#FBBF24] text-[#1E1E24] font-display font-bold text-xs border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] whitespace-nowrap pointer-events-none"
+                  >
+                    {st.bubble}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.button
+                type="button"
+                onClick={() => handlePeekInteract(botIdx)}
+                animate={{
+                  y: st.visible ? (st.booped ? 22 : 0) : 68,
+                  scaleY: st.booped ? 0.8 : 1,
+                  scaleX: st.booped ? 1.15 : 1,
+                  opacity: st.visible ? 1 : 0,
+                }}
+                transition={{ type: 'spring', stiffness: 360, damping: 20 }}
+                aria-label={`Mascot mengintip ${bot.id}`}
+                className={`relative focus:outline-none ${
+                  st.visible ? 'cursor-pointer pointer-events-auto' : 'pointer-events-none'
+                }`}
+              >
+                <MiniSparkleBurst burstKey={st.burstKey} color={bot.accent} />
+                <GrokMascot
+                  shape={bot.shape}
+                  color={bot.color}
+                  size={bot.size}
+                  mood={st.booped ? 'happy' : 'idle'}
+                  glasses={bot.glasses}
+                  crown={bot.crown}
+                  lookX={st.lookX}
+                  stickerBorder
+                />
+              </motion.button>
+            </div>
+          );
+        })}
       </div>
 
       {/* PLAYFUL SCALLOPED / WAVED TOP EDGE WITH TACTILE DEEP INK BORDER */}
