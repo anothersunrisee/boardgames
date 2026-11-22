@@ -725,41 +725,45 @@ interface PlaygroundMascotState {
   squishKey: number;
 }
 
-interface HallwayCrewConfig {
-  id: string;
-  hallwayName: string;
-  bouncer: { shape: MascotShape; color: string; name: string };
-  chaser: { shape: MascotShape; color: string; name: string; glasses?: boolean };
-  juggler: { shape: MascotShape; color: string; name: string; coffeeCup?: boolean };
-  chiller: { shape: MascotShape; color: string; name: string };
+interface MascotVariant {
+  shape: MascotShape;
+  color: string;
+  name: string;
+  glasses?: boolean;
+  coffeeCup?: boolean;
 }
 
-const HALLWAY_CREWS: HallwayCrewConfig[] = [
-  {
-    id: 'lorong-1',
-    hallwayName: 'Lorong 1/3 • Tim Rusuh',
-    bouncer: { shape: 'circle', color: '#D8317E', name: 'Boba' },
-    chaser: { shape: 'squircle', color: '#2568EF', name: 'Zuzu' },
-    juggler: { shape: 'triangle', color: '#EC5A29', name: 'Piko' },
-    chiller: { shape: 'blob', color: '#9D71E8', name: 'Momo' },
-  },
-  {
-    id: 'lorong-2',
-    hallwayName: 'Lorong 2/3 • Tim Begadang',
-    bouncer: { shape: 'cloud', color: '#158467', name: 'Kiko' },
-    chaser: { shape: 'circle', color: '#EA580C', name: 'Bimi', glasses: true },
-    juggler: { shape: 'squircle', color: '#7C3AED', name: 'Nori', coffeeCup: true },
-    chiller: { shape: 'cloud', color: '#2568EF', name: 'Lilo' },
-  },
-  {
-    id: 'lorong-3',
-    hallwayName: 'Lorong 3/3 • Tim Eksperimen',
-    bouncer: { shape: 'blob', color: '#65A30D', name: 'Juno' },
-    chaser: { shape: 'triangle', color: '#D8317E', name: 'Riri' },
-    juggler: { shape: 'circle', color: '#0284C7', name: 'Toto' },
-    chiller: { shape: 'squircle', color: '#B45309', name: 'Kopi' },
-  },
+const BOUNCER_VARIANTS: MascotVariant[] = [
+  { shape: 'circle', color: '#D8317E', name: 'Boba' },
+  { shape: 'cloud', color: '#158467', name: 'Kiko' },
+  { shape: 'blob', color: '#65A30D', name: 'Juno' },
 ];
+
+const CHASER_VARIANTS: MascotVariant[] = [
+  { shape: 'squircle', color: '#2568EF', name: 'Zuzu' },
+  { shape: 'circle', color: '#EA580C', name: 'Bimi', glasses: true },
+  { shape: 'triangle', color: '#D8317E', name: 'Riri' },
+];
+
+const JUGGLER_VARIANTS: MascotVariant[] = [
+  { shape: 'triangle', color: '#EC5A29', name: 'Piko' },
+  { shape: 'squircle', color: '#7C3AED', name: 'Nori', coffeeCup: true },
+  { shape: 'circle', color: '#0284C7', name: 'Toto' },
+];
+
+const CHILLER_VARIANTS: MascotVariant[] = [
+  { shape: 'blob', color: '#9D71E8', name: 'Momo' },
+  { shape: 'cloud', color: '#2568EF', name: 'Lilo' },
+  { shape: 'squircle', color: '#B45309', name: 'Kopi' },
+];
+
+interface RoamingBotState {
+  walkX: number;
+  dir: 1 | -1;
+  hopping: boolean;
+  variantIdx: number;
+  swapping: boolean;
+}
 
 export const PlayfulPartyFooter: React.FC<{
   muted: boolean;
@@ -781,10 +785,18 @@ export const PlayfulPartyFooter: React.FC<{
   const [peekLook, setPeekLook] = useState(0);
   const [peekBurst, setPeekBurst] = useState(0);
 
-  // Hallway Navigation State (Lorong Panjang)
-  const [crewIndex, setCrewIndex] = useState(0);
-  const [slideDir, setSlideDir] = useState<1 | -1>(1);
-  const activeCrew = HALLWAY_CREWS[crewIndex];
+  // Autonomous Hallway Roaming & Self-Swapping State
+  const [roam, setRoam] = useState<{
+    bouncer: RoamingBotState;
+    chaser: RoamingBotState;
+    juggler: RoamingBotState;
+    chiller: RoamingBotState;
+  }>({
+    bouncer: { walkX: 0, dir: 1, hopping: false, variantIdx: 0, swapping: false },
+    chaser: { walkX: 0, dir: 1, hopping: false, variantIdx: 0, swapping: false },
+    juggler: { walkX: 0, dir: -1, hopping: false, variantIdx: 0, swapping: false },
+    chiller: { walkX: 0, dir: -1, hopping: false, variantIdx: 0, swapping: false },
+  });
 
   // Interactive Physics & Prank States
   const [isLifted, setIsLifted] = useState(false);
@@ -808,12 +820,105 @@ export const PlayfulPartyFooter: React.FC<{
     chiller: { bubble: null, burstKey: 0, squishKey: 0 },
   });
 
+  const activeBouncer = BOUNCER_VARIANTS[roam.bouncer.variantIdx];
+  const activeChaser = CHASER_VARIANTS[roam.chaser.variantIdx];
+  const activeJuggler = JUGGLER_VARIANTS[roam.juggler.variantIdx];
+  const activeChiller = CHILLER_VARIANTS[roam.chiller.variantIdx];
+
   useEffect(() => {
     const id = window.setInterval(() => {
       setPeekLook((prev) => (prev === 0 ? 4 : prev === 4 ? -4 : 0));
     }, 2600);
     return () => clearInterval(id);
   }, []);
+
+  // Autonomous Hallway Walking, Hopping & Character Cycling Loop
+  useEffect(() => {
+    let stepCount = 0;
+    const slots: Array<'bouncer' | 'chaser' | 'juggler' | 'chiller'> = [
+      'bouncer',
+      'chaser',
+      'juggler',
+      'chiller',
+    ];
+
+    const intervalId = window.setInterval(() => {
+      stepCount += 1;
+
+      setRoam((prev) => {
+        const next = { ...prev };
+
+        slots.forEach((slot, idx) => {
+          // Skip autonomous step if user is actively interacting with this mascot
+          if (slot === 'bouncer' && (isLifted || justDropped)) return;
+          if (slot === 'chaser' && isChasingBall) return;
+          if (slot === 'juggler' && isPranked) return;
+          if (slot === 'chiller' && chillerAngry) return;
+
+          const cur = prev[slot];
+          if (cur.swapping) return;
+
+          // Every few ticks, one slot walks into the hallway door and swaps to a new mascot!
+          const shouldSwap = stepCount % 7 === idx + 1;
+          if (shouldSwap) {
+            next[slot] = {
+              ...cur,
+              swapping: true,
+              hopping: true,
+              walkX: cur.dir * 52,
+            };
+
+            setTimeout(() => {
+              setRoam((latest) => ({
+                ...latest,
+                [slot]: {
+                  walkX: 0,
+                  dir: (latest[slot].dir * -1) as 1 | -1,
+                  hopping: false,
+                  variantIdx: (latest[slot].variantIdx + 1) % 3,
+                  swapping: false,
+                },
+              }));
+            }, 420);
+            return;
+          }
+
+          // Normal autonomous walk & hop along the hallway
+          const stepDelta = (14 + ((stepCount + idx * 5) % 16)) * cur.dir;
+          let nextX = cur.walkX + stepDelta;
+          let nextDir = cur.dir;
+          const limit = slot === 'chiller' ? 24 : 36;
+
+          if (nextX > limit) {
+            nextX = limit;
+            nextDir = -1;
+          } else if (nextX < -limit) {
+            nextX = -limit;
+            nextDir = 1;
+          }
+
+          next[slot] = {
+            ...cur,
+            walkX: nextX,
+            dir: nextDir,
+            hopping: true,
+          };
+
+          // Reset hop state after bounce finishes
+          setTimeout(() => {
+            setRoam((latest) => ({
+              ...latest,
+              [slot]: { ...latest[slot], hopping: false },
+            }));
+          }, 360);
+        });
+
+        return next;
+      });
+    }, 1500);
+
+    return () => clearInterval(intervalId);
+  }, [isLifted, justDropped, isChasingBall, isPranked, chillerAngry]);
 
   const showBotBubble = (id: string, text: string, duration = 2200, burst = true) => {
     setBotStates((prev) => ({
@@ -830,17 +935,6 @@ export const PlayfulPartyFooter: React.FC<{
         [id]: { ...prev[id], bubble: null },
       }));
     }, duration);
-  };
-
-  const switchHallway = (dir: 1 | -1) => {
-    sfx.playPop(580);
-    setSlideDir(dir);
-    setCrewIndex((prev) => (prev + dir + HALLWAY_CREWS.length) % HALLWAY_CREWS.length);
-    setBallX(28);
-    setChaserX(0);
-    setIsPranked(false);
-    setPrankRotation(0);
-    setChillerAngry(false);
   };
 
   // 1. Lift & Drop Mechanic (Mascot 1)
@@ -1046,98 +1140,60 @@ export const PlayfulPartyFooter: React.FC<{
       <div className="relative z-20 bg-[#1E1E24] text-[#FAF7F2] pt-6 pb-24 sm:pb-14 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* ============================================================== */}
-          {/* INTERACTIVE MASCOT PLAYGROUND TRACK (LORONG PANJANG)           */}
+          {/* INTERACTIVE MASCOT PLAYGROUND TRACK (LORONG OTOMATIS)          */}
           {/* ============================================================== */}
           <div className="rounded-[28px] bg-[#FAF7F2] text-[#1E1E24] border-[3px] border-[#FBBF24]/80 p-4 sm:p-5 shadow-[0_7px_0_#0D0D11] relative overflow-hidden">
-            {/* Top Bar: Hallway Switcher & Interactive Hints */}
+            {/* Top Bar: Badge & Interactive Hints (No manual buttons) */}
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-extrabold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
-                  <span>Mascot Playground</span>
-                </div>
-
-                {/* Hallway Corridor Switcher Controls */}
-                <div className="inline-flex items-center gap-1 bg-[#F2ECE1] border border-[#1E1E24]/15 rounded-full p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => switchHallway(-1)}
-                    className="w-6 h-6 rounded-full hover:bg-[#1E1E24] hover:text-white text-[#1E1E24] font-bold text-xs flex items-center justify-center transition cursor-pointer"
-                    title="Geser ke lorong sebelumnya"
-                  >
-                    ◀
-                  </button>
-                  <span className="px-2 text-xs font-display font-bold text-[#1E1E24]">
-                    {activeCrew.hallwayName}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => switchHallway(1)}
-                    className="w-6 h-6 rounded-full hover:bg-[#1E1E24] hover:text-white text-[#1E1E24] font-bold text-xs flex items-center justify-center transition cursor-pointer"
-                    title="Geser ke lorong berikutnya"
-                  >
-                    ▶
-                  </button>
-                </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-extrabold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
+                <span>Mascot Playground</span>
               </div>
 
               <span className="text-xs font-bold text-[#64616C]">
-                ✋ Drag angkat mascot • ⚽ Lempar bola • ⭐ Jahili bintang • 🎧 Ganggu yang headset!
+                ✋ Angkat mascot • ⚽ Lempar bola • ⭐ Jahili bintang • 🎧 Ganggu yang headset!
               </span>
             </div>
 
-            {/* Interactive Long Hallway Stage */}
-            <div className="relative h-40 sm:h-44 rounded-[22px] bg-[#F2ECE1] border-2 border-dashed border-[#1E1E24]/15 overflow-hidden flex items-end justify-around px-3 sm:px-8 pb-4 select-none">
-              {/* Hallway Background Doors & Perspective Details */}
-              <div className="pointer-events-none absolute inset-x-0 top-3 flex items-center justify-between px-4 opacity-35">
-                <div className="px-2.5 py-0.5 rounded-md border border-[#1E1E24]/30 text-xs font-display font-bold text-[#64616C]">
-                  🚪← LORONG BARAT
-                </div>
-                <div className="hidden md:flex items-center gap-6">
-                  <div className="w-12 h-6 rounded-md border border-[#1E1E24]/20 bg-white/40" />
-                  <div className="w-12 h-6 rounded-md border border-[#1E1E24]/20 bg-white/40" />
-                  <div className="w-12 h-6 rounded-md border border-[#1E1E24]/20 bg-white/40" />
-                </div>
-                <div className="px-2.5 py-0.5 rounded-md border border-[#1E1E24]/30 text-xs font-display font-bold text-[#64616C]">
-                  LORONG TIMUR →🚪
-                </div>
+            {/* Autonomous Long Hallway Stage */}
+            <div className="relative h-36 sm:h-40 rounded-[22px] bg-[#F2ECE1] border-2 border-dashed border-[#1E1E24]/15 overflow-hidden flex items-end justify-around px-3 sm:px-8 pb-3.5 select-none">
+              {/* HallwayFloor Strip */}
+              <div className="absolute inset-x-0 bottom-0 h-5 bg-[#E6DDD0] border-t border-[#1E1E24]/10 flex items-center justify-around px-6">
+                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
+                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
+                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
+                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/8" />
               </div>
 
-              {/* Hallway Floor Strip */}
-              <div className="absolute inset-x-0 bottom-0 h-6 bg-[#E6DDD0] border-t-2 border-[#1E1E24]/12 flex items-center justify-around px-6">
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/10" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/10" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/10" />
-                <div className="w-8 h-1 rounded-full bg-[#1E1E24]/10" />
-              </div>
+              <div className="w-full flex items-end justify-around z-10">
+                {/* ========================================================== */}
+                {/* MASCOT 1: LIFTABLE & DROPPABLE (JALAN & LOMPAT SENDIRI)    */}
+                {/* ========================================================== */}
+                <div className="relative flex flex-col items-center z-20">
+                  <AnimatePresence>
+                    {botStates.bouncer.bubble && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
+                        animate={{ opacity: 1, y: -10, scale: 1 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        style={{ backgroundColor: activeBouncer.color }}
+                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
+                      >
+                        {botStates.bouncer.bubble}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeCrew.id}
-                  initial={{ opacity: 0, x: slideDir * 70 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -slideDir * 70 }}
-                  transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                  className="w-full flex items-end justify-around z-10"
-                >
-                  {/* ========================================================== */}
-                  {/* MASCOT 1: LIFTABLE & DROPPABLE (BISA DIANGKAT-ANGKAT)      */}
-                  {/* ========================================================== */}
-                  <div className="relative flex flex-col items-center z-20">
-                    <AnimatePresence>
-                      {botStates.bouncer.bubble && (
-                        <motion.span
-                          initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                          animate={{ opacity: 1, y: -10, scale: 1 }}
-                          exit={{ opacity: 0, y: -16 }}
-                          style={{ backgroundColor: activeCrew.bouncer.color }}
-                          className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                        >
-                          {botStates.bouncer.bubble}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-
+                  <motion.div
+                    animate={{
+                      x: isLifted ? 0 : roam.bouncer.walkX,
+                      y: isLifted ? 0 : roam.bouncer.hopping ? -14 : 0,
+                      opacity: roam.bouncer.swapping ? 0 : 1,
+                      scale: roam.bouncer.swapping ? 0.7 : 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                    className="flex flex-col items-center"
+                  >
                     <motion.div
                       drag
                       dragSnapToOrigin
@@ -1156,123 +1212,144 @@ export const PlayfulPartyFooter: React.FC<{
                           ? { rotate: [-8, 8, -8, 8, 0], scale: 1.1 }
                           : justDropped
                           ? { scaleX: [1.32, 0.88, 1], scaleY: [0.68, 1.14, 1] }
-                          : { rotate: 0, scale: 1 }
+                          : { rotate: roam.bouncer.hopping ? roam.bouncer.dir * 6 : 0, scale: 1 }
                       }
-                      transition={{ duration: 0.38 }}
+                      transition={{ duration: 0.35 }}
                       whileHover={{ y: -5, scale: 1.05 }}
                       className="relative cursor-grab active:cursor-grabbing focus:outline-none"
                       title="Drag angkat mascot ini ke atas lalu lepaskan!"
                     >
-                      <MiniSparkleBurst burstKey={botStates.bouncer.burstKey} color={activeCrew.bouncer.color} />
+                      <MiniSparkleBurst burstKey={botStates.bouncer.burstKey} color={activeBouncer.color} />
                       <GrokMascot
-                        shape={activeCrew.bouncer.shape}
-                        color={activeCrew.bouncer.color}
-                        size={64}
+                        shape={activeBouncer.shape}
+                        color={activeBouncer.color}
+                        size={62}
                         mood={isLifted ? 'surprised' : justDropped ? 'dizzy' : 'happy'}
+                        lookX={roam.bouncer.dir * 3}
                       />
                     </motion.div>
 
-                    {/* Dynamic Floor Shadow that shrinks when lifted */}
+                    {/* Dynamic Floor Shadow */}
                     <motion.div
                       animate={{
-                        scale: isLifted ? 0.45 : 1,
-                        opacity: isLifted ? 0.2 : 0.45,
+                        scale: isLifted ? 0.45 : roam.bouncer.hopping ? 0.7 : 1,
+                        opacity: isLifted ? 0.2 : 0.4,
                       }}
-                      className="w-10 h-2 rounded-full bg-[#1E1E24] -mt-1 pointer-events-none"
+                      className="w-10 h-1.5 rounded-full bg-[#1E1E24] -mt-1 pointer-events-none"
+                    />
+                  </motion.div>
+                </div>
+
+                {/* ========================================================== */}
+                {/* MASCOT 2: BALL CHASER + THROWABLE BALL (LEMPAR BOLA)       */}
+                {/* ========================================================== */}
+                <div className="relative flex flex-col items-center z-20">
+                  <AnimatePresence>
+                    {botStates.chaser.bubble && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
+                        animate={{ opacity: 1, y: -10, scale: 1 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        style={{ backgroundColor: activeChaser.color }}
+                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
+                      >
+                        {botStates.chaser.bubble}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="relative flex items-end">
+                    {/* Chaser Bot walks & hops autonomously OR sprints to chase thrown ball */}
+                    <motion.div
+                      animate={{
+                        x: isChasingBall ? chaserX : chaserX + roam.chaser.walkX * 0.6,
+                        y: isChasingBall ? [0, -12, 0] : roam.chaser.hopping ? -11 : 0,
+                        rotate: isChasingBall
+                          ? ballX >= chaserX
+                            ? 8
+                            : -8
+                          : roam.chaser.hopping
+                          ? roam.chaser.dir * 5
+                          : 0,
+                        opacity: roam.chaser.swapping ? 0 : 1,
+                        scale: roam.chaser.swapping ? 0.7 : 1,
+                      }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                      onClick={() => {
+                        const nextSpot = ballX > 40 ? -95 : 110;
+                        triggerBallThrow(nextSpot);
+                      }}
+                      className="relative cursor-pointer"
+                      title="Klik atau lempar bolanya biar dikejar!"
+                    >
+                      <MiniSparkleBurst burstKey={botStates.chaser.burstKey} color={activeChaser.color} />
+                      <GrokMascot
+                        shape={activeChaser.shape}
+                        color={activeChaser.color}
+                        size={64}
+                        mood={isChasingBall ? 'excited' : 'idle'}
+                        glasses={activeChaser.glasses}
+                        lookX={ballX > chaserX ? 4 : ballX < chaserX ? -4 : roam.chaser.dir * 3}
+                      />
+                    </motion.div>
+
+                    {/* Draggable / Throwable Ball */}
+                    <motion.div
+                      drag="x"
+                      dragMomentum={false}
+                      dragElastic={0.2}
+                      dragConstraints={{ left: -140, right: 170 }}
+                      animate={{
+                        x: isChasingBall ? ballX : ballX + roam.chaser.walkX * 0.45,
+                        rotate: (isChasingBall ? ballX : ballX + roam.chaser.walkX) * 4,
+                      }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                      onDragEnd={(_, info) => {
+                        const thrownX = ballX + info.offset.x + info.velocity.x * 0.12;
+                        triggerBallThrow(thrownX);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const kickX = ballX >= 30 ? -110 : 125;
+                        triggerBallThrow(kickX);
+                      }}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      title="Drag & lempar bola ini ke kiri/kanan!"
+                      className="w-6 h-6 rounded-full bg-[#FBBF24] border-2 border-[#1E1E24] mb-1.5 shadow-[0_2px_0_#1E1E24] cursor-grab active:cursor-grabbing flex items-center justify-center text-xs z-30"
                     />
                   </div>
+                </div>
 
-                  {/* ========================================================== */}
-                  {/* MASCOT 2: BALL CHASER + THROWABLE BALL (LEMPAR BOLA)       */}
-                  {/* ========================================================== */}
-                  <div className="relative flex flex-col items-center z-20">
-                    <AnimatePresence>
-                      {botStates.chaser.bubble && (
-                        <motion.span
-                          initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                          animate={{ opacity: 1, y: -10, scale: 1 }}
-                          exit={{ opacity: 0, y: -16 }}
-                          style={{ backgroundColor: activeCrew.chaser.color }}
-                          className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                        >
-                          {botStates.chaser.bubble}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="relative flex items-end">
-                      {/* Chaser Bot that physically runs to where the ball is thrown */}
-                      <motion.div
-                        animate={{
-                          x: chaserX,
-                          y: isChasingBall ? [0, -10, 0, -8, 0] : 0,
-                          rotate: isChasingBall ? (ballX >= chaserX ? 8 : -8) : 0,
-                        }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                        onClick={() => {
-                          const nextSpot = ballX > 40 ? -95 : 110;
-                          triggerBallThrow(nextSpot);
-                        }}
-                        className="relative cursor-pointer"
-                        title="Klik atau lempar bolanya biar dikejar!"
+                {/* ========================================================== */}
+                {/* MASCOT 3: PRANKABLE / JAHILI (JALAN & LOMPAT + BINTANG)    */}
+                {/* ========================================================== */}
+                <div className="relative flex flex-col items-center z-20">
+                  <AnimatePresence>
+                    {botStates.juggler.bubble && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
+                        animate={{ opacity: 1, y: -10, scale: 1 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        style={{ backgroundColor: activeJuggler.color }}
+                        className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
                       >
-                        <MiniSparkleBurst burstKey={botStates.chaser.burstKey} color={activeCrew.chaser.color} />
-                        <GrokMascot
-                          shape={activeCrew.chaser.shape}
-                          color={activeCrew.chaser.color}
-                          size={64}
-                          mood={isChasingBall ? 'excited' : 'idle'}
-                          glasses={activeCrew.chaser.glasses}
-                          lookX={ballX > chaserX ? 5 : ballX < chaserX ? -5 : 0}
-                        />
-                      </motion.div>
+                        {botStates.juggler.bubble}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
-                      {/* Draggable / Throwable Ball */}
-                      <motion.div
-                        drag="x"
-                        dragMomentum={false}
-                        dragElastic={0.2}
-                        dragConstraints={{ left: -140, right: 170 }}
-                        animate={{ x: ballX, rotate: ballX * 4 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                        onDragEnd={(_, info) => {
-                          const thrownX = ballX + info.offset.x + info.velocity.x * 0.12;
-                          triggerBallThrow(thrownX);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const kickX = ballX >= 30 ? -110 : 125;
-                          triggerBallThrow(kickX);
-                        }}
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.9 }}
-                        title="Drag & lempar bola ini ke kiri/kanan!"
-                        className="w-7 h-7 rounded-full bg-[#FBBF24] border-2 border-[#1E1E24] mb-1.5 shadow-[0_2px_0_#1E1E24] cursor-grab active:cursor-grabbing flex items-center justify-center text-xs z-30"
-                      >
-                        ⚽
-                      </motion.div>
-                    </div>
-                  </div>
-
-                  {/* ========================================================== */}
-                  {/* MASCOT 3: PRANKABLE / JAHILI (COLONG BINTANG / PUTER)      */}
-                  {/* ========================================================== */}
-                  <div className="relative flex flex-col items-center z-20">
-                    <AnimatePresence>
-                      {botStates.juggler.bubble && (
-                        <motion.span
-                          initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                          animate={{ opacity: 1, y: -10, scale: 1 }}
-                          exit={{ opacity: 0, y: -16 }}
-                          style={{ backgroundColor: activeCrew.juggler.color }}
-                          className="absolute -top-11 px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none"
-                        >
-                          {botStates.juggler.bubble}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Draggable Floating Star that can be stolen to prank the bot */}
+                  <motion.div
+                    animate={{
+                      x: isPranked ? 0 : roam.juggler.walkX,
+                      y: isPranked ? -8 : roam.juggler.hopping ? -13 : 0,
+                      opacity: roam.juggler.swapping ? 0 : 1,
+                      scale: roam.juggler.swapping ? 0.7 : 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                    className="flex flex-col items-center"
+                  >
+                    {/* Draggable Floating Star */}
                     <motion.div
                       drag
                       dragSnapToOrigin
@@ -1282,12 +1359,12 @@ export const PlayfulPartyFooter: React.FC<{
                       animate={
                         starStolen
                           ? { scale: 1.3, rotate: 145 }
-                          : { y: [0, -3, 0], rotate: 0, scale: 1 }
+                          : { y: roam.juggler.hopping ? -5 : 0, rotate: 0, scale: 1 }
                       }
                       className="mb-1 text-[#FBBF24] cursor-grab active:cursor-grabbing z-30"
                       title="Drag / curi bintangnya buat jahilin mascot ini!"
                     >
-                      <Star className="w-6 h-6 fill-[#FBBF24] stroke-[#1E1E24]" strokeWidth={2.5} />
+                      <Star className="w-5 h-5 fill-[#FBBF24] stroke-[#1E1E24]" strokeWidth={2.5} />
                     </motion.div>
 
                     <motion.div
@@ -1297,50 +1374,61 @@ export const PlayfulPartyFooter: React.FC<{
                       onDragStart={() => triggerPrankJuggler('spin')}
                       onClick={() => triggerPrankJuggler('spin')}
                       animate={{
-                        rotate: prankRotation,
-                        y: isPranked ? [0, -10, 0] : 0,
+                        rotate: isPranked ? prankRotation : roam.juggler.hopping ? roam.juggler.dir * 5 : 0,
                       }}
                       transition={{ type: 'spring', stiffness: 260, damping: 18 }}
                       whileHover={{ y: -5, rotate: -6 }}
                       className="relative cursor-grab active:cursor-grabbing focus:outline-none"
                       title="Klik atau drag buat puter-puter & jahilin mascot ini!"
                     >
-                      <MiniSparkleBurst burstKey={botStates.juggler.burstKey} color={activeCrew.juggler.color} />
+                      <MiniSparkleBurst burstKey={botStates.juggler.burstKey} color={activeJuggler.color} />
                       <GrokMascot
-                        shape={activeCrew.juggler.shape}
-                        color={activeCrew.juggler.color}
+                        shape={activeJuggler.shape}
+                        color={activeJuggler.color}
                         size={62}
                         mood={isPranked ? 'dizzy' : 'excited'}
-                        coffeeCup={activeCrew.juggler.coffeeCup}
+                        coffeeCup={activeJuggler.coffeeCup}
+                        lookX={roam.juggler.dir * 3}
                       />
                     </motion.div>
-                  </div>
+                  </motion.div>
+                </div>
 
-                  {/* ========================================================== */}
-                  {/* MASCOT 4: HEADSET BOT (MARAH & DAHI GRADIENT MERAH)        */}
-                  {/* ========================================================== */}
-                  <div className="relative flex flex-col items-center z-20">
-                    <AnimatePresence>
-                      {botStates.chiller.bubble && (
-                        <motion.span
-                          initial={{ opacity: 0, y: 6, scale: 0.7 }}
-                          animate={{ opacity: 1, y: -10, scale: 1 }}
-                          exit={{ opacity: 0, y: -16 }}
-                          className={`absolute -top-11 right-0 sm:right-auto px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none ${
-                            chillerAngry ? 'bg-[#DC2626]' : 'bg-[#9D71E8]'
-                          }`}
-                        >
-                          {botStates.chiller.bubble}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                {/* ========================================================== */}
+                {/* MASCOT 4: HEADSET BOT (MARAH & DAHI GRADIENT MERAH)        */}
+                {/* ========================================================== */}
+                <div className="relative flex flex-col items-center z-20">
+                  <AnimatePresence>
+                    {botStates.chiller.bubble && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 6, scale: 0.7 }}
+                        animate={{ opacity: 1, y: -10, scale: 1 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        className={`absolute -top-11 right-0 sm:right-auto px-2.5 py-1 rounded-xl text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border-2 border-[#1E1E24] z-30 pointer-events-none ${
+                          chillerAngry ? 'bg-[#DC2626]' : 'bg-[#9D71E8]'
+                        }`}
+                      >
+                        {botStates.chiller.bubble}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
+                  <motion.div
+                    animate={{
+                      x: chillerAngry ? 0 : roam.chiller.walkX,
+                      y: chillerAngry ? 0 : roam.chiller.hopping ? -8 : 0,
+                      opacity: roam.chiller.swapping ? 0 : 1,
+                      scale: roam.chiller.swapping ? 0.7 : 1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 240, damping: 20 }}
+                    className="relative flex flex-col items-center"
+                  >
                     <span
                       className={`absolute -top-5 right-0 font-display font-bold text-xs pointer-events-none ${
                         chillerAngry ? 'text-[#DC2626] animate-bounce' : 'text-[#9D71E8]'
                       }`}
                     >
-                      {chillerAngry ? '💢🔥' : 'zZz 🎧'}
+                      {chillerAngry ? '💢🔥' : 'zZz'}
                     </span>
 
                     <motion.div
@@ -1362,20 +1450,21 @@ export const PlayfulPartyFooter: React.FC<{
                     >
                       <MiniSparkleBurst
                         burstKey={botStates.chiller.burstKey}
-                        color={chillerAngry ? '#DC2626' : activeCrew.chiller.color}
+                        color={chillerAngry ? '#DC2626' : activeChiller.color}
                       />
                       <GrokMascot
-                        shape={activeCrew.chiller.shape}
-                        color={activeCrew.chiller.color}
+                        shape={activeChiller.shape}
+                        color={activeChiller.color}
                         size={64}
                         mood={chillerAngry ? 'angry' : 'chill'}
                         foreheadAngry={chillerAngry}
                         headphones
+                        lookX={roam.chiller.dir * 2}
                       />
                     </motion.div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                  </motion.div>
+                </div>
+              </div>
             </div>
           </div>
 
