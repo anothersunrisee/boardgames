@@ -99,76 +99,87 @@ export default function G2Setup() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col">
-      <motion.div className="max-w-lg mx-auto w-full flex-1 flex flex-col" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-6 md:py-8 pb-20 md:pb-16 flex flex-col">
+      <motion.div className="max-w-5xl mx-auto w-full flex-1 flex flex-col" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
         {/* Navigation */}
-        <button
-          type="button"
-          className="text-sm font-bold text-[#64616C] hover:text-[#1E1E24] mb-6 flex items-center gap-1.5 cursor-pointer w-fit"
-          onClick={() => {
-            sfx.playPop()
-            navigate('/hub')
-          }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Menu</span>
-        </button>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            className="text-sm font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer w-fit"
+            onClick={() => {
+              sfx.playPop()
+              navigate('/hub')
+            }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Kembali ke Menu</span>
+          </button>
 
-        <div className="text-center mb-6">
-          <BlobMascot
-            shape="scallop"
-            mood="cheeky"
-            color="#FF8AC2"
-            accentColor="#9A1454"
-            accessory="crown"
-            size={100}
-          />
-          <span className="inline-block px-3 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-xs font-black uppercase tracking-wider mb-2">
+          <span className="inline-block px-3.5 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-xs font-black uppercase tracking-wider">
             LIVE INTEROGASI • CEWEK VS COWOK
           </span>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-[#D8317E]">
-            Beauty Expert?!
-          </h1>
-          <p className="text-sm font-semibold text-[#64616C] mt-1 max-w-sm mx-auto">
-            Host memegang benda rahasia. {boyRows.length} cowok bertanya 2 pertanyaan live ke tiap cewek lalu menebak!
-          </p>
         </div>
 
-        {/* Girls */}
-        <Card className="mb-4 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#D8317E]">
-            Tim Cewek ({girlRows.length} Pemain)
-          </p>
-          <div className="space-y-2 overflow-x-hidden">
-            {girlRows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center min-w-0">
-                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
-                <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cewek ${i + 1}`} value={row.name}
-                  onChange={(e) => updateGirl(row.id, 'name', e.target.value)} maxLength={20} />
-                <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
-                  onChange={(e) => updateGirl(row.id, 'kubu', e.target.value)} maxLength={12} />
-              </div>
-            ))}
+        {/* Compact Header Banner */}
+        <Card className="p-4 md:p-5 bg-white shadow-xs mb-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+          <div className="shrink-0">
+            <BlobMascot
+              shape="scallop"
+              mood="cheeky"
+              color="#FF8AC2"
+              accentColor="#9A1454"
+              accessory="crown"
+              size={78}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-[#D8317E]">
+              Beauty Expert?!
+            </h1>
+            <p className="text-xs sm:text-sm font-semibold text-[#64616C] mt-1">
+              Host memegang benda rahasia. {boyRows.length} cowok bertanya 2 pertanyaan live ke tiap cewek lalu menebak!
+            </p>
           </div>
         </Card>
 
-        {/* Boys */}
-        <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#2568EF]">
-            Tim Cowok Penebak ({boyRows.length} Pemain)
-          </p>
-          <div className="space-y-2 overflow-x-hidden">
-            {boyRows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center min-w-0">
-                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
-                <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cowok ${i + 1}`} value={row.name}
-                  onChange={(e) => updateBoy(row.id, 'name', e.target.value)} maxLength={20} />
-                <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
-                  onChange={(e) => updateBoy(row.id, 'kubu', e.target.value)} maxLength={12} />
-              </div>
-            ))}
-          </div>
-        </Card>
+        {/* Split 2-Column Teams */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5 flex-1">
+          {/* Girls */}
+          <Card className="p-5 bg-white shadow-xs flex flex-col">
+            <p className="font-display text-base font-bold mb-3 text-[#D8317E]">
+              Tim Cewek ({girlRows.length} Pemain)
+            </p>
+            <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 overflow-x-hidden">
+              {girlRows.map((row, i) => (
+                <div key={row.id} className="flex gap-2 items-center min-w-0">
+                  <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
+                  <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cewek ${i + 1}`} value={row.name}
+                    onChange={(e) => updateGirl(row.id, 'name', e.target.value)} maxLength={20} />
+                  <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
+                    onChange={(e) => updateGirl(row.id, 'kubu', e.target.value)} maxLength={12} />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Boys */}
+          <Card className="p-5 bg-white shadow-xs flex flex-col">
+            <p className="font-display text-base font-bold mb-3 text-[#2568EF]">
+              Tim Cowok Penebak ({boyRows.length} Pemain)
+            </p>
+            <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 overflow-x-hidden">
+              {boyRows.map((row, i) => (
+                <div key={row.id} className="flex gap-2 items-center min-w-0">
+                  <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">{i + 1}</span>
+                  <input className="input-field flex-1 text-sm py-2 min-w-0" placeholder={`Nama Cowok ${i + 1}`} value={row.name}
+                    onChange={(e) => updateBoy(row.id, 'name', e.target.value)} maxLength={20} />
+                  <input className="input-field text-sm py-2 shrink-0" style={{ width: '6.5rem' }} placeholder="Kubu" value={row.kubu}
+                    onChange={(e) => updateBoy(row.id, 'kubu', e.target.value)} maxLength={12} />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
 
         <div className="mt-auto">
           <Button

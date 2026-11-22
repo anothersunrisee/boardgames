@@ -219,11 +219,11 @@ export default function G6Match() {
       onUndo={stage !== 'prep' ? handleUndoStage : undefined}
       undoLabel="Stage Lalu"
     >
-      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
-        {/* Pitch Item & Absurd Buyer Banner */}
-        <div className="rounded-[32px] bg-gradient-to-b from-[#65A30D] to-[#4D7C0F] text-white p-6 md:p-8 shadow-[0_12px_28px_rgba(101,163,13,0.25)] border-2 border-[#3F6212]/30 mb-5 relative overflow-hidden text-center">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider shadow-xs">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between gap-3">
+        {/* Pitch Item & Absurd Buyer Banner (Compact Top Header) */}
+        <div className="rounded-[24px] bg-gradient-to-b from-[#65A30D] to-[#4D7C0F] text-white p-4 md:p-5 shadow-[0_6px_0_#3F6212] border-2 border-[#3F6212]/30 relative overflow-hidden shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-[#BEF264]" />
               <span>SELL ME THIS TRASH!</span>
             </div>
@@ -234,20 +234,20 @@ export default function G6Match() {
               title="Ganti barang dan target pembeli baru"
             >
               <Shuffle className="w-3 h-3 text-[#BEF264]" />
-              <span>Ganti Barang & Target</span>
+              <span>Ganti Barang &amp; Target</span>
             </button>
           </div>
 
-          <h2 className="font-display text-2xl md:text-3xl font-bold leading-snug">
+          <h2 className="font-display text-xl md:text-2xl font-bold leading-snug text-center">
             "{match.pitchItem.prompt}"
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
-            <div className="p-3.5 rounded-2xl bg-white/15 border border-white/10">
-              <span className="text-xs font-black uppercase bg-[#EF4444] text-white px-2.5 py-0.5 rounded-full shadow-xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-3 text-left">
+            <div className="p-3 rounded-2xl bg-white/15 border border-white/10">
+              <span className="text-xs font-black uppercase bg-[#EF4438] text-white px-2.5 py-0.5 rounded-full">
                 Barang Rusak / Aneh
               </span>
-              <p className="font-display text-base font-bold text-white mt-1.5">
+              <p className="font-display text-sm sm:text-base font-bold text-white mt-1">
                 {match.pitchItem.product}
               </p>
               <p className="text-xs text-white/90 italic mt-0.5">
@@ -255,255 +255,262 @@ export default function G6Match() {
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/15 border border-white/10">
-              <span className="text-xs font-black uppercase bg-[#FBBF24] text-[#1E1E24] px-2.5 py-0.5 rounded-full shadow-xs">
+            <div className="p-3 rounded-2xl bg-white/15 border border-white/10">
+              <span className="text-xs font-black uppercase bg-[#FBBF24] text-[#1E1E24] px-2.5 py-0.5 rounded-full">
                 Calon Pembeli Absurd
               </span>
-              <p className="font-display text-base font-bold text-white mt-1.5">
+              <p className="font-display text-sm sm:text-base font-bold text-white mt-1">
                 {match.pitchItem.targetBuyer}
               </p>
               <p className="text-xs text-white/90 italic mt-0.5">
-                Tantangan: Yakinkan target pembeli ini agar mau beli!
+                Yakinkan target pembeli ini agar mau beli!
               </p>
             </div>
           </div>
         </div>
 
-        {/* Pitching Combatants Duel Cards (2v2 Duo Sales) */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          <div
-            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-between ${
-              stage === 'pitchA'
-                ? 'bg-[#ECFCCB] border-[#65A30D] ring-4 ring-[#65A30D]/20 shadow-md scale-102'
-                : 'bg-white border-[#1E1E24]/10 shadow-xs'
-            }`}
-          >
-            <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-[#4D7C0F] text-white shadow-xs">
-              DUO SALES A
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
-              {teamAPlayers.map((p) => (
-                <div key={p.id} className="flex items-center gap-1 bg-[#F4F4F6] px-2 py-0.5 rounded-lg">
-                  <PlayerProfileAvatar characterId={p.avatarId} size={24} name={p.name} />
-                  <span className="font-display text-xs font-bold text-[#1E1E24] truncate max-w-[80px]">
-                    {p.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-            {stage === 'pitchA' && (
-              <span className="inline-flex items-center gap-1 text-xs font-black text-[#4D7C0F] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
-                <FluentEmoji name="microphone" variant="3d" size={14} />
-                <span>Sedang Presentasi!</span>
-              </span>
-            )}
-          </div>
+        {/* Middle Stage: Split 2 Columns (Timer Left | Duo Sales / Voting Right) */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <AnimatePresence mode="wait">
+            {stage !== 'voting' ? (
+              <motion.div
+                key={stage}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3.5 items-stretch"
+              >
+                {/* LEFT COLUMN: Mascot + Timer Ring + Controls */}
+                <div className="md:col-span-5 rounded-[24px] bg-white border-2 border-[#1E1E24]/10 shadow-xs p-4 flex flex-col items-center justify-center text-center gap-3">
+                  <BlobMascot
+                    shape="diamond"
+                    mood={timeLeft <= 5 ? 'spicy' : 'smug'}
+                    color="#84CC16"
+                    accentColor="#4D7C0F"
+                    accessory="sunglasses"
+                    size={68}
+                  />
 
-          <div
-            className={`p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-between ${
-              stage === 'pitchB'
-                ? 'bg-[#ECFCCB] border-[#65A30D] ring-4 ring-[#65A30D]/20 shadow-md scale-102'
-                : 'bg-white border-[#1E1E24]/10 shadow-xs'
-            }`}
-          >
-            <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-[#3F6212] text-white shadow-xs">
-              DUO SALES B
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
-              {teamBPlayers.map((p) => (
-                <div key={p.id} className="flex items-center gap-1 bg-[#F4F4F6] px-2 py-0.5 rounded-lg">
-                  <PlayerProfileAvatar characterId={p.avatarId} size={24} name={p.name} />
-                  <span className="font-display text-xs font-bold text-[#1E1E24] truncate max-w-[80px]">
-                    {p.name}
+                  <span className="font-display text-xs font-black uppercase tracking-wider text-[#3F6212] bg-[#ECFCCB] px-3 py-1 rounded-full border border-[#65A30D]/25">
+                    {stage === 'prep'
+                      ? 'Persiapan Ide (15s)'
+                      : stage === 'pitchA'
+                      ? 'Giliran Duo Sales A (45s)'
+                      : 'Giliran Duo Sales B (45s)'}
                   </span>
+
+                  <div
+                    className={`w-32 h-32 lg:w-36 lg:h-36 rounded-full flex flex-col items-center justify-center border-4 shadow-md transition-all ${
+                      timeLeft <= 5
+                        ? 'bg-[#FFE8DF] border-[#F04438] text-[#F04438] animate-pulse'
+                        : 'bg-[#FAF7F2] border-[#65A30D] text-[#4D7C0F]'
+                    }`}
+                  >
+                    <span className="font-display text-4xl lg:text-5xl font-bold tabular-nums">{timeLeft}</span>
+                    <span className="text-xs font-bold text-[#64616C] uppercase">Detik</span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop();
+                        setIsRunning(!isRunning);
+                      }}
+                    >
+                      {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      <span>{isRunning ? 'Jeda' : 'Lanjut'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop();
+                        setTimeLeft((t) => t + 10);
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+10s</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer"
+                      onClick={() => {
+                        sfx.playPop();
+                        setTimeLeft(stage === 'prep' ? 15 : 45);
+                        setIsRunning(true);
+                      }}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Reset</span>
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-            {stage === 'pitchB' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
-                <FluentEmoji name="microphone" variant="3d" size={14} />
-                <span>Sedang Presentasi!</span>
-              </span>
+
+                {/* RIGHT COLUMN: Duo Sales A & Duo Sales B Cards */}
+                <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    className={`p-4 rounded-[24px] border-2 transition-all text-center flex flex-col items-center justify-center gap-2.5 ${
+                      stage === 'pitchA'
+                        ? 'bg-[#ECFCCB] border-[#65A30D] ring-3 ring-[#65A30D]/25 shadow-sm'
+                        : 'bg-white border-[#1E1E24]/10 shadow-xs'
+                    }`}
+                  >
+                    <span className="text-xs font-black uppercase px-3 py-0.5 rounded-full bg-[#4D7C0F] text-white">
+                      DUO SALES A
+                    </span>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {teamAPlayers.map((p) => (
+                        <div key={p.id} className="flex items-center gap-2 bg-[#FAF7F2] border border-[#1E1E24]/10 px-3 py-1.5 rounded-xl">
+                          <PlayerProfileAvatar characterId={p.avatarId} size={30} name={p.name} />
+                          <span className="font-display text-sm font-bold text-[#1E1E24] truncate max-w-[100px]">
+                            {p.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {stage === 'pitchA' ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-black text-[#4D7C0F] animate-pulse bg-white px-3 py-1 rounded-full border border-[#65A30D]/25">
+                        <FluentEmoji name="microphone" variant="3d" size={14} />
+                        <span>Sedang Presentasi!</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-[#64616C]">Siap berjualan!</span>
+                    )}
+                  </div>
+
+                  <div
+                    className={`p-4 rounded-[24px] border-2 transition-all text-center flex flex-col items-center justify-center gap-2.5 ${
+                      stage === 'pitchB'
+                        ? 'bg-[#ECFCCB] border-[#65A30D] ring-3 ring-[#65A30D]/25 shadow-sm'
+                        : 'bg-white border-[#1E1E24]/10 shadow-xs'
+                    }`}
+                  >
+                    <span className="text-xs font-black uppercase px-3 py-0.5 rounded-full bg-[#3F6212] text-white">
+                      DUO SALES B
+                    </span>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {teamBPlayers.map((p) => (
+                        <div key={p.id} className="flex items-center gap-2 bg-[#FAF7F2] border border-[#1E1E24]/10 px-3 py-1.5 rounded-xl">
+                          <PlayerProfileAvatar characterId={p.avatarId} size={30} name={p.name} />
+                          <span className="font-display text-sm font-bold text-[#1E1E24] truncate max-w-[100px]">
+                            {p.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {stage === 'pitchB' ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-black text-[#4D7C0F] animate-pulse bg-white px-3 py-1 rounded-full border border-[#65A30D]/25">
+                        <FluentEmoji name="microphone" variant="3d" size={14} />
+                        <span>Sedang Presentasi!</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-[#64616C]">Menunggu giliran</span>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="voting-stage"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3.5 items-stretch"
+              >
+                <Card className="md:col-span-5 p-5 bg-[#ECFCCB] border-2 border-[#65A30D]/30 text-center shadow-xs flex flex-col items-center justify-center gap-2.5">
+                  <FluentEmoji name="bullseye" variant="3d" size={38} />
+                  <p className="font-display text-lg font-bold text-[#3F6212]">
+                    Seluruh Audiens Memilih!
+                  </p>
+                  <p className="text-xs text-[#3F6212]/90 font-semibold leading-relaxed">
+                    Siapa yang rayuan jualan barang rusaknya paling meyakinkan? Klik kartu tim untuk menambah suara!
+                  </p>
+                  <span className="px-3 py-1 rounded-full bg-white text-xs font-extrabold text-[#3F6212] border border-[#65A30D]/25">
+                    Total Suara Masuk: {votesA + votesB}
+                  </span>
+                </Card>
+
+                <div className="md:col-span-7 grid grid-cols-2 gap-3.5">
+                  <div
+                    onClick={handleVoteA}
+                    className="p-5 rounded-[24px] bg-white border-3 border-[#65A30D] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center justify-center active:scale-98"
+                  >
+                    <div className="flex -space-x-2 mb-1.5">
+                      {teamAPlayers.map((p) => (
+                        <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
+                      ))}
+                    </div>
+                    <p className="font-display text-sm font-bold text-[#1E1E24] truncate w-full">
+                      Duo Sales A ({teamAPlayers.map((p) => p.name).join(' & ')})
+                    </p>
+                    <p className="font-display text-4xl font-bold text-[#65A30D] my-2.5 tabular-nums">{votesA}</p>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#65A30D] text-white text-xs font-bold shadow-xs">
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      <span>+1 Vote Tim A</span>
+                    </span>
+                  </div>
+
+                  <div
+                    onClick={handleVoteB}
+                    className="p-5 rounded-[24px] bg-white border-3 border-[#3F6212] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center justify-center active:scale-98"
+                  >
+                    <div className="flex -space-x-2 mb-1.5">
+                      {teamBPlayers.map((p) => (
+                        <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
+                      ))}
+                    </div>
+                    <p className="font-display text-sm font-bold text-[#1E1E24] truncate w-full">
+                      Duo Sales B ({teamBPlayers.map((p) => p.name).join(' & ')})
+                    </p>
+                    <p className="font-display text-4xl font-bold text-[#3F6212] my-2.5 tabular-nums">{votesB}</p>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3F6212] text-white text-xs font-bold shadow-xs">
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      <span>+1 Vote Tim B</span>
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
         </div>
 
-        {/* Timer & Stage Action Area */}
-        <AnimatePresence mode="wait">
+        {/* Fixed Anchored Main Action Button (Consistent vertical placement) */}
+        <div className="shrink-0">
           {stage !== 'voting' ? (
-            <motion.div
-              key={stage}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex-1 flex flex-col items-center justify-center text-center"
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleNextStage}
             >
-              <div className="mb-3">
-                <BlobMascot
-                  shape="diamond"
-                  mood={timeLeft <= 5 ? 'spicy' : 'smug'}
-                  color="#84CC16"
-                  accentColor="#4D7C0F"
-                  accessory="sunglasses"
-                  size={92}
-                />
-              </div>
-
-              <span className="font-display text-xs font-black uppercase tracking-wider text-[#65A30D] mb-1.5 bg-[#ECFCCB] px-3.5 py-1 rounded-full border border-[#65A30D]/20">
-                {stage === 'prep'
-                  ? 'Persiapan Ide Duo Sales (15s)'
-                  : stage === 'pitchA'
-                  ? `Giliran Pitching: Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')}) (45s)`
-                  : `Giliran Pitching: Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')}) (45s)`}
-              </span>
-
-              {/* Countdown Clock */}
-              <div
-                className={`w-36 h-36 rounded-full flex flex-col items-center justify-center border-4 shadow-md transition-all my-2 ${
-                  timeLeft <= 5
-                    ? 'bg-[#FFE8DF] border-[#F04438] text-[#F04438] animate-pulse'
-                    : 'bg-white border-[#65A30D] text-[#65A30D]'
-                }`}
-              >
-                <span className="font-display text-5xl font-bold">{timeLeft}</span>
-                <span className="text-[11px] font-bold text-[#64616C] uppercase">Detik</span>
-              </div>
-
-              {/* Timer Controls */}
-              <div className="flex items-center gap-2 mt-4">
-                <button
-                  type="button"
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer shadow-xs"
-                  onClick={() => {
-                    sfx.playPop();
-                    setIsRunning(!isRunning);
-                  }}
-                >
-                  {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                  <span>{isRunning ? 'Jeda' : 'Lanjut'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer shadow-xs"
-                  onClick={() => {
-                    sfx.playPop();
-                    setTimeLeft((t) => t + 10);
-                  }}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+10s</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] hover:bg-black/5 flex items-center gap-1 cursor-pointer shadow-xs"
-                  onClick={() => {
-                    sfx.playPop();
-                    setTimeLeft(45);
-                    setIsRunning(true);
-                  }}
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset</span>
-                </button>
-              </div>
-
-              {/* Main Advance Button */}
-              <div className="w-full mt-6">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onClick={handleNextStage}
-                >
-                  {stage === 'prep'
-                    ? `Mulai Pitching Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')}) →`
-                    : stage === 'pitchA'
-                    ? `Lanjut Pitching Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')}) →`
-                    : 'Masuk ke Voting Audiens 🗳️ →'}
-                </Button>
-              </div>
-            </motion.div>
+              {stage === 'prep'
+                ? `Mulai Pitching Duo Sales A (${teamAPlayers.map((p) => p.name).join(' & ')}) →`
+                : stage === 'pitchA'
+                ? `Lanjut Pitching Duo Sales B (${teamBPlayers.map((p) => p.name).join(' & ')}) →`
+                : 'Masuk ke Voting Audiens 🗳️ →'}
+            </Button>
           ) : (
-            <motion.div
-              key="voting-stage"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleFinishVoting}
             >
-              <Card className="p-4 bg-[#ECFCCB] border-2 border-[#65A30D]/30 text-center shadow-xs">
-                <p className="font-display text-sm font-bold text-[#65A30D] flex items-center justify-center gap-1.5">
-                  <FluentEmoji name="bullseye" variant="3d" size={18} />
-                  <span>Seluruh Audiens di Ruangan Memilih!</span>
-                </p>
-                <p className="text-xs text-[#64616C] font-semibold mt-1">
-                  Siapa yang argumen & rayuan jualan barang rusaknya paling meyakinkan? Klik untuk menambah suara:
-                </p>
-              </Card>
-
-              {/* Voting Counters (2v2) */}
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  onClick={handleVoteA}
-                  className="p-5 rounded-2xl bg-white border-3 border-[#65A30D] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center active:scale-98"
-                >
-                  <div className="flex -space-x-2 mb-1">
-                    {teamAPlayers.map((p) => (
-                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
-                    ))}
-                  </div>
-                  <p className="font-display text-sm font-bold text-[#1E1E24] mt-2 truncate w-full">
-                    Duo Sales A ({teamAPlayers.map((p) => p.name).join(' & ')})
-                  </p>
-                  <p className="font-display text-4xl font-bold text-[#65A30D] my-2">{votesA}</p>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#65A30D] text-white text-xs font-bold shadow-xs">
-                    <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>+1 Vote Tim A</span>
-                  </span>
-                </div>
-
-                <div
-                  onClick={handleVoteB}
-                  className="p-5 rounded-2xl bg-white border-3 border-[#3F6212] hover:bg-[#F7FEE7] text-center cursor-pointer transition shadow-xs flex flex-col items-center active:scale-98"
-                >
-                  <div className="flex -space-x-2 mb-1">
-                    {teamBPlayers.map((p) => (
-                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={38} name={p.name} />
-                    ))}
-                  </div>
-                  <p className="font-display text-sm font-bold text-[#1E1E24] mt-2 truncate w-full">
-                    Duo Sales B ({teamBPlayers.map((p) => p.name).join(' & ')})
-                  </p>
-                  <p className="font-display text-4xl font-bold text-[#3F6212] my-2">{votesB}</p>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3F6212] text-white text-xs font-bold shadow-xs">
-                    <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>+1 Vote Tim B</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Finalize Button */}
-              <div className="pt-3">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  onClick={handleFinishVoting}
-                >
-                  {isLastMatch ? (
-                    <>
-                      <FluentEmoji name="crown" variant="3d" size={22} />
-                      <span>Kunci Skor & Lihat Juara Pitching</span>
-                    </>
-                  ) : (
-                    <span>Kunci Poin & Lanjut Match Berikutnya →</span>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
+              {isLastMatch ? (
+                <>
+                  <FluentEmoji name="crown" variant="3d" size={22} />
+                  <span>Kunci Skor &amp; Lihat Juara Pitching</span>
+                </>
+              ) : (
+                <span>Kunci Poin &amp; Lanjut Match Berikutnya →</span>
+              )}
+            </Button>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
       <PunishmentModal

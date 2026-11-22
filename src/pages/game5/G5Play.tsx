@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import {
   Check,
   X,
-  ArrowRight,
   Eye,
   EyeOff,
   Sparkles,
@@ -234,56 +233,55 @@ export default function G5Play() {
         <ConfettiShower particleCount={50} />
       )}
 
-      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col justify-between gap-3">
         {/* ========================================================================= */}
         {/* TAHAP 1: PANGGIL TIM & TUNJUKKAN ANGGOTA SEBELUM GAS 4 RONDE BERUNTUN      */}
         {/* ========================================================================= */}
         {stage === 'team_ready' && (
           <motion.div
             key="stage-team-ready"
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="flex-1 flex flex-col justify-between"
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="flex-1 flex flex-col justify-between gap-3"
           >
-            <div className="text-center mb-6">
-              <div className="mb-2 inline-block">
+            <div className="text-center">
+              <div className="mb-1.5 inline-block">
                 <BlobMascot
                   shape="pentagon"
                   mood="excited"
                   color="#A78BFA"
                   accentColor="#6D28D9"
                   accessory="crown"
-                  size={100}
+                  size={78}
                 />
               </div>
 
-              <div className="flex justify-center mb-1.5">
-                <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20 shadow-xs">
+              <div className="flex justify-center mb-1">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-0.5 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20 shadow-xs">
                   <Users className="w-3.5 h-3.5" />
                   <span>GILIRAN TIM {g5CurrentTeamIndex + 1} DARI {g5Teams.length}</span>
                 </span>
               </div>
 
-              <h1 className="font-display text-3xl md:text-5xl font-bold text-[#1E1E24]">
+              <h1 className="font-display text-2xl md:text-4xl font-bold text-[#1E1E24]">
                 {currentTeam.name}
               </h1>
-              <p className="text-xs sm:text-sm text-[#64616C] font-semibold mt-1.5 max-w-lg mx-auto">
-                Silakan seluruh anggota tim maju ke depan layar! Tim ini akan memainkan{' '}
-                <strong>4 Ronde Beruntun (1 Ronde = 4 Soal Estafet, Total 16 Soal)</strong>.
-                Jika ada 1 orang salah, pemain tersebut langsung <strong>-2 Poin</strong> dan mendapat{' '}
-                <strong>Kartu Tantangan yang WAJIB dijalankan terus sampai ronde 4 selesai!</strong>
+              <p className="text-xs sm:text-sm text-[#64616C] font-semibold mt-1 max-w-xl mx-auto">
+                Seluruh anggota tim maju ke depan layar! Tim ini memainkan{' '}
+                <strong>4 Ronde Beruntun (Total 16 Soal Estafet)</strong>. Salah jawab ={' '}
+                <strong>-2 Poin + Kartu Tantangan</strong> sampai ronde 4 selesai.
               </p>
             </div>
 
             {/* Lineup 4 Ronde Pipeline Card */}
-            <div className="mb-6 p-5 rounded-3xl bg-white border-2 border-[#1E1E24]/10 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1E1E24]/10 mb-4">
+            <div className="p-4 sm:p-5 rounded-3xl bg-white border-2 border-[#1E1E24]/10 shadow-xs flex-1 flex flex-col justify-center">
+              <div className="flex items-center justify-between pb-3 border-b border-[#1E1E24]/10 mb-3">
                 <span className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-[#7C3AED]" />
                   <span>Target Sesi: 4 Ronde (16 Soal Estafet)</span>
                 </span>
-                <span className="text-[11px] font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-extrabold text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full">
                   +2 Pts/Ronde • 10 Pts Jackpot (4/4)
                 </span>
               </div>
@@ -293,9 +291,9 @@ export default function G5Play() {
                   return (
                     <div
                       key={`ready-round-${rIdx}`}
-                      className="p-3.5 rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/8 text-center flex flex-col items-center justify-between shadow-2xs hover:border-[#7C3AED]/30 transition"
+                      className="p-3 rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/8 text-center flex flex-col items-center justify-between shadow-2xs"
                     >
-                      <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-display font-black text-xs mb-1.5">
+                      <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-display font-black text-xs mb-1">
                         R{rIdx + 1}
                       </span>
                       <p className="font-display text-sm font-bold text-[#1E1E24]">
@@ -314,13 +312,13 @@ export default function G5Play() {
             </div>
 
             {/* Tombol Mulai 4 Ronde Tim */}
-            <div className="mt-auto pt-2">
+            <div className="shrink-0">
               <Button
                 variant="primary"
                 size="lg"
                 fullWidth
                 onClick={handleStartTeamRun}
-                className="py-4 text-base md:text-lg bg-[#7C3AED] hover:bg-[#6D28D9] border-2 border-[#5B21B6] shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                className="py-3.5 text-base flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] border-2 border-[#5B21B6] cursor-pointer"
               >
                 <Play className="w-5 h-5 fill-current" />
                 <span>Tim Sudah di Depan, Gas Mulai Ronde 1! 🚀</span>
@@ -330,145 +328,50 @@ export default function G5Play() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAHAP 2: 4 SOAL DI DALAM RONDE AKTIF (4 RONDE X 4 SOAL = 16 SOAL)           */}
+        {/* TAHAP 2: 4 SOAL DI DALAM RONDE AKTIF (SPLIT RINGKAS & ZERO-SCROLL)        */}
         {/* ========================================================================= */}
         {stage === 'chain_quiz' && (
-          <div className="flex-1 flex flex-col justify-between">
-            {/* Header Mini Mascot & Active Status */}
-            <div className="text-center mb-2">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase tracking-wider border border-[#7C3AED]/20">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{currentTeam.name}</span>
-                </span>
-                <span className="text-xs font-extrabold text-[#1E1E24] bg-white border border-[#1E1E24]/10 px-3 py-0.5 rounded-full shadow-2xs">
-                  Ronde <strong>{currentRoundIdx + 1}</strong> dari 4 • Soal <strong>{currentQuestionInRound + 1}</strong>/4
-                </span>
-                <span className="text-xs font-bold text-[#64616C] bg-white border border-[#1E1E24]/10 px-2.5 py-0.5 rounded-full shadow-2xs">
-                  #{currentGlobalIdx + 1}/16
-                </span>
-              </div>
-            </div>
+          <div className="flex-1 flex flex-col justify-between gap-3">
+            {/* Compact Top Bar: Combined Round Pills + 15s Timer Track */}
+            <div className="p-3 rounded-2xl bg-white border-2 border-[#1E1E24]/10 shadow-xs space-y-2 shrink-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#EDE9FE] text-[#7C3AED] text-xs font-black uppercase">
+                    <Sparkles className="w-3 h-3" />
+                    <span>{currentTeam.name}</span>
+                  </span>
+                  <span className="text-xs font-extrabold text-[#1E1E24]">
+                    Ronde {currentRoundIdx + 1}/4 • Soal {currentQuestionInRound + 1}/4 (#{currentGlobalIdx + 1}/16)
+                  </span>
+                </div>
 
-            {/* Top 4-Round Pipeline Stepper */}
-            <div className="mb-2 p-2.5 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
-              <div className="flex items-center justify-between gap-1.5">
-                {Array.from({ length: 4 }).map((_, rIdx) => {
-                  const isDone = rIdx < currentRoundIdx;
-                  const isCurrent = rIdx === currentRoundIdx;
-                  return (
-                    <div
-                      key={`round-pill-${rIdx}`}
-                      className={`flex-1 py-1 px-2 rounded-xl text-center text-xs transition-all ${
-                        isDone
-                          ? 'bg-[#ECFDF5] text-[#065F46] font-bold border border-[#12B76A]/30'
-                          : isCurrent
-                          ? 'bg-[#7C3AED] text-white font-black shadow-xs ring-2 ring-[#7C3AED]/30'
-                          : 'bg-[#F9FAFB] text-[#64616C] font-medium border border-[#E5E7EB]'
-                      }`}
-                    >
-                      <span>{isDone ? `✓ Ronde ${rIdx + 1}` : isCurrent ? `▶ Ronde ${rIdx + 1}` : `Ronde ${rIdx + 1}`}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Visual 4-Question Relay Stepper for the CURRENT Round */}
-            <div className="mb-3.5 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
-              <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#1E1E24]/8 text-xs font-extrabold text-[#64616C]">
-                <span>Estafet Soal Ronde #{currentRoundIdx + 1}:</span>
-                <span className="text-[#7C3AED]">Minimal 3 Benar = Poin Ronde</span>
-              </div>
-              <div className="flex items-center justify-between gap-1.5">
-                {Array.from({ length: 4 }).map((_, qInRoundIdx) => {
-                  const qGlobalIndex = currentRoundIdx * 4 + qInRoundIdx;
-                  const historyItem = currentTeam.roundHistory?.find(
-                    (h) => h.globalQuestionIdx === qGlobalIndex
-                  );
-                  const isDone = Boolean(historyItem);
-                  const isCorrect = historyItem?.isCorrect;
-                  const isCurrent = qInRoundIdx === currentQuestionInRound;
-                  const memberId = currentTeam.memberIds[qGlobalIndex % currentTeam.memberIds.length];
-                  const mem = players.find((p) => p.id === memberId);
-
-                  return (
-                    <React.Fragment key={`chain-step-${qInRoundIdx}`}>
-                      <div
-                        className={`flex-1 py-1.5 px-2 rounded-xl text-center flex items-center justify-center gap-1.5 transition-all ${
-                          isDone && isCorrect
-                            ? 'bg-[#ECFDF5] text-[#065F46] border border-[#12B76A]/40 font-bold'
-                            : isDone && !isCorrect
-                            ? 'bg-[#FEF2F2] text-[#991B1B] border border-[#EF4444]/40 font-bold'
+                {/* Compact 4-Round Stepper */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 4 }).map((_, rIdx) => {
+                    const isDone = rIdx < currentRoundIdx;
+                    const isCurrent = rIdx === currentRoundIdx;
+                    return (
+                      <span
+                        key={`round-pill-${rIdx}`}
+                        className={`px-2 py-0.5 rounded-lg text-xs font-bold ${
+                          isDone
+                            ? 'bg-[#ECFDF5] text-[#065F46]'
                             : isCurrent
-                            ? 'bg-[#7C3AED] text-white border-2 border-[#6D28D9] shadow-xs font-black scale-102 ring-2 ring-[#7C3AED]/30'
-                            : 'bg-[#F9FAFB] text-[#64616C] border border-[#E5E7EB] font-medium'
+                            ? 'bg-[#7C3AED] text-white font-black'
+                            : 'bg-[#FAF7F2] text-[#64616C]'
                         }`}
                       >
-                        <PlayerProfileAvatar characterId={mem?.avatarId} size={18} name={mem?.name} />
-                        <span className="text-xs truncate max-w-[85px]">
-                          {isDone
-                            ? isCorrect
-                              ? `✓ ${mem?.name}`
-                              : `❌ ${mem?.name}`
-                            : isCurrent
-                            ? `▶ S${qInRoundIdx + 1}: ${mem?.name}`
-                            : `S${qInRoundIdx + 1}: ${mem?.name}`}
-                        </span>
-                      </div>
-                      {qInRoundIdx < 3 && (
-                        <ArrowRight
-                          className={`w-3.5 h-3.5 shrink-0 ${
-                            isDone
-                              ? isCorrect
-                                ? 'text-[#12B76A]'
-                                : 'text-[#EF4444]'
-                              : 'text-[#D1D5DB]'
-                          }`}
-                        />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Active Challenges Banner (Stays active across remaining rounds for this team) */}
-            {currentTeam.activeChallenges && currentTeam.activeChallenges.length > 0 && (
-              <div className="mb-3.5 p-3 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B] shadow-xs">
-                <div className="flex items-center gap-1.5 text-xs font-black text-[#B45309] uppercase tracking-wider mb-2">
-                  <Flame className="w-4 h-4 text-[#EA580C] animate-pulse" />
-                  <span>⚠️ KARTU TANTANGAN AKTIF (BERLAKU SAMPAI RONDE 4 SELESAI):</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {currentTeam.activeChallenges.map((c, cIdx) => {
-                    const mem = players.find((p) => p.id === c.memberId);
-                    return (
-                      <div
-                        key={`challenge-item-${cIdx}`}
-                        className="p-2.5 rounded-xl bg-white border border-[#F59E0B]/30 flex items-center gap-2 shadow-2xs"
-                      >
-                        <PlayerProfileAvatar characterId={mem?.avatarId} size={26} name={mem?.name} />
-                        <div className="min-w-0">
-                          <p className="font-display text-xs font-bold text-[#1E1E24] truncate">
-                            {mem?.name} (Kena R#{c.assignedAtRound}):
-                          </p>
-                          <p className="text-xs font-extrabold text-[#B45309] leading-tight">
-                            "{c.challenge}"
-                          </p>
-                        </div>
-                      </div>
+                        {isDone ? `✓ R${rIdx + 1}` : `R${rIdx + 1}`}
+                      </span>
                     );
                   })}
                 </div>
               </div>
-            )}
 
-            {/* 15-Second Urgent Countdown Timer Bar */}
-            <div className="mb-3 p-2.5 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-2xs flex items-center gap-3">
-              <div className="flex items-center gap-1.5 shrink-0">
+              {/* 15s Timer Bar */}
+              <div className="flex items-center gap-2.5 pt-1 border-t border-[#1E1E24]/8">
                 <span
-                  className={`font-display text-xs font-black px-2.5 py-0.5 rounded-full transition-colors ${
+                  className={`font-display text-xs font-black px-2.5 py-0.5 rounded-full shrink-0 ${
                     timeLeft <= 3
                       ? 'bg-[#FEE2E2] text-[#DC2626] animate-pulse'
                       : timeLeft <= 7
@@ -476,132 +379,202 @@ export default function G5Play() {
                       : 'bg-[#EDE9FE] text-[#7C3AED]'
                   }`}
                 >
-                  ⏱️ {timeLeft > 0 ? `${timeLeft}s` : 'WAKTU HABIS!'}
+                  ⏱️ {timeLeft > 0 ? `${timeLeft}s` : 'HABIS!'}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsTimerPaused(!isTimerPaused)}
-                  className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] px-2.5 py-1 rounded-lg hover:bg-black/5 cursor-pointer"
+                  className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] px-2 py-0.5 rounded-lg hover:bg-black/5 cursor-pointer shrink-0"
                 >
                   {isTimerPaused ? '▶ Lanjut' : '⏸ Jeda'}
                 </button>
+                <div className="flex-1 h-2.5 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      timeLeft <= 3
+                        ? 'bg-[#EF4444]'
+                        : timeLeft <= 7
+                        ? 'bg-[#F59E0B]'
+                        : 'bg-[#10B981]'
+                    }`}
+                    style={{ width: `${(timeLeft / 15) * 100}%` }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTimeLeft(15)}
+                  className="text-xs font-bold text-[#64616C] hover:text-[#7C3AED] px-2 py-0.5 rounded-lg hover:bg-black/5 shrink-0 cursor-pointer"
+                  title="Reset timer ke 15 detik"
+                >
+                  ↺ 15s
+                </button>
               </div>
-
-              {/* Progress Track */}
-              <div className="flex-1 h-3 rounded-full bg-[#FAF7F2] border border-[#1E1E24]/10 overflow-hidden relative">
-                <motion.div
-                  className={`h-full transition-all duration-300 rounded-full ${
-                    timeLeft <= 3
-                      ? 'bg-gradient-to-r from-[#EF4444] to-[#DC2626]'
-                      : timeLeft <= 7
-                      ? 'bg-gradient-to-r from-[#F59E0B] to-[#D97706]'
-                      : 'bg-gradient-to-r from-[#10B981] to-[#059669]'
-                  }`}
-                  style={{ width: `${(timeLeft / 15) * 100}%` }}
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setTimeLeft(15)}
-                className="text-xs font-bold text-[#64616C] hover:text-[#7C3AED] px-2.5 py-1 rounded-lg hover:bg-black/5 shrink-0 cursor-pointer"
-                title="Reset timer ke 15 detik"
-              >
-                ↺ Reset 15s
-              </button>
             </div>
 
-            {/* Active Question Card */}
-            <motion.div
-              key={`q-${currentRoundIdx}-${currentQuestionInRound}-${currentQuestion?.id}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-3 my-auto"
-            >
-              <div className="rounded-[32px] bg-gradient-to-b from-[#7C3AED] to-[#6D28D9] text-white p-5 md:p-7 shadow-lg border-2 border-[#5B21B6]/30 text-center relative overflow-hidden">
-                {/* Category & Inline Shuffle Button */}
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider shadow-xs">
-                    <FluentEmoji emoji={currentQuestion?.categoryEmoji} size={18} />
-                    <span>Kategori: {currentQuestion?.category}</span>
+            {/* Middle Stage: Split 2-Column on Desktop (Soal & Kunci Kiri | Estafet & Tantangan Kanan) */}
+            <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-3.5 items-stretch min-h-0">
+              {/* LEFT: Question Card + Answer Reveal Spoiler */}
+              <motion.div
+                key={`q-${currentRoundIdx}-${currentQuestionInRound}-${currentQuestion?.id}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="xl:col-span-8 flex flex-col justify-between gap-3"
+              >
+                <div className="flex-1 flex flex-col justify-center rounded-[26px] bg-gradient-to-b from-[#7C3AED] to-[#6D28D9] text-white p-5 shadow-md border-2 border-[#5B21B6]/30 text-center">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider">
+                      <FluentEmoji emoji={currentQuestion?.categoryEmoji} size={16} />
+                      <span>{currentQuestion?.category}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleShuffleQuestion}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white font-display text-xs font-bold transition cursor-pointer"
+                    >
+                      <Shuffle className="w-3.5 h-3.5 text-[#FBBF24]" />
+                      <span>Ganti Soal</span>
+                    </button>
                   </div>
 
-                  {/* Shuffle Button langsung di atas kartu */}
-                  <button
-                    type="button"
-                    onClick={handleShuffleQuestion}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white font-display text-xs font-bold transition cursor-pointer border border-white/20 active:scale-95"
-                    title="Ganti soal ini dengan pertanyaan lain"
-                  >
-                    <Shuffle className="w-3.5 h-3.5 text-[#FBBF24]" />
-                    <span>Ganti Soal</span>
-                  </button>
+                  <div className="inline-flex items-center justify-center gap-2 mb-2 bg-white/15 py-1 px-3.5 rounded-full mx-auto">
+                    <PlayerProfileAvatar characterId={currentMember?.avatarId} size={24} name={currentMember?.name} />
+                    <p className="text-xs text-white font-bold">
+                      Penjawab #{currentQuestionInRound + 1}:{' '}
+                      <span className="font-display font-black underline">{currentMember?.name}</span>
+                    </p>
+                  </div>
+
+                  <h2 className="font-display text-xl md:text-2xl font-bold leading-snug my-1">
+                    "{currentQuestion?.question}"
+                  </h2>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mb-2 bg-white/10 py-1.5 px-4 rounded-full max-w-fit mx-auto">
-                  <PlayerProfileAvatar characterId={currentMember?.avatarId} size={26} name={currentMember?.name} />
-                  <p className="text-xs text-white/95 font-bold">
-                    Penjawab Soal #{currentQuestionInRound + 1}:{' '}
-                    <span className="font-display font-black text-white underline">{currentMember?.name}</span>
-                  </p>
+                {/* Host Answer Clue Spoiler Box */}
+                <Card className="p-3 bg-white shadow-xs border border-[#1E1E24]/10 text-center shrink-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#64616C] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
+                      <span>Kunci Jawaban Host:</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sfx.playPop();
+                        setShowAnswer(!showAnswer);
+                      }}
+                      className="text-xs font-bold text-[#7C3AED] hover:underline flex items-center gap-1 cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EDE9FE]/50 transition-colors"
+                    >
+                      {showAnswer ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      <span>{showAnswer ? 'Sembunyikan' : 'Buka Kunci'}</span>
+                    </button>
+                  </div>
+
+                  {showAnswer ? (
+                    <div className="mt-2 p-2 rounded-xl bg-[#EDE9FE] text-[#6D28D9] font-display font-bold text-sm border border-[#7C3AED]/20">
+                      {currentQuestion?.answer}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#64616C] italic mt-1 select-none font-medium">
+                      •••••••••••••••••••••••• (klik buka kunci untuk melihat)
+                    </p>
+                  )}
+                </Card>
+              </motion.div>
+
+              {/* RIGHT: Relay Roster Stepper + Active Challenges */}
+              <div className="xl:col-span-4 flex flex-col gap-3">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#1E1E24]/10 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-extrabold text-[#64616C]">
+                    <span>Estafet Ronde #{currentRoundIdx + 1}</span>
+                    <span className="text-[#7C3AED]">Min 3 Benar</span>
+                  </div>
+                  <div className="grid grid-cols-2 xl:grid-cols-1 gap-1.5">
+                    {Array.from({ length: 4 }).map((_, qInRoundIdx) => {
+                      const qGlobalIndex = currentRoundIdx * 4 + qInRoundIdx;
+                      const historyItem = currentTeam.roundHistory?.find(
+                        (h) => h.globalQuestionIdx === qGlobalIndex
+                      );
+                      const isDone = Boolean(historyItem);
+                      const isCorrect = historyItem?.isCorrect;
+                      const isCurrent = qInRoundIdx === currentQuestionInRound;
+                      const memberId = currentTeam.memberIds[qGlobalIndex % currentTeam.memberIds.length];
+                      const mem = players.find((p) => p.id === memberId);
+
+                      return (
+                        <div
+                          key={`chain-step-${qInRoundIdx}`}
+                          className={`py-1.5 px-2.5 rounded-xl flex items-center gap-2 text-xs transition-all ${
+                            isDone && isCorrect
+                              ? 'bg-[#ECFDF5] text-[#065F46] border border-[#12B76A]/40 font-bold'
+                              : isDone && !isCorrect
+                              ? 'bg-[#FEF2F2] text-[#991B1B] border border-[#EF4444]/40 font-bold'
+                              : isCurrent
+                              ? 'bg-[#7C3AED] text-white border-2 border-[#5B21B6] font-black shadow-xs'
+                              : 'bg-[#FAF7F2] text-[#64616C] border border-[#E5E7EB] font-semibold'
+                          }`}
+                        >
+                          <PlayerProfileAvatar characterId={mem?.avatarId} size={20} name={mem?.name} />
+                          <span className="truncate">
+                            {isDone
+                              ? `${isCorrect ? '✓' : '❌'} ${mem?.name}`
+                              : `S${qInRoundIdx + 1}: ${mem?.name}`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <h2 className="font-display text-lg md:text-2xl font-bold leading-snug my-2">
-                  "{currentQuestion?.question}"
-                </h2>
-              </div>
-
-              {/* Host Answer Clue Spoiler Box */}
-              <Card className="p-3.5 bg-white shadow-xs border border-[#1E1E24]/10 text-center">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#64616C] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
-                    <span>Kunci Jawaban Host:</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sfx.playPop();
-                      setShowAnswer(!showAnswer);
-                    }}
-                    className="text-xs font-bold text-[#7C3AED] hover:underline flex items-center gap-1 cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EDE9FE]/50 transition-colors"
-                  >
-                    {showAnswer ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    <span>{showAnswer ? 'Sembunyikan' : 'Buka Kunci'}</span>
-                  </button>
-                </div>
-
-                {showAnswer ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="mt-2.5 p-2.5 rounded-xl bg-[#EDE9FE] text-[#7C3AED] font-display font-bold text-sm md:text-base border border-[#7C3AED]/20"
-                  >
-                    {currentQuestion?.answer}
-                  </motion.div>
-                ) : (
-                  <p className="text-xs text-[#64616C] italic mt-1.5 select-none font-medium">
-                    •••••••••••••••••••••••• (klik buka kunci untuk melihat)
-                  </p>
+                {currentTeam.activeChallenges && currentTeam.activeChallenges.length > 0 && (
+                  <div className="p-3 rounded-2xl bg-[#FFFBEB] border-2 border-[#F59E0B] shadow-xs flex-1 overflow-y-auto max-h-[180px]">
+                    <div className="flex items-center gap-1.5 text-xs font-black text-[#B45309] uppercase tracking-wider mb-1.5">
+                      <Flame className="w-3.5 h-3.5 text-[#EA580C]" />
+                      <span>Tantangan Aktif</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {currentTeam.activeChallenges.map((c, cIdx) => {
+                        const mem = players.find((p) => p.id === c.memberId);
+                        return (
+                          <div
+                            key={`challenge-item-${cIdx}`}
+                            className="p-2 rounded-xl bg-white border border-[#F59E0B]/30 flex items-center gap-2"
+                          >
+                            <PlayerProfileAvatar characterId={mem?.avatarId} size={22} name={mem?.name} />
+                            <div className="min-w-0">
+                              <p className="font-display text-xs font-bold text-[#1E1E24] truncate">
+                                {mem?.name} (R#{c.assignedAtRound})
+                              </p>
+                              <p className="text-xs font-bold text-[#B45309] leading-tight">
+                                "{c.challenge}"
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
-              </Card>
+              </div>
+            </div>
 
-              {/* Verdict Buttons */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
+            {/* Bottom Anchored Verdict Buttons */}
+            <div className="shrink-0 space-y-1.5">
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="primary"
                   size="lg"
                   fullWidth
                   onClick={() => handleAnswer(true)}
-                  className="shadow-sm hover:shadow-md py-3.5 bg-[#12B76A] hover:bg-[#0E9F5D] border-2 border-[#057A44] flex items-center justify-center gap-2 cursor-pointer"
+                  className="bg-[#12B76A] hover:bg-[#0E9F5D] border-2 border-[#057A44] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Check className="w-5 h-5 stroke-[3]" />
                   <span>
                     {currentQuestionInRound === 3
                       ? currentRoundIdx === 3
-                        ? 'BENAR! (Turnamen Tuntas 🎉)'
+                        ? 'BENAR! (Tuntas 🎉)'
                         : 'BENAR! (Ronde Selesai ✓)'
-                      : 'BENAR! (Lanjut Soal ✓)'}
+                      : 'BENAR! (Lanjut ✓)'}
                   </span>
                 </Button>
 
@@ -610,27 +583,26 @@ export default function G5Play() {
                   size="lg"
                   fullWidth
                   onClick={() => handleAnswer(false)}
-                  className="shadow-sm hover:shadow-md py-3.5 flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <X className="w-5 h-5 stroke-[3]" />
-                  <span>SALAH! (-2 Pts & Tantangan)</span>
+                  <span>SALAH! (-2 Pts &amp; Tantangan)</span>
                 </Button>
               </div>
 
-              {/* Host Undo Assist Pill */}
               {canUndo && (
-                <div className="flex justify-center pt-1">
+                <div className="flex justify-center">
                   <button
                     type="button"
                     onClick={handleUndo}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] text-xs font-bold border border-[#DC2626]/20 transition cursor-pointer shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] text-xs font-bold border border-[#DC2626]/20 transition cursor-pointer"
                   >
                     <Undo2 className="w-3.5 h-3.5" />
-                    <span>Salah Pencet? Undo Jawaban Soal Lalu</span>
+                    <span>Salah Pencet? Undo Soal Lalu</span>
                   </button>
                 </div>
               )}
-            </motion.div>
+            </div>
           </div>
         )}
 
@@ -895,10 +867,12 @@ export default function G5Play() {
         />
       )}
 
-      <HostUtilityBar
-        onUndo={canUndo ? handleUndo : undefined}
-        onShuffle={stage === 'chain_quiz' ? handleShuffleQuestion : undefined}
-      />
+      <div className="block lg:hidden">
+        <HostUtilityBar
+          onUndo={canUndo ? handleUndo : undefined}
+          onShuffle={stage === 'chain_quiz' ? handleShuffleQuestion : undefined}
+        />
+      </div>
     </GameDesktopLayout>
   );
 }

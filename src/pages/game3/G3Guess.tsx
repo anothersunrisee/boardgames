@@ -91,7 +91,7 @@ export default function G3Guess() {
       }}
       backLabel="Sesi Tanya"
     >
-      <div className="max-w-3xl lg:max-w-4xl mx-auto w-full flex-1 flex flex-col">
+      <div className="w-full flex-1 flex flex-col">
         {/* TV Mode vs Pass Device Switcher */}
         <div className="flex items-center justify-between gap-2 mb-3 bg-white p-2 rounded-2xl border border-[#1E1E24]/10 shadow-2xs">
           <span className="text-xs font-bold text-[#64616C] ml-2">Mode Permainan:</span>
@@ -102,7 +102,7 @@ export default function G3Guess() {
                 sfx.playPop()
                 setIsTvMode(false)
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition cursor-pointer ${
                 !isTvMode ? 'bg-[#D8317E] text-white shadow-xs' : 'text-[#64616C] hover:bg-black/5'
               }`}
             >
@@ -115,7 +115,7 @@ export default function G3Guess() {
                 sfx.playPop()
                 setIsTvMode(true)
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition cursor-pointer ${
                 isTvMode ? 'bg-[#2568EF] text-white shadow-xs' : 'text-[#64616C] hover:bg-black/5'
               }`}
             >
@@ -125,67 +125,94 @@ export default function G3Guess() {
           </div>
         </div>
 
-        {/* QnA Recap */}
-        {slot.qna.length > 0 && (
-          <Card className="mb-4 p-4 bg-white shadow-xs border border-[#1E1E24]/10 max-h-40 overflow-y-auto">
-            <p className="text-xs font-bold uppercase text-[#64616C] tracking-wider mb-2">
-              Rangkuman Tanya-Jawab:
-            </p>
-            <div className="space-y-2">
-              {slot.qna.map((pair, i) => (
-                <div key={i} className="text-xs">
-                  <p className="font-bold text-[#D8317E]">❓ {pair.question}</p>
-                  <p className="text-[#1E1E24] font-medium ml-3.5 mt-0.5">💬 "{pair.answer}"</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
         {isTvMode ? (
           /* ========================================================================= */
-          /* MODE TV / KERTAS: TAMPILKAN SEMUA PENEBAK SEKALIGUS                       */
+          /* MODE TV / KERTAS: SPLIT 2 KOLOM (QnA RECAP + SEMUA PENEBAK)               */
           /* ========================================================================= */
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col justify-between">
-            <Card className="p-5 bg-white border-2 border-[#2568EF]/20 mb-4 shadow-sm">
-              <div className="mb-4 pb-3 border-b border-[#1E1E24]/10">
-                <h3 className="font-display text-base font-bold text-[#1E1E24]">
-                  Tebakan Bersama (TV Mode)
-                </h3>
-                <p className="text-xs text-[#64616C] font-semibold mt-0.5">
-                  Para cewek boleh menulis di kertas masing-masing atau menyebutkan langsung ke Host.
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch"
+          >
+            {slot.qna.length > 0 && (
+              <Card className="lg:col-span-4 p-4 bg-white shadow-xs border border-[#1E1E24]/10 flex flex-col">
+                <p className="text-xs font-bold uppercase text-[#64616C] tracking-wider mb-2">
+                  Rangkuman Tanya-Jawab:
                 </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
-                {girls.map((girl) => (
-                  <div key={girl.id} className="p-3 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 flex items-center gap-3">
-                    <PlayerProfileAvatar characterId={girl.avatarId} size={38} name={girl.name} />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-display text-xs font-bold text-[#1E1E24] truncate">{girl.name}</p>
-                      <input
-                        type="text"
-                        value={tvGuesses[girl.id] || ''}
-                        onChange={(e) => setTvGuesses({ ...tvGuesses, [girl.id]: e.target.value })}
-                        placeholder="Ketik tebakan..."
-                        className="w-full mt-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#1E1E24]/15 bg-white focus:outline-none focus:border-[#D8317E]"
-                      />
+                <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                  {slot.qna.map((pair, i) => (
+                    <div key={i} className="text-xs p-2 rounded-xl bg-[#FAF7F2] border border-[#1E1E24]/5">
+                      <p className="font-bold text-[#D8317E]">❓ {pair.question}</p>
+                      <p className="text-[#1E1E24] font-medium ml-3.5 mt-0.5">💬 "{pair.answer}"</p>
                     </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <div className={`${slot.qna.length > 0 ? 'lg:col-span-8' : 'lg:col-span-12'} flex flex-col justify-between`}>
+              <Card className="p-4 bg-white border-2 border-[#2568EF]/20 mb-4 shadow-sm flex-1 flex flex-col">
+                <div className="mb-3 pb-2.5 border-b border-[#1E1E24]/10 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-display text-base font-bold text-[#1E1E24]">
+                      Tebakan Bersama (TV Mode)
+                    </h3>
+                    <p className="text-xs text-[#64616C] font-semibold mt-0.5">
+                      Para cewek boleh menulis di kertas masing-masing atau menyebutkan langsung ke Host.
+                    </p>
+                  </div>
+                  <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E]">
+                    {girls.length} Penebak
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
+                  {girls.map((girl) => (
+                    <div key={girl.id} className="p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 flex items-center gap-2.5">
+                      <PlayerProfileAvatar characterId={girl.avatarId} size={34} name={girl.name} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display text-xs font-bold text-[#1E1E24] truncate">{girl.name}</p>
+                        <input
+                          type="text"
+                          value={tvGuesses[girl.id] || ''}
+                          onChange={(e) => setTvGuesses({ ...tvGuesses, [girl.id]: e.target.value })}
+                          placeholder="Ketik tebakan..."
+                          className="w-full mt-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#1E1E24]/15 bg-white focus:outline-none focus:border-[#D8317E]"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Button
+                variant="cobalt"
+                size="lg"
+                fullWidth
+                onClick={handleTvSubmitAll}
+              >
+                <span>Kunci Semua Tebakan &amp; Buka Hasil Reveal ✨</span>
+              </Button>
+            </div>
+          </motion.div>
+        ) : (
+        <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
+          {/* QnA Recap (1-col centered Oper HP) */}
+          {slot.qna.length > 0 && (
+            <Card className="mb-4 p-4 bg-white shadow-xs border border-[#1E1E24]/10 max-h-36 overflow-y-auto">
+              <p className="text-xs font-bold uppercase text-[#64616C] tracking-wider mb-2">
+                Rangkuman Tanya-Jawab:
+              </p>
+              <div className="space-y-2">
+                {slot.qna.map((pair, i) => (
+                  <div key={i} className="text-xs">
+                    <p className="font-bold text-[#D8317E]">❓ {pair.question}</p>
+                    <p className="text-[#1E1E24] font-medium ml-3.5 mt-0.5">💬 "{pair.answer}"</p>
                   </div>
                 ))}
               </div>
             </Card>
-
-            <Button
-              variant="cobalt"
-              size="lg"
-              fullWidth
-              onClick={handleTvSubmitAll}
-            >
-              <span>Kunci Semua Tebakan & Buka Hasil Reveal ✨</span>
-            </Button>
-          </motion.div>
-        ) : (
+          )}
 
         <AnimatePresence mode="wait">
           {phase === 'pass' && (
@@ -262,6 +289,7 @@ export default function G3Guess() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
         )}
       </div>
 

@@ -5,7 +5,6 @@ import { ArrowLeft, Trophy, ArrowRight, Flame, AlertTriangle } from 'lucide-reac
 import { useGameStore, type DebateMatch } from '../../store/useGameStore'
 import { getRandomTopic, getRandomChaosCard } from '../../data/game4-topics'
 import { Button } from '../../components/ui/Button'
-import { Card } from '../../components/ui/Card'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { BlobMascot } from '../../components/ui/BlobMascot'
 import { PlayerProfileAvatar } from '../../components/characters/PlayerProfileAvatar'
@@ -106,10 +105,10 @@ export default function G4RoundResult() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
-      <div className="max-w-xl mx-auto w-full flex-1 flex flex-col">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-6 md:py-8 pb-20 md:pb-16 flex flex-col justify-between">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
         {/* Top Header with Back Navigation */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] flex items-center gap-1.5 cursor-pointer py-1 px-2.5 rounded-full hover:bg-black/5 transition-colors"
@@ -137,177 +136,167 @@ export default function G4RoundResult() {
           </div>
         </div>
 
-        {/* Match Result Banner */}
-        <motion.div
-          className="text-center mb-6"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', damping: 15 }}
-        >
-          <div className="mb-2">
-            <BlobMascot
-              shape="triangle"
-              mood={isTie ? 'curious' : 'excited'}
-              color="#FFB03A"
-              accentColor="#B53B10"
-              size={90}
-            />
-          </div>
-
-          <span className="inline-block px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider mb-2">
-            {isFinalMatch
-              ? '👑 HASIL GRAND FINAL DEBAT'
-              : `HASIL PERTANDINGAN #${match.matchNumber}`}
-          </span>
-
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-[#1E1E24]">
-            {isTie
-              ? 'HASIL SERI! 🤝'
-              : `${winningTeam?.map((p) => p.name).join(' & ')} MENANG! 🏆`}
-          </h1>
-          <p className="text-xs font-semibold text-[#64616C] mt-1 italic max-w-md mx-auto">
-            "{match.topic.topic}"
-          </p>
-        </motion.div>
-
-        {/* Voting & Point Breakdown Card */}
-        <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold text-[#1E1E24] mb-3 text-center">
-            Perolehan Suara & Poin Tim 2v2
-          </p>
-          <div className="grid grid-cols-2 gap-3 text-center">
-            {/* Tim PRO */}
-            <div
-              className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col items-center ${
-                isAWinner && !isTie
-                  ? 'bg-[#D6F5EC] border-[#12B76A]'
-                  : 'bg-[#FAF7F2] border-[#1E1E24]/10'
-              }`}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1">
+          {/* LEFT COLUMN: Winner Banner + Vote Breakdown + Anchored CTA */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            <motion.div
+              className="text-center p-5 rounded-[28px] bg-white border-2 border-[#1E1E24]/10 shadow-xs"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', damping: 15 }}
             >
-              <div className="flex -space-x-2 mb-1">
-                {teamAPlayers.map((p) => (
-                  <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={36} name={p.name} />
-                ))}
+              <div className="mb-2">
+                <BlobMascot
+                  shape="triangle"
+                  mood={isTie ? 'curious' : 'excited'}
+                  color="#FFB03A"
+                  accentColor="#B53B10"
+                  size={82}
+                />
               </div>
-              <p className="font-display text-sm font-bold text-[#1E1E24] mt-1">
-                {teamAPlayers.map((p) => p.name).join(' & ')}
-              </p>
-              <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#12B76A] text-white inline-block mt-0.5 mb-1.5">
-                TIM PRO
-              </span>
-              <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesA} suara</p>
-              <p className="text-xs font-semibold text-[#64616C] mt-1">
-                {isAWinner && !isTie
-                  ? '+8 Pts Tiap Anggota'
-                  : isTie
-                  ? '+4 Pts Tiap Anggota'
-                  : '+2 Pts Tiap Anggota'}
-              </p>
-            </div>
 
-            {/* Tim KONTRA */}
-            <div
-              className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col items-center ${
-                !isAWinner && !isTie
-                  ? 'bg-[#D6F5EC] border-[#12B76A]'
-                  : 'bg-[#FAF7F2] border-[#1E1E24]/10'
-              }`}
-            >
-              <div className="flex -space-x-2 mb-1">
-                {teamBPlayers.map((p) => (
-                  <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={36} name={p.name} />
-                ))}
+              <span className="inline-block px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider mb-1.5">
+                {isFinalMatch
+                  ? '👑 HASIL GRAND FINAL DEBAT'
+                  : `HASIL PERTANDINGAN #${match.matchNumber}`}
+              </span>
+
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1E1E24]">
+                {isTie
+                  ? 'HASIL SERI! 🤝'
+                  : `${winningTeam?.map((p) => p.name).join(' & ')} MENANG! 🏆`}
+              </h1>
+              <p className="text-xs font-semibold text-[#64616C] mt-1 italic">
+                "{match.topic.topic}"
+              </p>
+
+              {/* Voting & Point Breakdown Grid */}
+              <div className="grid grid-cols-2 gap-2.5 text-center mt-4 pt-4 border-t border-[#1E1E24]/10">
+                {/* Tim PRO */}
+                <div
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center ${
+                    isAWinner && !isTie
+                      ? 'bg-[#D6F5EC] border-[#12B76A]'
+                      : 'bg-[#FAF7F2] border-[#1E1E24]/10'
+                  }`}
+                >
+                  <div className="flex -space-x-2 mb-1">
+                    {teamAPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={28} name={p.name} />
+                    ))}
+                  </div>
+                  <p className="font-display text-xs font-bold text-[#1E1E24] mt-0.5 truncate max-w-full">
+                    {teamAPlayers.map((p) => p.name).join(' & ')}
+                  </p>
+                  <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#12B76A] text-white inline-block mt-1">
+                    PRO
+                  </span>
+                  <p className="font-display text-xl font-bold text-[#1E1E24] mt-1">{match.votesA} suara</p>
+                  <p className="text-xs font-semibold text-[#64616C]">
+                    {isAWinner && !isTie ? '+8 Pts' : isTie ? '+4 Pts' : '+2 Pts'}
+                  </p>
+                </div>
+
+                {/* Tim KONTRA */}
+                <div
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center ${
+                    !isAWinner && !isTie
+                      ? 'bg-[#D6F5EC] border-[#12B76A]'
+                      : 'bg-[#FAF7F2] border-[#1E1E24]/10'
+                  }`}
+                >
+                  <div className="flex -space-x-2 mb-1">
+                    {teamBPlayers.map((p) => (
+                      <PlayerProfileAvatar key={p.id} characterId={p.avatarId} size={28} name={p.name} />
+                    ))}
+                  </div>
+                  <p className="font-display text-xs font-bold text-[#1E1E24] mt-0.5 truncate max-w-full">
+                    {teamBPlayers.map((p) => p.name).join(' & ')}
+                  </p>
+                  <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#F04438] text-white inline-block mt-1">
+                    KONTRA
+                  </span>
+                  <p className="font-display text-xl font-bold text-[#1E1E24] mt-1">{match.votesB} suara</p>
+                  <p className="text-xs font-semibold text-[#64616C]">
+                    {!isAWinner && !isTie ? '+8 Pts' : isTie ? '+4 Pts' : '+2 Pts'}
+                  </p>
+                </div>
               </div>
-              <p className="font-display text-sm font-bold text-[#1E1E24] mt-1">
-                {teamBPlayers.map((p) => p.name).join(' & ')}
-              </p>
-              <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#F04438] text-white inline-block mt-0.5 mb-1.5">
-                TIM KONTRA
-              </span>
-              <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesB} suara</p>
-              <p className="text-xs font-semibold text-[#64616C] mt-1">
-                {!isAWinner && !isTie
-                  ? '+8 Pts Tiap Anggota'
-                  : isTie
-                  ? '+4 Pts Tiap Anggota'
-                  : '+2 Pts Tiap Anggota'}
-              </p>
+            </motion.div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2.5 mt-auto">
+              {isFinalMatch ? (
+                <Button
+                  variant="primary"
+                  fullWidth
+                  size="lg"
+                  onClick={() => {
+                    sfx.playPop()
+                    navigate('/game4/results')
+                  }}
+                >
+                  <Trophy className="w-5 h-5" />
+                  <span>Penobatan Supreme Devil's Advocate →</span>
+                </Button>
+              ) : isAllStandardMatchesCompleted ? (
+                <>
+                  <Button
+                    variant="tangerine"
+                    fullWidth
+                    size="lg"
+                    onClick={handleStartGrandFinal}
+                  >
+                    <Flame className="w-5 h-5" />
+                    <span>Tandingkan Grand Final Debat! (Top 2 Pemain)</span>
+                  </Button>
+                  <Button
+                    variant="ink"
+                    fullWidth
+                    size="md"
+                    onClick={() => {
+                      sfx.playPop()
+                      navigate('/game4/results')
+                    }}
+                  >
+                    <span>Lihat Hasil Turnamen Langsung</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="tangerine"
+                  fullWidth
+                  size="lg"
+                  onClick={handleNextMatch}
+                >
+                  <span>Lanjut ke Pertandingan #{match.matchNumber + 1} ⚔️</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              )}
             </div>
           </div>
-        </Card>
 
-        {/* Live Scoreboard */}
-        <div className="mb-6">
-          <ScoreBoard players={players} title="Klasemen Skor Sementara" />
-        </div>
+          {/* RIGHT COLUMN: Live Scoreboard & Loser Punishment */}
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            <ScoreBoard players={players} title="Klasemen Skor Sementara" />
 
-        {/* Punishment Button for Losers */}
-        {losingTeam && losingTeam.length > 0 && (
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={() => {
-                setLoserName(losingTeam.map((p) => p.name).join(' & '))
-                setShowPunishment(true)
-              }}
-              className="w-full py-3 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
-            >
-              <AlertTriangle className="w-4 h-4" />
-              <span>🃏 Ambil Kartu Hukuman untuk Tim Kalah ({losingTeam.map((p) => p.name).join(' & ')})!</span>
-            </button>
+            {losingTeam && losingTeam.length > 0 && (
+              <div className="mt-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoserName(losingTeam.map((p) => p.name).join(' & '))
+                    setShowPunishment(true)
+                  }}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-[#FFE8DF] border-2 border-[#EC5A29] text-[#EC5A29] hover:bg-[#FFD9CA] font-display text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>🃏 Ambil Kartu Hukuman untuk Tim Kalah ({losingTeam.map((p) => p.name).join(' & ')})!</span>
+                </button>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-3 mt-auto">
-          {isFinalMatch ? (
-            <Button
-              variant="primary"
-              fullWidth
-              size="lg"
-              onClick={() => {
-                sfx.playPop()
-                navigate('/game4/results')
-              }}
-            >
-              <Trophy className="w-5 h-5" />
-              <span>Penobatan Supreme Devil's Advocate →</span>
-            </Button>
-          ) : isAllStandardMatchesCompleted ? (
-            <>
-              <Button
-                variant="tangerine"
-                fullWidth
-                size="lg"
-                onClick={handleStartGrandFinal}
-              >
-                <Flame className="w-5 h-5" />
-                <span>Tandingkan Grand Final Debat! (Top 2 Pemain)</span>
-              </Button>
-              <Button
-                variant="ink"
-                fullWidth
-                size="lg"
-                onClick={() => {
-                  sfx.playPop()
-                  navigate('/game4/results')
-                }}
-              >
-                <span>Lihat Hasil Turnamen Langsung</span>
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="tangerine"
-              fullWidth
-              size="lg"
-              onClick={handleNextMatch}
-            >
-              <span>Lanjut ke Pertandingan #{match.matchNumber + 1} ⚔️</span>
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          )}
         </div>
       </div>
 

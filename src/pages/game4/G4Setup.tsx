@@ -118,16 +118,16 @@ export default function G4Setup() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-8 md:py-12 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1E1E24] px-4 py-6 md:py-8 pb-20 md:pb-16 flex flex-col justify-between">
       <motion.div
-        className="max-w-xl mx-auto w-full flex-1 flex flex-col"
+        className="max-w-5xl mx-auto w-full flex-1 flex flex-col"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Navigation */}
         <button
           type="button"
-          className="text-sm font-bold text-[#64616C] hover:text-[#1E1E24] mb-6 flex items-center gap-1.5 cursor-pointer w-fit"
+          className="text-sm font-bold text-[#64616C] hover:text-[#1E1E24] mb-4 flex items-center gap-1.5 cursor-pointer w-fit"
           onClick={() => {
             sfx.playPop()
             navigate('/hub')
@@ -137,121 +137,127 @@ export default function G4Setup() {
           <span>Kembali ke Menu</span>
         </button>
 
-        {/* Mascot & Header */}
-        <div className="text-center mb-6">
-          <BlobMascot
-            shape="triangle"
-            mood="spicy"
-            color="#FFB03A"
-            accentColor="#B53B10"
-            accessory="horns"
-            size={100}
-          />
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-[#EC5A29] mt-2">
-            The Devil's Advocate
-          </h1>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider mt-2">
-            <Flame className="w-3.5 h-3.5" />
-            <span>DEBAT 2 VS 2 &amp; GRAND FINAL</span>
-          </div>
-          <p className="text-sm font-semibold text-[#64616C] mt-2 max-w-md mx-auto">
-            Dua tim berdebat membela opini absurd, sementara pemain lainnya menjadi audiens &amp; juri pemberi voting!
-          </p>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1">
+          {/* LEFT COLUMN: Mascot, Chaos Card Toggle & Start CTA */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            <Card className="p-5 bg-white shadow-xs text-center flex flex-col items-center">
+              <BlobMascot
+                shape="triangle"
+                mood="spicy"
+                color="#FFB03A"
+                accentColor="#B53B10"
+                accessory="horns"
+                size={88}
+              />
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-[#EC5A29] mt-2">
+                The Devil's Advocate
+              </h1>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider mt-2">
+                <Flame className="w-3.5 h-3.5" />
+                <span>DEBAT 2 VS 2 &amp; GRAND FINAL</span>
+              </div>
+              <p className="text-xs font-semibold text-[#64616C] mt-2">
+                Dua tim berdebat membela opini absurd, sementara pemain lainnya menjadi audiens &amp; juri pemberi voting!
+              </p>
+            </Card>
 
-        {/* Chaos Card Toggle */}
-        <Card className="mb-4 p-4 bg-white shadow-xs flex items-center justify-between gap-3 border-2 border-[#EC5A29]/20">
-          <div>
-            <p className="font-display text-base font-bold text-[#1E1E24] flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-[#EC5A29]" />
-              <span>Fitur CHAOS CARD</span>
-            </p>
-            <p className="text-xs text-[#64616C] font-medium mt-0.5">
-              Tantangan & gangguan kocak acak saat debat (misal: dilarang kata "aku")
-            </p>
-          </div>
-          <button
-            type="button"
-            className={`px-4 py-2 min-h-[40px] shrink-0 rounded-2xl font-display text-xs font-bold transition-all cursor-pointer ${
-              enableChaos
-                ? 'bg-[#EC5A29] text-white shadow-[0_4px_0_#B53B10]'
-                : 'bg-black/10 text-[#64616C]'
-            }`}
-            onClick={() => {
-              sfx.playPop()
-              setEnableChaos(!enableChaos)
-            }}
-          >
-            {enableChaos ? 'AKTIF' : 'NONAKTIF'}
-          </button>
-        </Card>
+            {/* Chaos Card Toggle */}
+            <Card className="p-4 bg-white shadow-xs flex items-center justify-between gap-3 border-2 border-[#EC5A29]/20">
+              <div>
+                <p className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
+                  <Flame className="w-4 h-4 text-[#EC5A29]" />
+                  <span>Fitur CHAOS CARD</span>
+                </p>
+                <p className="text-xs text-[#64616C] font-medium mt-0.5">
+                  Tantangan &amp; gangguan kocak acak saat debat (misal: dilarang kata "aku")
+                </p>
+              </div>
+              <button
+                type="button"
+                className={`px-4 py-2 min-h-[40px] shrink-0 rounded-2xl font-display text-xs font-bold transition-all cursor-pointer ${
+                  enableChaos
+                    ? 'bg-[#EC5A29] text-white shadow-[0_4px_0_#B53B10]'
+                    : 'bg-black/10 text-[#64616C]'
+                }`}
+                onClick={() => {
+                  sfx.playPop()
+                  setEnableChaos(!enableChaos)
+                }}
+              >
+                {enableChaos ? 'AKTIF' : 'NONAKTIF'}
+              </button>
+            </Card>
 
-        {/* Player Roster */}
-        <Card className="mb-6 p-5 bg-white shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <p className="font-display text-base font-bold text-[#1E1E24] flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-[#EC5A29]" />
-              <span>Daftar Peserta ({rows.length} Orang • {Math.max(1, Math.floor(rows.length / 4))} Match 2v2)</span>
-            </p>
-            <div className="flex gap-2">
-              {rows.length > 4 && (
-                <button
-                  type="button"
-                  className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-red-200 text-red-700 bg-red-50 hover:bg-red-100 cursor-pointer"
-                  onClick={removePlayerPair}
-                >
-                  - 2 Orang
-                </button>
-              )}
-              {rows.length < 16 && (
-                <button
-                  type="button"
-                  className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-orange-200 text-orange-800 bg-orange-50 hover:bg-orange-100 cursor-pointer"
-                  onClick={addPlayerPair}
-                >
-                  + 2 Orang
-                </button>
-              )}
+            {/* Start Button */}
+            <div className="mt-auto">
+              <Button
+                variant="tangerine"
+                fullWidth
+                size="lg"
+                disabled={!isValid}
+                onClick={handleStart}
+              >
+                Undi Pasangan &amp; Mulai Debat!
+              </Button>
             </div>
           </div>
 
-          <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1 overflow-x-hidden">
-            {rows.map((row, i) => (
-              <div key={row.id} className="flex gap-2 items-center min-w-0">
-                <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">
-                  {i + 1}
-                </span>
-                <input
-                  className="input-field flex-1 text-sm py-2 min-w-0"
-                  placeholder={`Nama pemain ${i + 1}`}
-                  value={row.name}
-                  onChange={(e) => updateRow(row.id, 'name', e.target.value)}
-                  maxLength={20}
-                />
-                <input
-                  className="input-field text-sm py-2 shrink-0"
-                  style={{ width: '7.5rem' }}
-                  placeholder="Kubu/Tim"
-                  value={row.kubu}
-                  onChange={(e) => updateRow(row.id, 'kubu', e.target.value)}
-                  maxLength={15}
-                />
+          {/* RIGHT COLUMN: Player Roster */}
+          <div className="lg:col-span-7">
+            <Card className="p-5 bg-white shadow-xs h-full flex flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <p className="font-display text-base font-bold text-[#1E1E24] flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-[#EC5A29]" />
+                  <span>Daftar Peserta ({rows.length} Orang • {Math.max(1, Math.floor(rows.length / 4))} Match 2v2)</span>
+                </p>
+                <div className="flex gap-2">
+                  {rows.length > 4 && (
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-red-200 text-red-700 bg-red-50 hover:bg-red-100 cursor-pointer"
+                      onClick={removePlayerPair}
+                    >
+                      - 2 Orang
+                    </button>
+                  )}
+                  {rows.length < 16 && (
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-orange-200 text-orange-800 bg-orange-50 hover:bg-orange-100 cursor-pointer"
+                      onClick={addPlayerPair}
+                    >
+                      + 2 Orang
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </Card>
 
-        {/* Start Button */}
-        <div className="mt-auto">
-          <Button
-            variant="tangerine"
-            fullWidth
-            size="lg"
-            disabled={!isValid}
-            onClick={handleStart}
-          >
-            Undi Pasangan &amp; Mulai Debat!
-          </Button>
+              <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1 overflow-x-hidden flex-1">
+                {rows.map((row, i) => (
+                  <div key={row.id} className="flex gap-2 items-center min-w-0">
+                    <span className="font-display text-xs w-6 text-center text-[#64616C] shrink-0">
+                      {i + 1}
+                    </span>
+                    <input
+                      className="input-field flex-1 text-sm py-2 min-w-0"
+                      placeholder={`Nama pemain ${i + 1}`}
+                      value={row.name}
+                      onChange={(e) => updateRow(row.id, 'name', e.target.value)}
+                      maxLength={20}
+                    />
+                    <input
+                      className="input-field text-sm py-2 shrink-0"
+                      style={{ width: '7.5rem' }}
+                      placeholder="Kubu/Tim"
+                      value={row.kubu}
+                      onChange={(e) => updateRow(row.id, 'kubu', e.target.value)}
+                      maxLength={15}
+                    />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       </motion.div>
 
