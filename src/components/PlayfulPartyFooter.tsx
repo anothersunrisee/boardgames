@@ -3577,17 +3577,6 @@ const InteractiveMascotPlayground: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Live Interactive Hint Strip */}
-      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#64616C]">
-        <span>
-          Klik arena lempar bola ⚽ • Tap mascot keluarin skill ⚡ • Drag angkat ✋ • Ganggu headset 💢
-        </span>
-        <span className="inline-flex items-center gap-1 text-[#158467]">
-          <span className="w-2 h-2 rounded-full bg-[#158467] animate-pulse" />
-          <span>10 karakter rotasi otomatis</span>
-        </span>
-      </div>
     </div>
   );
 };
