@@ -315,6 +315,9 @@ export default function G4RoundResult() {
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
         loserName={loserName}
+        targetType={losingTeam && losingTeam.length > 1 ? 'team' : 'individual'}
+        targetTeamName={losingTeam && losingTeam.length > 1 ? loserName : undefined}
+        targetPlayers={losingTeam || undefined}
       />
 
       <HostUtilityBar onUndo={handleUndo} />

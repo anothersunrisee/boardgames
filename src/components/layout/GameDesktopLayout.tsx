@@ -14,6 +14,7 @@ import {
   Flame,
   X,
   Sparkles,
+  Camera,
 } from 'lucide-react';
 import { useGameStore, type Player } from '../../store/useGameStore';
 import { PlayerProfileAvatar } from '../characters/PlayerProfileAvatar';
@@ -50,15 +51,27 @@ const FullPodiumAndPunishmentModal: React.FC<{
   gameId?: GameId;
   onClose: () => void;
 }> = ({ open, players, gameId, onClose }) => {
-  const [activePunishment, setActivePunishment] = useState<PunishmentCardDef>(PUNISHMENT_CARDS[0]);
+  const navigate = useNavigate();
+  const isTeamGame = gameId === 'game2' || gameId === 'game3' || gameId === 'game5';
+  const modeDeck = useMemo(
+    () =>
+      PUNISHMENT_CARDS.filter((c) =>
+        isTeamGame
+          ? c.targetMode === 'team' || c.targetMode === 'both'
+          : c.targetMode === '1v1' || c.targetMode === 'both'
+      ),
+    [isTeamGame]
+  );
+
+  const [activePunishment, setActivePunishment] = useState<PunishmentCardDef>(
+    () => modeDeck[0] || PUNISHMENT_CARDS[0]
+  );
   const [isShuffling, setIsShuffling] = useState(false);
 
   const sorted = useMemo(
     () => [...players].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name)),
     [players]
   );
-
-  const isTeamGame = gameId === 'game2' || gameId === 'game3' || gameId === 'game5';
 
   // Compute team standings for team games
   const teamScores = useMemo(() => {
@@ -91,8 +104,8 @@ const FullPodiumAndPunishmentModal: React.FC<{
     setTimeout(() => sfx.playPop(680), 240);
 
     setTimeout(() => {
-      const pool = PUNISHMENT_CARDS.filter((c) => c.id !== activePunishment.id);
-      const next = pool[Math.floor(Math.random() * pool.length)] || PUNISHMENT_CARDS[0];
+      const pool = modeDeck.filter((c) => c.id !== activePunishment.id);
+      const next = pool[Math.floor(Math.random() * pool.length)] || modeDeck[0] || PUNISHMENT_CARDS[0];
       setActivePunishment(next);
       setIsShuffling(false);
       sfx.playFanfare();
@@ -320,6 +333,22 @@ const FullPodiumAndPunishmentModal: React.FC<{
                     “{activePunishment.text}”
                   </p>
                 </motion.div>
+
+                {/* Shortcut to End-Game Final Punishment Photobooth */}
+                <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playFanfare();
+                      onClose();
+                      navigate('/photobooth');
+                    }}
+                    className="flex-1 py-3 px-4 rounded-xl bg-[#D8317E] hover:bg-[#C82373] text-white font-display font-bold text-xs sm:text-sm border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Camera className="w-4 h-4 text-[#FBBF24]" />
+                    <span>📸 Hukuman Terakhir: Photo Booth (Yang Kalah Di Depan!)</span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

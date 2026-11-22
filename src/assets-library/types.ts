@@ -93,6 +93,7 @@ export interface PunishmentCardDef {
   duration: string;
   color: string;
   emoji: string;
+  targetMode: '1v1' | 'team' | 'both';
 }
 
 export interface GameScoreAction {

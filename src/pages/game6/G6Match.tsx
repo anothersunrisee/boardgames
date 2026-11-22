@@ -510,6 +510,17 @@ export default function G6Match() {
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
         loserName={loserName}
+        targetType={
+          (votesA > votesB ? teamBPlayers : teamAPlayers).length > 1
+            ? 'team'
+            : 'individual'
+        }
+        targetTeamName={
+          (votesA > votesB ? teamBPlayers : teamAPlayers).length > 1
+            ? loserName
+            : undefined
+        }
+        targetPlayers={votesA > votesB ? teamBPlayers : teamAPlayers}
       />
 
       <div className="block lg:hidden">

@@ -14,6 +14,22 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+
+const Instagram: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
 import { useGameStore } from '../store/useGameStore';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -284,18 +300,30 @@ export default function RoomPodium() {
           </div>
         </div>
 
-        {/* Viral Loop: TV Backdrop & Story Download Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        {/* Viral Loop: Photo Booth, TV Backdrop & Story Download Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              sfx.playFanfare();
+              navigate('/photobooth');
+            }}
+            className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D8317E] to-[#EC5A29] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98 border-2 border-[#1E1E24]"
+          >
+            <Instagram className="w-4 h-4 text-[#FBBF24]" />
+            <span>📸 Photo Booth IG Story!</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
               sfx.playFanfare();
               setShowTvBackdrop(true);
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D8317E] to-[#9333EA] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98"
+            className="p-3.5 rounded-2xl bg-[#7C3AED] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98"
           >
             <Camera className="w-4 h-4" />
-            <span>📸 Mode Foto Bareng (TV Backdrop)</span>
+            <span>📺 TV Backdrop</span>
           </button>
 
           <button
@@ -305,7 +333,7 @@ export default function RoomPodium() {
             className="p-3.5 rounded-2xl bg-[#1E1E24] text-[#FBBF24] border-2 border-[#FBBF24]/40 font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:bg-black transition cursor-pointer active:scale-98 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingStory ? 'Memproses Kartu...' : '📲 Unduh Kartu Story (9:16 PNG)'}</span>
+            <span>{isGeneratingStory ? 'Memproses...' : '📲 Unduh Kartu Podium'}</span>
           </button>
         </div>
 
@@ -363,6 +391,7 @@ export default function RoomPodium() {
           <div className="space-y-2">
             {sortedPlayers.map((player, idx) => {
               const isFirst = idx === 0;
+              const isLast = players.length > 1 && idx === sortedPlayers.length - 1;
               const isNegative = player.score < 0;
               const char = getCharacterById(player.avatarId || CHARACTER_PACK[idx % CHARACTER_PACK.length].id);
 
@@ -372,6 +401,8 @@ export default function RoomPodium() {
                   className={`p-3 rounded-2xl border flex items-center justify-between transition ${
                     isFirst
                       ? 'bg-[#FEF3C7] border-[#F59E0B]'
+                      : isLast
+                      ? 'bg-[#FFE8DF] border-[#EC5A29]/60'
                       : 'bg-[#FAF7F2] border-[#1E1E24]/10'
                   }`}
                 >
@@ -382,12 +413,17 @@ export default function RoomPodium() {
                     <PlayerProfileAvatar
                       character={char}
                       size={36}
-                      mood={isFirst ? 'winner' : 'idle'}
+                      mood={isFirst ? 'winner' : isLast ? 'shocked' : 'idle'}
                     />
                     <div>
-                      <p className="font-display text-sm font-bold text-[#1E1E24] flex items-center gap-1.5">
+                      <p className="font-display text-sm font-bold text-[#1E1E24] flex flex-wrap items-center gap-1.5">
                         <span>{player.name}</span>
                         {isFirst && <FluentEmoji name="crown" variant="3d" size={16} />}
+                        {isLast && (
+                          <span className="px-2 py-0.5 rounded-full bg-[#EC5A29] text-white text-[9px] font-black uppercase tracking-wider">
+                            👇 WAJIB DI DEPAN FOTO
+                          </span>
+                        )}
                       </p>
                       <p className="text-[11px] text-[#64616C] font-semibold">
                         {player.gender === 'cewek' ? '👧 Cewek' : '👦 Cowok'} • {player.kubu}
@@ -412,47 +448,96 @@ export default function RoomPodium() {
           </div>
         </Card>
 
-        {/* 🃏 Zona Hukuman 3 Pemain Terbawah di Room */}
+        {/* 📸 ZONA HUKUMAN TERAKHIR END-GAME: PHOTO BOOTH + WAJIB IG STORY */}
         {bottom3.length > 0 && players.length > 1 && (
           <div className="mb-6">
-            <div className="p-4 sm:p-5 rounded-[28px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-              <div className="w-full sm:w-auto">
-                <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1.5 mb-2">
+            <div className="p-5 rounded-[30px] bg-gradient-to-br from-[#FFE8DF] to-[#FCE4F0] border-[3px] border-[#EC5A29] shadow-[0_6px_0_#EC5A29] space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] font-black uppercase text-white px-3 py-1 rounded-full bg-[#EC5A29] inline-flex items-center gap-1.5 shadow-xs">
                   <FluentEmoji name="fire" variant="3d" size={14} />
-                  <span>ZONA HUKUMAN: 3 PEMAIN TERBAWAH</span>
+                  <span>HUKUMAN TERAKHIR END-GAME • PHOTO BOOTH</span>
                 </span>
-                <p className="text-xs text-[#64616C] font-semibold mb-2.5">
-                  3 pemain dengan perolehan skor terendah di room wajib menerima kartu hukuman:
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {bottom3.map((p) => {
-                    const rank = sortedPlayers.indexOf(p) + 1;
-                    return (
-                      <div
-                        key={p.id}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white border border-[#EC5A29]/30 shadow-2xs"
-                      >
-                        <span className="font-display font-black text-xs text-[#DC2626]">#{rank}</span>
-                        <PlayerProfileAvatar characterId={p.avatarId} size={28} name={p.name} />
-                        <div>
-                          <p className="font-display font-bold text-xs text-[#1E1E24] leading-tight">{p.name}</p>
-                          <span className="text-[10px] font-bold text-[#64616C]">{p.score} pts</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <span className="text-[11px] font-black uppercase text-[#D8317E] bg-white px-3 py-1 rounded-full border border-[#D8317E]/30">
+                  📸 WAJIB SHARE IG STORY &amp; TAG SEMUA TIM!
+                </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowPunishment(true)}
-                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-[#EC5A29] text-white font-display text-xs sm:text-sm font-bold hover:bg-[#D44A1D] cursor-pointer shrink-0 shadow-md transition flex items-center justify-center gap-2 active:scale-95"
-              >
-                <FluentEmoji name="joker" variant="3d" size={20} />
-                <span>Acak Hukuman 3 Terbawah</span>
-              </button>
+              <div>
+                <h3 className="font-display text-xl sm:text-2xl font-black text-[#1E1E24]">
+                  Foto Bersama — Yang Kalah Wajib Di Depan! 👇
+                </h3>
+                <p className="text-xs sm:text-sm text-[#4A4752] font-semibold mt-1">
+                  Pemain di posisi terbawah wajib berdiri paling depan saat sesi foto studio 9:16, lalu <strong>WAJIB di-upload ke Instagram Story &amp; tag seluruh anggota tim!</strong>
+                </p>
+              </div>
+
+              {/* Bottom Players Chips (Ranked Lowest First) */}
+              <div className="flex flex-wrap gap-2">
+                {[...bottom3].reverse().map((p, idx) => {
+                  const rank = sortedPlayers.indexOf(p) + 1;
+                  const isAbsoluteLast = idx === 0;
+                  return (
+                    <div
+                      key={p.id}
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl border-2 shadow-2xs ${
+                        isAbsoluteLast
+                          ? 'bg-[#1E1E24] text-white border-[#FBBF24]'
+                          : 'bg-white text-[#1E1E24] border-[#EC5A29]/30'
+                      }`}
+                    >
+                      <span
+                        className={`font-display font-black text-xs ${
+                          isAbsoluteLast ? 'text-[#FBBF24]' : 'text-[#DC2626]'
+                        }`}
+                      >
+                        #{rank}
+                      </span>
+                      <PlayerProfileAvatar characterId={p.avatarId} size={30} name={p.name} />
+                      <div>
+                        <p className="font-display font-bold text-xs leading-tight flex items-center gap-1">
+                          <span>{p.name}</span>
+                          {isAbsoluteLast && (
+                            <span className="text-[9px] font-black bg-[#EC5A29] text-white px-1.5 py-0.5 rounded-md">
+                              DI DEPAN!
+                            </span>
+                          )}
+                        </p>
+                        <span
+                          className={`text-[10px] font-bold ${
+                            isAbsoluteLast ? 'text-white/75' : 'text-[#64616C]'
+                          }`}
+                        >
+                          {p.score} pts
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Primary CTA: Launch End-Game Photo Booth Studio + Secondary Card Shuffle */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playFanfare();
+                    navigate('/photobooth');
+                  }}
+                  className="sm:col-span-8 py-3.5 px-5 rounded-2xl bg-[#D8317E] hover:bg-[#C82373] text-white font-display text-sm sm:text-base font-black border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] cursor-pointer transition flex items-center justify-center gap-2"
+                >
+                  <Instagram className="w-5 h-5 text-[#FBBF24]" />
+                  <span>📸 Buka Photo Booth 9:16 (Wajib IG Story!)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPunishment(true)}
+                  className="sm:col-span-4 py-3.5 px-4 rounded-2xl bg-white hover:bg-[#FAF7F2] text-[#EC5A29] font-display text-xs sm:text-sm font-bold border-2 border-[#EC5A29] cursor-pointer transition flex items-center justify-center gap-1.5 active:scale-98"
+                >
+                  <FluentEmoji name="joker" variant="3d" size={18} />
+                  <span>Acak Hukuman Ekstra</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

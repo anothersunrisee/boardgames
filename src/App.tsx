@@ -8,6 +8,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Home = lazy(() => import('./pages/Home'));
 const RoomSetup = lazy(() => import('./pages/RoomSetup'));
 const RoomPodium = lazy(() => import('./pages/RoomPodium'));
+const PhotoBooth = lazy(() => import('./pages/PhotoBooth'));
 const StudioAssetPack = lazy(() => import('./pages/StudioAssetPack'));
 const PlayerJoin = lazy(() => import('./pages/PlayerJoin'));
 const PlayerController = lazy(() => import('./pages/PlayerController'));
@@ -78,9 +79,10 @@ export default function App() {
           <Route path="/play" element={<PlayerController />} />
           <Route path="/controller" element={<PlayerController />} />
 
-          {/* 2. Room Setup & Podium */}
+          {/* 2. Room Setup, Podium & End-Game Photo Booth */}
           <Route path="/room" element={<RoomSetup />} />
           <Route path="/room/podium" element={<RoomPodium />} />
+          <Route path="/photobooth" element={<PhotoBooth />} />
 
           {/* 3. Game Selection Hub */}
           <Route path="/hub" element={<Home />} />

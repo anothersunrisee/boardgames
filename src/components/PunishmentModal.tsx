@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shuffle, X, Flame } from 'lucide-react';
+import { Shuffle, X, Flame, Users, Swords } from 'lucide-react';
 import { PUNISHMENT_CARDS } from '../assets-library/punishments';
 import type { PunishmentCardDef } from '../assets-library/types';
 import { GameMascotBot } from './characters/GameMascotBot';
@@ -27,21 +27,50 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
   targetTeamName,
   targetPlayers,
 }) => {
-  const [activeCard, setActiveCard] = useState<PunishmentCardDef>(PUNISHMENT_CARDS[0]);
+  const isTeam = targetType === 'team' || Boolean(targetTeamName);
+  const isBottom3 = targetType === 'bottom3' || (targetPlayers && targetPlayers.length > 1 && !isTeam);
+
+  const [modeFilter, setModeFilter] = useState<'auto' | '1v1' | 'team'>('auto');
+  const [intensityFilter, setIntensityFilter] = useState<'Semua' | 'Santai' | 'Kocak' | 'Chaos'>('Semua');
   const [isShuffling, setIsShuffling] = useState(false);
   const [cardFlipped, setCardFlipped] = useState(true);
-  const [intensityFilter, setIntensityFilter] = useState<'Semua' | 'Santai' | 'Kocak' | 'Chaos'>('Semua');
+
+  const modeFilteredPool = useMemo(() => {
+    const desiredMode =
+      modeFilter !== 'auto'
+        ? modeFilter
+        : isTeam
+        ? 'team'
+        : isBottom3
+        ? 'both'
+        : '1v1';
+
+    if (desiredMode === 'both') return PUNISHMENT_CARDS;
+    return PUNISHMENT_CARDS.filter(
+      (c) => c.targetMode === desiredMode || c.targetMode === 'both'
+    );
+  }, [isTeam, isBottom3, modeFilter]);
+
+  const [activeCard, setActiveCard] = useState<PunishmentCardDef>(
+    () => modeFilteredPool[0] || PUNISHMENT_CARDS[0]
+  );
 
   useEffect(() => {
     if (open) {
       sfx.playPenalty();
-      const initial = PUNISHMENT_CARDS[Math.floor(Math.random() * PUNISHMENT_CARDS.length)];
+      setModeFilter('auto');
+      const desiredMode = isTeam ? 'team' : isBottom3 ? 'both' : '1v1';
+      const initialPool =
+        desiredMode === 'both'
+          ? PUNISHMENT_CARDS
+          : PUNISHMENT_CARDS.filter((c) => c.targetMode === desiredMode || c.targetMode === 'both');
+      const initial = initialPool[Math.floor(Math.random() * initialPool.length)] || PUNISHMENT_CARDS[0];
       setActiveCard(initial);
       setCardFlipped(true);
     }
-  }, [open]);
+  }, [open, isTeam, isBottom3]);
 
-  const handleShuffle = () => {
+  const handleShuffle = (overrideMode?: 'auto' | '1v1' | 'team', overrideIntensity?: 'Semua' | 'Santai' | 'Kocak' | 'Chaos') => {
     if (isShuffling) return;
     setIsShuffling(true);
     setCardFlipped(false);
@@ -51,12 +80,30 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
       setTimeout(() => sfx.playShuffleTick(i), i * 110);
     });
 
-    const pool =
-      intensityFilter === 'Semua'
-        ? PUNISHMENT_CARDS
-        : PUNISHMENT_CARDS.filter((c) => c.intensity === intensityFilter);
+    const effectiveMode = overrideMode ?? modeFilter;
+    const effectiveIntensity = overrideIntensity ?? intensityFilter;
 
-    const candidates = pool.length > 1 ? pool.filter((c) => c.id !== activeCard.id) : pool;
+    const desiredMode =
+      effectiveMode !== 'auto'
+        ? effectiveMode
+        : isTeam
+        ? 'team'
+        : isBottom3
+        ? 'both'
+        : '1v1';
+
+    const byMode =
+      desiredMode === 'both'
+        ? PUNISHMENT_CARDS
+        : PUNISHMENT_CARDS.filter((c) => c.targetMode === desiredMode || c.targetMode === 'both');
+
+    const pool =
+      effectiveIntensity === 'Semua'
+        ? byMode
+        : byMode.filter((c) => c.intensity === effectiveIntensity);
+
+    const safePool = pool.length > 0 ? pool : byMode;
+    const candidates = safePool.length > 1 ? safePool.filter((c) => c.id !== activeCard.id) : safePool;
     const picked = candidates[Math.floor(Math.random() * candidates.length)] || PUNISHMENT_CARDS[0];
 
     setTimeout(() => {
@@ -64,11 +111,8 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
       setIsShuffling(false);
       setCardFlipped(true);
       sfx.playFanfare();
-    }, 750);
+    }, 650);
   };
-
-  const isTeam = targetType === 'team' || Boolean(targetTeamName);
-  const isBottom3 = targetType === 'bottom3' || (targetPlayers && targetPlayers.length > 1 && !isTeam);
 
   return (
     <AnimatePresence>
@@ -92,18 +136,34 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
 
             {/* Header Mascot Bot */}
             <div className="flex justify-center mb-1">
-              <GameMascotBot character={CHARACTER_PACK[14]} size={68} mood="shocked" />
+              <GameMascotBot character={CHARACTER_PACK[14]} size={64} mood="shocked" />
             </div>
 
-            {/* Title & Target */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FFE4E2] text-[#B42318] text-xs font-black uppercase tracking-wider mb-2 self-center">
-              <Flame className="w-3.5 h-3.5 text-[#DC2626]" />
-              <span>
-                {isTeam
-                  ? `HUKUMAN: 1 TIM KALAH (${targetTeamName || loserName || 'Tim Kalah'})`
-                  : isBottom3
-                  ? 'HUKUMAN: 3 PEMAIN TERBAWAH'
-                  : `HUKUMAN UNTUK: ${loserName || 'Pemain Kalah'}`}
+            {/* Distinct Deck Type Indicator Pill */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-2">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FFE4E2] text-[#B42318] text-xs font-black uppercase tracking-wider">
+                <Flame className="w-3.5 h-3.5 text-[#DC2626]" />
+                <span>
+                  {isTeam
+                    ? `HUKUMAN KELOMPOK (${targetTeamName || loserName || 'Tim Kalah'})`
+                    : isBottom3
+                    ? 'HUKUMAN: 3 PEMAIN TERBAWAH'
+                    : `HUKUMAN DUEL 1V1: ${loserName || 'Pemain Kalah'}`}
+                </span>
+              </div>
+
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-black uppercase">
+                {activeCard.targetMode === 'team' ? (
+                  <>
+                    <Users className="w-3 h-3" />
+                    <span>Dek Kelompok</span>
+                  </>
+                ) : (
+                  <>
+                    <Swords className="w-3 h-3" />
+                    <span>Dek 1v1 / Solo</span>
+                  </>
+                )}
               </span>
             </div>
 
@@ -111,7 +171,7 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
             {isTeam && (
               <div className="mb-3">
                 <p className="text-xs font-semibold text-[#64616C] mb-2">
-                  Seluruh anggota tim wajib menjalani hukuman ini bersama-sama:
+                  Seluruh anggota tim kalah wajib menjalankan hukuman kelompok ini bersama:
                 </p>
                 {targetPlayers && targetPlayers.length > 0 && (
                   <div className="flex flex-wrap items-center justify-center gap-2 max-h-24 overflow-y-auto">
@@ -132,7 +192,7 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
             {isBottom3 && (
               <div className="mb-3">
                 <p className="text-xs font-semibold text-[#64616C] mb-2">
-                  3 pemain di posisi terbawah wajib menerima kartu hukuman malam ini:
+                  Pemain di posisi terbawah wajib menerima hukuman tantangan berikut:
                 </p>
                 {targetPlayers && targetPlayers.length > 0 && (
                   <div className="flex flex-wrap items-center justify-center gap-2 max-h-24 overflow-y-auto">
@@ -154,13 +214,43 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
 
             {!isTeam && !isBottom3 && loserName && (
               <p className="text-xs font-bold text-[#64616C] mb-2">
-                Hukuman khusus untuk:{' '}
+                Tantangan khusus kekalahan 1v1 / individu untuk:{' '}
                 <span className="text-[#EC5A29] font-black underline">{loserName}</span>
               </p>
             )}
 
-            {/* Filter Pills */}
-            <div className="flex items-center justify-center gap-1.5 mb-3">
+            {/* Mode Switcher (Allow toggling between 1v1 vs Team deck if bottom3, or switching intensity) */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3">
+              {isBottom3 && (
+                <>
+                  {(
+                    [
+                      { id: 'auto', label: 'Campur' },
+                      { id: '1v1', label: '⚔️ 1v1/Solo' },
+                      { id: 'team', label: '👥 Kelompok' },
+                    ] as const
+                  ).map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        sfx.playPop(620);
+                        setModeFilter(m.id);
+                        handleShuffle(m.id, intensityFilter);
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black cursor-pointer transition border ${
+                        modeFilter === m.id
+                          ? 'bg-[#EC5A29] text-white border-[#EC5A29]'
+                          : 'bg-white text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                  <span className="text-[#1E1E24]/20">|</span>
+                </>
+              )}
+
               {(['Semua', 'Santai', 'Kocak', 'Chaos'] as const).map((lvl) => (
                 <button
                   key={lvl}
@@ -168,8 +258,9 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
                   onClick={() => {
                     sfx.playPop(580);
                     setIntensityFilter(lvl);
+                    handleShuffle(modeFilter, lvl);
                   }}
-                  className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer transition ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer transition ${
                     intensityFilter === lvl
                       ? 'bg-[#1E1E24] text-white shadow-xs'
                       : 'bg-[#F2ECE1] text-[#64616C] hover:text-[#1E1E24]'
@@ -190,15 +281,16 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-black uppercase tracking-wider">
-                    {activeCard.intensity}
+                    {activeCard.targetMode === 'team' ? '👥 KELOMPOK' : '⚔️ DUEL 1V1'} • {activeCard.intensity}
                   </span>
                   <span className="text-xs font-bold text-white/85">
                     Durasi: {activeCard.duration}
                   </span>
                 </div>
 
-                <h3 className="font-display text-xl sm:text-2xl font-bold mb-2">
-                  {activeCard.title}
+                <h3 className="font-display text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2">
+                  <span>{activeCard.emoji}</span>
+                  <span>{activeCard.title}</span>
                 </h3>
                 <p className="text-xs sm:text-sm font-semibold bg-black/20 rounded-xl p-3 border border-white/15 leading-relaxed">
                   “{activeCard.text}”
@@ -212,7 +304,7 @@ export const PunishmentModal: React.FC<PunishmentModalProps> = ({
                 variant="sunny"
                 fullWidth
                 size="md"
-                onClick={handleShuffle}
+                onClick={() => handleShuffle()}
                 disabled={isShuffling}
               >
                 <Shuffle className={`w-4 h-4 ${isShuffling ? 'animate-spin' : ''}`} />
