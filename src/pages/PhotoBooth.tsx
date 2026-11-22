@@ -20,7 +20,6 @@ import {
   Monitor,
   Gamepad2,
   Users,
-  Palette,
   FlipHorizontal,
   ZoomIn,
   Move,
@@ -36,7 +35,6 @@ import {
   Film,
   Smile,
   ArrowLeft,
-  AtSign,
 } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore';
 
@@ -251,12 +249,6 @@ const LOSER_HEADING_PRESETS = [
   'CERTIFIED LOSERS 💀',
   'SQUAD KALAH HARI INI',
   'HALL OF SHAME 😭',
-];
-
-const FOOTER_HOOK_PRESETS = [
-  'Cobain bareng gengmu!',
-  'Berani adu seru bareng timmu?',
-  'Main rame-rame biar makin chaos!',
 ];
 
 const STICKER_LABEL_PALETTE: { bg: string; text: string }[] = [
@@ -2493,7 +2485,7 @@ export default function PhotoBooth() {
 
   // UI & Audio state
   const [muted, setMuted] = useState(false);
-  const [activeTab, setActiveTab] = useState<ControlTabId>('content');
+  const [activeTab, setActiveTab] = useState<ControlTabId>('visual');
   const [toast, setToast] = useState<string | null>(null);
   const [fontsLoadedTick, setFontsLoadedTick] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
@@ -3167,22 +3159,535 @@ export default function PhotoBooth() {
         </header>
 
         {/* ==================================================================== */}
-        {/* MAIN 2-COLUMN STUDIO (COMPACT ONE-SCREEN PREVIEW + BUTTONS)          */}
+        {/* 3-PANEL STUDIO: KIRI (ADJUST) | TENGAH (FOTO 9:16) | KANAN (SHUTTER) */}
         {/* ==================================================================== */}
-        <main className="max-w-6xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* LEFT SHOWCASE COLUMN: COMPACT 9:16 PREVIEW + ACTION BUTTONS TOGETHER */}
-            <div className="lg:col-span-5 lg:sticky lg:top-16 flex flex-col items-center space-y-2.5">
-              {(photoImg || cameraActive) && (
-                <div className="w-full max-w-[290px] flex items-center justify-end">
-                  <span className="text-xs font-bold text-[#64616C] inline-flex items-center gap-1">
-                    <Move className="w-3.5 h-3.5" />
-                    <span>Drag foto untuk geser</span>
-                  </span>
-                </div>
-              )}
+        <main className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6 items-start">
 
-              <div className="relative w-full max-w-[255px] sm:max-w-[280px] aspect-[9/16] rounded-[26px] border-[4px] border-[#1E1E24] shadow-[0_10px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
+            {/* ================================================================ */}
+            {/* KOLOM KIRI: NAVIGASI ADJUST & EDIT TEKS / NAMA YANG KALAH         */}
+            {/* ================================================================ */}
+            <div className="lg:col-span-4 order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
+              {/* 2-Tab Switcher: Adjust & Bingkai | Teks & Yang Kalah */}
+              <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-[22px] bg-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playPop(620);
+                    setActiveTab('visual');
+                  }}
+                  className={`py-2.5 px-3 min-h-[42px] rounded-2xl font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    activeTab === 'visual'
+                      ? 'bg-[#1E1E24] text-[#4AE3B5] shadow-xs'
+                      : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24]'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>Adjust &amp; Frame</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playPop(580);
+                    setActiveTab('content');
+                  }}
+                  className={`py-2.5 px-3 min-h-[42px] rounded-2xl font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    activeTab === 'content'
+                      ? 'bg-[#1E1E24] text-[#FBBF24] shadow-xs'
+                      : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24]'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span>Teks &amp; Kalah</span>
+                </button>
+              </div>
+
+              {/* Left Panel Card Body */}
+              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 max-h-[calc(100vh-145px)] overflow-y-auto custom-scroll">
+                <AnimatePresence mode="wait">
+                  {activeTab === 'visual' && (
+                    <motion.div
+                      key="tab-visual"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="space-y-4"
+                    >
+                      {/* Quick Framing & Adjust */}
+                      <div className="rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 p-3.5 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold uppercase text-[#64616C] flex items-center gap-1.5">
+                            <SlidersHorizontal className="w-3.5 h-3.5 text-[#2568EF]" />
+                            <span>Adjust Foto &amp; Kemiringan</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sfx.playPop();
+                              setFrameTiltDeg(-2.2);
+                              setZoom(1.0);
+                              setPanX(0);
+                              setPanY(0);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-white border border-[#1E1E24]/15 text-xs font-bold hover:border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Reset</span>
+                          </button>
+                        </div>
+
+                        <label className="block space-y-1">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span className="inline-flex items-center gap-1">
+                              <ZoomIn className="w-3.5 h-3.5 text-[#158467]" />
+                              <span>Zoom Foto</span>
+                            </span>
+                            <span className="text-[#158467] tabular-nums">{zoom.toFixed(2)}x</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={1}
+                            max={2.4}
+                            step={0.05}
+                            value={zoom}
+                            onChange={(e) => setZoom(parseFloat(e.target.value))}
+                            className="w-full accent-[#158467] cursor-pointer"
+                          />
+                        </label>
+
+                        <label className="block space-y-1">
+                          <div className="flex justify-between text-xs font-bold">
+                            <span>Kemiringan Bingkai</span>
+                            <span className="text-[#EC5A29] tabular-nums">
+                              {frameTiltDeg > 0 ? `+${frameTiltDeg.toFixed(1)}°` : `${frameTiltDeg.toFixed(1)}°`}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={-4}
+                            max={4}
+                            step={0.2}
+                            value={frameTiltDeg}
+                            onChange={(e) => setFrameTiltDeg(parseFloat(e.target.value))}
+                            className="w-full accent-[#EC5A29] cursor-pointer"
+                          />
+                        </label>
+
+                        <div className="flex flex-wrap items-center gap-2 pt-1.5 border-t border-[#1E1E24]/10">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sfx.playPop();
+                              setMirrorPhoto((m) => !m);
+                            }}
+                            className={`px-3 py-1.5 rounded-full border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition ${
+                              mirrorPhoto ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-white text-[#64616C]'
+                            }`}
+                          >
+                            <FlipHorizontal className="w-3.5 h-3.5" />
+                            <span>Mirror: {mirrorPhoto ? 'ON' : 'OFF'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sfx.playPop();
+                              setCrtFilter((v) => !v);
+                            }}
+                            className={`px-3 py-1.5 rounded-full border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition ${
+                              crtFilter ? 'bg-[#4AE3B5] text-[#1E1E24]' : 'bg-white text-[#64616C]'
+                            }`}
+                          >
+                            <Film className="w-3.5 h-3.5" />
+                            <span>CRT: {crtFilter ? 'ON' : 'OFF'}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Tema Poster */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-extrabold uppercase text-[#64616C]">
+                          Tema Warna Poster (9:16):
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(Object.values(POSTER_THEMES) as PosterThemeConfig[]).map((t) => {
+                            const active = themeId === t.id;
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => {
+                                  sfx.playPop(600);
+                                  setThemeId(t.id);
+                                }}
+                                className={`p-2.5 rounded-2xl border-2 text-left transition cursor-pointer flex items-center gap-2 ${
+                                  active
+                                    ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_3px_0_#0A0A0D]'
+                                    : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
+                                }`}
+                              >
+                                <div className="flex items-center -space-x-1.5 shrink-0">
+                                  {t.previewSwatch.slice(0, 2).map((hex, i) => (
+                                    <span
+                                      key={i}
+                                      style={{ backgroundColor: hex }}
+                                      className="w-5 h-5 rounded-full border-2 border-[#1E1E24] block"
+                                    />
+                                  ))}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-display font-bold text-xs truncate">
+                                    {t.name}
+                                  </p>
+                                  <p className={`text-xs font-semibold truncate ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
+                                    {t.badge}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Model Bingkai */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-extrabold uppercase text-[#64616C]">
+                          Model Bingkai Foto:
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(
+                            [
+                              {
+                                id: 'retro-monitor',
+                                title: 'Retro',
+                                icon: <Monitor className="w-4 h-4" />,
+                                accent: '#158467',
+                              },
+                              {
+                                id: 'playverse-arcade',
+                                title: 'Arcade',
+                                icon: <Gamepad2 className="w-4 h-4" />,
+                                accent: '#7C3AED',
+                              },
+                              {
+                                id: 'classic-tv',
+                                title: 'CRT TV',
+                                icon: <Tv className="w-4 h-4" />,
+                                accent: '#EC5A29',
+                              },
+                            ] as const
+                          ).map((f) => {
+                            const active = frameStyle === f.id;
+                            return (
+                              <button
+                                key={f.id}
+                                type="button"
+                                onClick={() => {
+                                  sfx.playPop(620);
+                                  setFrameStyle(f.id);
+                                }}
+                                className={`p-2.5 rounded-2xl border-2 text-center transition cursor-pointer flex flex-col items-center gap-1 ${
+                                  active
+                                    ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_3px_0_#0A0A0D]'
+                                    : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
+                                }`}
+                              >
+                                <span
+                                  style={{ backgroundColor: f.accent }}
+                                  className="w-8 h-8 rounded-xl text-white flex items-center justify-center border-2 border-[#1E1E24]"
+                                >
+                                  {f.icon}
+                                </span>
+                                <p className="font-display font-bold text-xs">{f.title}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Mascots Toggle & Expression */}
+                      <div className="rounded-2xl bg-[#FAF7F2] border-2 border-[#1E1E24]/15 p-3.5 space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-xl bg-[#D8317E] text-white border-2 border-[#1E1E24] flex items-center justify-center shrink-0">
+                              <Smile className="w-4 h-4" />
+                            </span>
+                            <p className="font-display font-bold text-xs sm:text-sm">Stiker Mascot Bingkai</p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sfx.playPop();
+                              setShowMascots((v) => !v);
+                            }}
+                            className={`px-3 py-1 rounded-full border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer transition ${
+                              showMascots ? 'bg-[#4AE3B5] text-[#1E1E24]' : 'bg-white text-[#64616C]'
+                            }`}
+                          >
+                            {showMascots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            <span>{showMascots ? 'Aktif' : 'Off'}</span>
+                          </button>
+                        </div>
+
+                        {showMascots && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#1E1E24]/10">
+                            {(
+                              [
+                                { id: 'playful', label: 'Ceria' },
+                                { id: 'mocking', label: 'Ngeledek' },
+                                { id: 'cool', label: 'Cool' },
+                              ] as { id: MascotMoodPreset; label: string }[]
+                            ).map((m) => (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  sfx.playPop(640);
+                                  setMascotMoodPreset(m.id);
+                                }}
+                                className={`px-3 py-1 rounded-full text-xs font-display font-bold border-2 transition cursor-pointer ${
+                                  mascotMoodPreset === m.id
+                                    ? 'bg-[#FBBF24] text-[#1E1E24] border-[#1E1E24]'
+                                    : 'bg-white text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
+                                }`}
+                              >
+                                {m.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'content' && (
+                    <motion.div
+                      key="tab-content"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="space-y-4"
+                    >
+                      {/* Team Name & Sub-Dialog */}
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-display text-sm font-bold text-[#1E1E24]">
+                            Teks Header Poster
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sfx.playShuffle();
+                              setCustomSubDialog(null);
+                              setSubDialogIdx((i) => (i + 1) % SUBDIALOG_PRESETS.length);
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-[#FBBF24] text-[#1E1E24] border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Shuffle className="w-3 h-3" />
+                            <span>Acak Kalimat</span>
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div>
+                            <label className="block text-xs font-extrabold uppercase text-[#64616C] mb-1">
+                              Nama Tim / Geng
+                            </label>
+                            <input
+                              value={teamName}
+                              onChange={(e) => setTeamName(e.target.value)}
+                              maxLength={24}
+                              placeholder="Tim Hore"
+                              className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
+                            />
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-xs font-extrabold uppercase text-[#64616C]">
+                                Sub-Dialog
+                              </label>
+                              {customSubDialog !== null && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCustomSubDialog(null)}
+                                  className="text-xs font-bold text-[#1084C8] hover:underline cursor-pointer"
+                                >
+                                  Reset
+                                </button>
+                              )}
+                            </div>
+                            <input
+                              value={effectiveSubDialog}
+                              onChange={(e) => setCustomSubDialog(e.target.value)}
+                              maxLength={64}
+                              className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-bold text-xs sm:text-sm outline-none transition"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {SUBDIALOG_PRESETS.map((p, idx) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => {
+                                sfx.playPop(580);
+                                setCustomSubDialog(null);
+                                setSubDialogIdx(idx);
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold border-2 transition cursor-pointer ${
+                                customSubDialog === null && subDialogIdx === idx
+                                  ? 'bg-[#1E1E24] text-[#FBBF24] border-[#1E1E24]'
+                                  : 'bg-[#FAF7F2] text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
+                              }`}
+                            >
+                              {p.tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <hr className="border-dashed border-[#1E1E24]/15" />
+
+                      {/* Losers Stickers */}
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-display text-sm font-bold text-[#1E1E24]">
+                            Stiker Yang Kalah
+                          </span>
+                          <button
+                            type="button"
+                            onClick={randomizeRotationsAndColors}
+                            className="px-2.5 py-1.5 rounded-xl bg-[#D8317E] text-white border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Shuffle className="w-3 h-3 text-[#FBBF24]" />
+                            <span>Acak Warna</span>
+                          </button>
+                        </div>
+
+                        <input
+                          value={losersHeading}
+                          onChange={(e) => setLosersHeading(e.target.value)}
+                          maxLength={32}
+                          className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
+                        />
+
+                        <div className="flex flex-wrap gap-1">
+                          {LOSER_HEADING_PRESETS.map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                sfx.playPop(600);
+                                setLosersHeading(preset);
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-xs font-display font-bold border-2 transition cursor-pointer ${
+                                losersHeading === preset
+                                  ? 'bg-[#1E1E24] text-[#4AE3B5] border-[#1E1E24]'
+                                  : 'bg-[#FAF7F2] text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
+                              }`}
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex gap-1.5">
+                          <input
+                            value={newLoserName}
+                            onChange={(e) => setNewLoserName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addLoserLabel()}
+                            placeholder="Tambah nama (maks 6)..."
+                            maxLength={16}
+                            className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-bold text-xs sm:text-sm outline-none transition"
+                          />
+                          <button
+                            type="button"
+                            onClick={addLoserLabel}
+                            className="px-3 py-2 rounded-xl bg-[#158467] hover:bg-[#199978] text-white border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer shrink-0"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Tambah</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {losers.map((item) => (
+                            <div
+                              key={item.id}
+                              style={{ backgroundColor: item.color }}
+                              className="rounded-xl border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] p-2 space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFrontSpot(item.id)}
+                                  title="Tandai paling depan"
+                                  className={`px-2 py-0.5 rounded-full text-xs font-extrabold border border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer transition ${
+                                    item.frontSpot
+                                      ? 'bg-[#EC5A29] text-white'
+                                      : 'bg-white/90 text-[#1E1E24] hover:bg-white'
+                                  }`}
+                                >
+                                  <Crown className="w-3 h-3" />
+                                  <span>Depan</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeLoserLabel(item.id)}
+                                  aria-label={`Hapus ${item.name}`}
+                                  className="w-7 h-7 rounded-full bg-white/85 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              <input
+                                value={item.name}
+                                onChange={(e) => updateLoserName(item.id, e.target.value)}
+                                maxLength={16}
+                                className="w-full px-2 py-1 rounded-lg bg-white/95 border border-[#1E1E24]/25 focus:border-[#1E1E24] font-display font-bold text-xs text-[#1E1E24] outline-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <hr className="border-dashed border-[#1E1E24]/15" />
+
+                      {/* Footer CTA Text */}
+                      <div className="space-y-2">
+                        <span className="font-display text-sm font-bold text-[#1E1E24] block">
+                          Teks Footer Poster
+                        </span>
+                        <input
+                          value={footerHook}
+                          onChange={(e) => setFooterHook(e.target.value)}
+                          maxLength={32}
+                          placeholder="Baris 1"
+                          className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-xs sm:text-sm outline-none transition"
+                        />
+                        <input
+                          value={footerSubCta}
+                          onChange={(e) => setFooterSubCta(e.target.value)}
+                          maxLength={30}
+                          placeholder="Baris 2"
+                          className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-xs sm:text-sm outline-none transition"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* ================================================================ */}
+            {/* KOLOM TENGAH: LIVE BINGKAI 9:16 FULL UKURAN BESAR & UTUH        */}
+            {/* ================================================================ */}
+            <div className="lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-16 flex flex-col items-center space-y-2">
+              <div className="relative w-full max-w-[396px] lg:w-auto lg:h-[calc(100vh-110px)] lg:max-h-[700px] aspect-[9/16] rounded-[28px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
                 <AnimatePresence>
                   {flashActive && (
                     <motion.div
@@ -3208,82 +3713,42 @@ export default function PhotoBooth() {
                     photoImg ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                   }`}
                 />
-
-                <AnimatePresence>
-                  {cameraActive && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      className="absolute inset-x-3 bottom-3 z-30 rounded-[22px] bg-[#1E1E24]/92 backdrop-blur-md border-2 border-[#FBBF24] p-2.5 space-y-2 shadow-xl"
-                    >
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          disabled={countdown !== null}
-                          onClick={startCountdownShot}
-                          className="py-2.5 px-3 rounded-xl bg-[#EC5A29] text-white font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
-                        >
-                          <Timer className="w-3.5 h-3.5" />
-                          <span>{countdown !== null ? `Siap... ${countdown}` : 'Jepret 3-2-1'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          disabled={countdown !== null}
-                          onClick={captureFromCamera}
-                          className="py-2.5 px-3 rounded-xl bg-[#158467] text-white font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Camera className="w-3.5 h-3.5" />
-                          <span>Jepret!</span>
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => startCamera(facingMode === 'user' ? 'environment' : 'user')}
-                          className="flex-1 py-1.5 px-2 rounded-lg bg-white/12 hover:bg-white/20 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <RefreshCw className="w-3 h-3" />
-                          <span>{facingMode === 'user' ? 'Kamera Depan' : 'Kamera Belakang'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            sfx.playPop();
-                            setMirrorPhoto((m) => !m);
-                          }}
-                          className={`py-1.5 px-2.5 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer ${
-                            mirrorPhoto ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-white/12 text-white'
-                          }`}
-                        >
-                          <FlipHorizontal className="w-3 h-3" />
-                          <span>Mirror</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={stopCamera}
-                          className="py-1.5 px-2.5 rounded-lg bg-[#F04438] text-white text-[11px] font-bold cursor-pointer"
-                        >
-                          Tutup
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
-              {cameraError && (
-                <div className="w-full max-w-[396px] rounded-2xl bg-[#FFE4E2] border-2 border-[#F04438]/40 px-4 py-2.5 text-xs font-bold text-[#B42318]">
-                  {cameraError}
-                </div>
+              {(photoImg || cameraActive) && (
+                <p className="text-xs font-bold text-[#64616C] inline-flex items-center gap-1">
+                  <Move className="w-3.5 h-3.5" />
+                  <span>Drag langsung di dalam foto untuk menggeser posisi</span>
+                </p>
               )}
+            </div>
 
-              <div className="w-full max-w-[290px] space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+            {/* ================================================================ */}
+            {/* KOLOM KANAN: KAMERA, SHUTTER, UPLOAD, DOWNLOAD & SHARE IG STORY  */}
+            {/* ================================================================ */}
+            <div className="lg:col-span-4 order-2 lg:order-3 lg:sticky lg:top-16 space-y-3.5">
+              {/* Card 1: Kamera, Shutter & Upload Foto */}
+              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-bold text-sm text-[#1E1E24]">
+                    Kamera &amp; Shutter
+                  </span>
+                  <span className="text-xs font-bold text-[#64616C]">
+                    {cameraActive ? 'Kamera Aktif' : photoImg ? 'Foto Siap' : 'Pilih Sumber Foto'}
+                  </span>
+                </div>
+
+                {cameraError && (
+                  <div className="rounded-xl bg-[#FFE4E2] border-2 border-[#F04438]/40 px-3 py-2 text-xs font-bold text-[#B42318]">
+                    {cameraError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
                     onClick={() => (cameraActive ? stopCamera() : startCamera(facingMode))}
-                    className={`py-2.5 px-3 min-h-[42px] rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    className={`py-3 px-3 min-h-[46px] rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                       cameraActive
                         ? 'bg-[#F04438] text-white'
                         : 'bg-[#2568EF] hover:bg-[#3576F8] text-white'
@@ -3299,19 +3764,90 @@ export default function PhotoBooth() {
                       sfx.playPop();
                       fileInputRef.current?.click();
                     }}
-                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <Upload className="w-4 h-4" />
                     <span>{photoImg ? 'Ganti Foto' : 'Upload Foto'}</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                {/* Dedicated Shutter Controls (No overlay blocking the photo frame!) */}
+                {cameraActive && (
+                  <div className="p-3 rounded-2xl bg-[#1E1E24] text-white space-y-2.5 border-2 border-[#FBBF24]">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        disabled={countdown !== null}
+                        onClick={startCountdownShot}
+                        className="py-3 px-3 min-h-[46px] rounded-xl bg-[#EC5A29] hover:bg-[#D94E20] text-white font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                      >
+                        <Timer className="w-4 h-4" />
+                        <span>{countdown !== null ? `Tahan... ${countdown}` : 'Jepret 3-2-1'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={countdown !== null}
+                        onClick={captureFromCamera}
+                        className="py-3 px-3 min-h-[46px] rounded-xl bg-[#158467] hover:bg-[#199978] text-white font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>Jepret!</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startCamera(facingMode === 'user' ? 'environment' : 'user')}
+                        className="py-2 px-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>{facingMode === 'user' ? 'Depan' : 'Belakang'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sfx.playPop();
+                          setMirrorPhoto((m) => !m);
+                        }}
+                        className={`py-2 px-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                          mirrorPhoto ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-white/12 text-white'
+                        }`}
+                      >
+                        <FlipHorizontal className="w-3.5 h-3.5" />
+                        <span>Mirror: {mirrorPhoto ? 'ON' : 'OFF'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {photoImg && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop(420);
+                      setPhotoImg(null);
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-[#FFE4E2] hover:bg-[#FECACA] text-[#B42318] font-bold text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus Foto Saat Ini</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Card 2: Download & Wajib Share / Upload IG Story */}
+              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 space-y-3">
+                <span className="font-display font-bold text-sm text-[#1E1E24] block">
+                  Simpan &amp; Upload IG Story
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
                     type="button"
                     disabled={isExporting}
                     onClick={handleDownloadPng}
-                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
                     <Download className="w-4 h-4 text-[#FBBF24]" />
                     <span>{isExporting ? 'Export...' : 'Download PNG'}</span>
@@ -3321,23 +3857,20 @@ export default function PhotoBooth() {
                     type="button"
                     disabled={isExporting}
                     onClick={handleShareIgStory}
-                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
                     <Share2 className="w-4 h-4 text-[#FBBF24]" />
-                    <span>{isExporting ? 'Siapkan...' : 'Wajib IG Story!'}</span>
+                    <span>{isExporting ? 'Siapkan...' : 'Upload IG Story!'}</span>
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* RIGHT CONTROL PANEL */}
-            <div className="lg:col-span-7 space-y-4">
-              {/* 🏆 MANDATORY END-GAME PUNISHMENT CHECKLIST CARD */}
+              {/* Card 3: Aturan End-Game & Daftar Tag Semua Tim */}
               <div className="rounded-[24px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_5px_0_#EC5A29] p-4 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                     <Instagram className="w-3.5 h-3.5" />
-                    <span>ATURAN END-GAME ({teamTags.length} ANGGOTA • {losers.length} DI DEPAN)</span>
+                    <span>{teamTags.length} Anggota • {losers.length} Di Depan</span>
                   </span>
                   <button
                     type="button"
@@ -3346,632 +3879,37 @@ export default function PhotoBooth() {
                       sfx.playFanfare();
                       showToast('Semua tag @anggota tim disalin! Siap paste di IG Story 📸');
                     }}
-                    className="px-3 py-1.5 min-h-[36px] rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3 py-1.5 rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Copy className="w-3.5 h-3.5 text-[#D8317E]" />
-                    <span>Copy Tag Semua Tim</span>
+                    <span>Copy Tag Tim</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-bold text-[#1E1E24]">
-                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
-                    1. {losers.length} terbawah wajib berdiri paling depan saat foto!
-                  </div>
-                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
-                    2. Foto bareng pakai bingkai 9:16 di samping.
-                  </div>
-                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
-                    3. Wajib Share IG Story &amp; Tag Semua Tim!
-                  </div>
-                </div>
+                <p className="text-xs font-bold text-[#1E1E24] leading-snug">
+                  <strong>{losers.length} pemain terbawah wajib di depan!</strong> Wajib upload IG Story &amp; tag semua anggota tim:
+                </p>
 
-                {/* Editable Team Members Instagram Tags */}
-                <div className="pt-2 border-t border-[#EC5A29]/20">
-                  <p className="text-xs font-extrabold text-[#B42318] mb-1.5 flex items-center gap-1">
-                    <AtSign className="w-3.5 h-3.5" />
-                    <span>Daftar Tag Instagram Anggota Tim ({teamTags.length} Orang):</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {teamTags.map((t) => (
-                      <div
-                        key={t.id}
-                        className="inline-flex items-center bg-white border border-[#1E1E24]/20 rounded-xl px-2.5 py-1.5 gap-1 shadow-2xs"
-                      >
-                        <span className="text-xs font-bold text-[#64616C]">{t.name}:</span>
-                        <input
-                          type="text"
-                          value={t.handle}
-                          onChange={(e) => updateTeamTagHandle(t.id, e.target.value)}
-                          className="w-24 text-xs font-extrabold text-[#D8317E] bg-transparent outline-none"
-                          placeholder="@ig_kamu"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Compact 2-Tab Switcher */}
-              <div className="grid grid-cols-2 gap-2 p-2 rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    sfx.playPop(580);
-                    setActiveTab('content');
-                  }}
-                  className={`py-3 px-4 rounded-[18px] font-display font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition cursor-pointer ${
-                    activeTab === 'content'
-                      ? 'bg-[#1E1E24] text-[#FBBF24] shadow-[0_4px_0_#0A0A0D]'
-                      : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24] hover:bg-[#F2ECE1]'
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span>Teks &amp; Yang Kalah</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    sfx.playPop(620);
-                    setActiveTab('visual');
-                  }}
-                  className={`py-3 px-4 rounded-[18px] font-display font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition cursor-pointer ${
-                    activeTab === 'visual'
-                      ? 'bg-[#1E1E24] text-[#4AE3B5] shadow-[0_4px_0_#0A0A0D]'
-                      : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24] hover:bg-[#F2ECE1]'
-                  }`}
-                >
-                  <Palette className="w-4 h-4" />
-                  <span>Visual &amp; Frame</span>
-                </button>
-              </div>
-
-              {/* Active Control Card */}
-              <div className="rounded-[32px] bg-white border-[3px] border-[#1E1E24] shadow-[0_8px_0_rgba(30,30,36,0.12)] p-5 sm:p-6">
-                <AnimatePresence mode="wait">
-                  {activeTab === 'content' && (
-                    <motion.div
-                      key="tab-content"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-6"
+                <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scroll pr-1">
+                  {teamTags.map((t) => (
+                    <div
+                      key={t.id}
+                      className="inline-flex items-center bg-white border border-[#1E1E24]/20 rounded-xl px-2.5 py-1 gap-1 shadow-2xs"
                     >
-                      {/* Section A: Team Name & Sub-Dialog */}
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#E0EBFF] text-[#1084C8] text-xs font-extrabold uppercase">
-                              SUB-DIALOG HEADER
-                            </span>
-                            <h3 className="font-display text-xl font-bold mt-1">
-                              Teks di Bawah Logo PartyGamesHub
-                            </h3>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              sfx.playShuffle();
-                              setCustomSubDialog(null);
-                              setSubDialogIdx((i) => (i + 1) % SUBDIALOG_PRESETS.length);
-                            }}
-                            className="px-3.5 py-2 rounded-[14px] bg-[#FBBF24] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Shuffle className="w-3.5 h-3.5" />
-                            <span>Acak Kalimat</span>
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                          <div className="sm:col-span-5">
-                            <label className="block text-[11px] font-extrabold uppercase text-[#64616C] mb-1">
-                              Nama Tim / Geng
-                            </label>
-                            <input
-                              value={teamName}
-                              onChange={(e) => setTeamName(e.target.value)}
-                              maxLength={24}
-                              placeholder="Tim Hore"
-                              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
-                            />
-                          </div>
-                          <div className="sm:col-span-7">
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="text-[11px] font-extrabold uppercase text-[#64616C]">
-                                Sub-Dialog Arcade
-                              </label>
-                              {customSubDialog !== null && (
-                                <button
-                                  type="button"
-                                  onClick={() => setCustomSubDialog(null)}
-                                  className="text-[11px] font-bold text-[#1084C8] hover:underline cursor-pointer"
-                                >
-                                  Reset Preset
-                                </button>
-                              )}
-                            </div>
-                            <input
-                              value={effectiveSubDialog}
-                              onChange={(e) => setCustomSubDialog(e.target.value)}
-                              maxLength={64}
-                              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-bold text-sm outline-none transition"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {SUBDIALOG_PRESETS.map((p, idx) => (
-                            <button
-                              key={p.id}
-                              type="button"
-                              onClick={() => {
-                                sfx.playPop(580);
-                                setCustomSubDialog(null);
-                                setSubDialogIdx(idx);
-                              }}
-                              className={`px-3 py-1 rounded-full text-[11px] font-bold border-2 transition cursor-pointer ${
-                                customSubDialog === null && subDialogIdx === idx
-                                  ? 'bg-[#1E1E24] text-[#FBBF24] border-[#1E1E24]'
-                                  : 'bg-[#FAF7F2] text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
-                              }`}
-                            >
-                              {p.tag}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <hr className="border-dashed border-[#1E1E24]/15" />
-
-                      {/* Section B: Losers Heading & Sticker Labels */}
-                      <div className="space-y-3.5">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-extrabold uppercase">
-                              YANG KALAH WAJIB DI DEPAN
-                            </span>
-                            <h3 className="font-display text-xl font-bold mt-1">
-                              Judul &amp; Nama Yang Kalah
-                            </h3>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={randomizeRotationsAndColors}
-                            className="px-3.5 py-2 rounded-[14px] bg-[#D8317E] text-white border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Shuffle className="w-3.5 h-3.5 text-[#FBBF24]" />
-                            <span>Acak Rotasi &amp; Warna</span>
-                          </button>
-                        </div>
-
-                        <div className="space-y-2">
-                          <input
-                            value={losersHeading}
-                            onChange={(e) => setLosersHeading(e.target.value)}
-                            maxLength={32}
-                            className="w-full px-4 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-base outline-none transition"
-                          />
-                          <div className="flex flex-wrap gap-1.5">
-                            {LOSER_HEADING_PRESETS.map((preset) => (
-                              <button
-                                key={preset}
-                                type="button"
-                                onClick={() => {
-                                  sfx.playPop(600);
-                                  setLosersHeading(preset);
-                                }}
-                                className={`px-3 py-1 rounded-full text-[11px] font-display font-bold border-2 transition cursor-pointer ${
-                                  losersHeading === preset
-                                    ? 'bg-[#1E1E24] text-[#4AE3B5] border-[#1E1E24]'
-                                    : 'bg-[#FAF7F2] text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
-                                }`}
-                              >
-                                {preset}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <input
-                            value={newLoserName}
-                            onChange={(e) => setNewLoserName(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && addLoserLabel()}
-                            placeholder="Tambah nama yang kalah (maks 6)..."
-                            maxLength={16}
-                            className="flex-1 px-4 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-bold text-sm outline-none transition"
-                          />
-                          <button
-                            type="button"
-                            onClick={addLoserLabel}
-                            className="px-4 py-2.5 rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-sm inline-flex items-center gap-1.5 cursor-pointer shrink-0"
-                          >
-                            <Plus className="w-4 h-4" />
-                            <span>Tambah</span>
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                          {losers.map((item) => (
-                            <div
-                              key={item.id}
-                              style={{ backgroundColor: item.color }}
-                              className="rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] p-2.5 space-y-2"
-                            >
-                              <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-extrabold bg-white/85 text-[#1E1E24] px-2 py-0.5 rounded-full">
-                                  {item.rotation > 0 ? `+${item.rotation}°` : `${item.rotation}°`}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleFrontSpot(item.id)}
-                                    title="Tandai paling depan"
-                                    className={`px-2 py-1 rounded-full text-xs font-extrabold border border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer transition ${
-                                      item.frontSpot
-                                        ? 'bg-[#EC5A29] text-white'
-                                        : 'bg-white/90 text-[#1E1E24] hover:bg-white'
-                                    }`}
-                                  >
-                                    <Crown className="w-3 h-3" />
-                                    <span>Depan</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeLoserLabel(item.id)}
-                                    aria-label={`Hapus ${item.name}`}
-                                    className="w-8 h-8 rounded-full bg-white/85 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-
-                              <input
-                                value={item.name}
-                                onChange={(e) => updateLoserName(item.id, e.target.value)}
-                                maxLength={16}
-                                className="w-full px-2.5 py-1.5 rounded-xl bg-white/90 border border-[#1E1E24]/25 focus:border-[#1E1E24] font-display font-bold text-sm text-[#1E1E24] outline-none"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <hr className="border-dashed border-[#1E1E24]/15" />
-
-                      {/* Section C: Bottom Footer CTA */}
-                      <div className="space-y-3">
-                        <div>
-                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#D6F5EC] text-[#158467] text-xs font-extrabold uppercase">
-                            FOOTER AJAKAN &amp; QR POJOK KANAN
-                          </span>
-                          <h3 className="font-display text-lg font-bold mt-1">
-                            Teks Ajakan Main (Link Langsung di Bawahnya!)
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                          <div>
-                            <label className="block text-[11px] font-extrabold uppercase text-[#64616C] mb-1">
-                              Baris 1 (Atas Link)
-                            </label>
-                            <input
-                              value={footerHook}
-                              onChange={(e) => setFooterHook(e.target.value)}
-                              maxLength={32}
-                              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-extrabold uppercase text-[#64616C] mb-1">
-                              Baris 3 (Bawah Link)
-                            </label>
-                            <input
-                              value={footerSubCta}
-                              onChange={(e) => setFooterSubCta(e.target.value)}
-                              maxLength={30}
-                              className="w-full px-3.5 py-2.5 rounded-2xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {FOOTER_HOOK_PRESETS.map((h) => (
-                            <button
-                              key={h}
-                              type="button"
-                              onClick={() => {
-                                sfx.playPop();
-                                setFooterHook(h);
-                              }}
-                              className="px-2.5 py-1 rounded-full bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-[#1E1E24]/15 text-[11px] font-bold text-[#64616C] hover:text-[#1E1E24] cursor-pointer"
-                            >
-                              {h}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {activeTab === 'visual' && (
-                    <motion.div
-                      key="tab-visual"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-2.5">
-                        <div>
-                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FCE4F0] text-[#C82373] text-xs font-extrabold uppercase">
-                            4 VISUAL KEY POSTER
-                          </span>
-                          <h3 className="font-display text-xl font-bold mt-1">
-                            Pilih Tema Poster 9:16
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                          {(Object.values(POSTER_THEMES) as PosterThemeConfig[]).map((t) => {
-                            const active = themeId === t.id;
-                            return (
-                              <button
-                                key={t.id}
-                                type="button"
-                                onClick={() => {
-                                  sfx.playPop(600);
-                                  setThemeId(t.id);
-                                }}
-                                className={`p-3 rounded-2xl border-2 text-left transition cursor-pointer flex flex-col gap-2 ${
-                                  active
-                                    ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_4px_0_#0A0A0D]'
-                                    : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
-                                }`}
-                              >
-                                <div className="flex items-center -space-x-1.5">
-                                  {t.previewSwatch.map((hex, i) => (
-                                    <span
-                                      key={i}
-                                      style={{ backgroundColor: hex }}
-                                      className="w-6 h-6 rounded-full border-2 border-[#1E1E24] block"
-                                    />
-                                  ))}
-                                </div>
-                                <div>
-                                  <p className="font-display font-bold text-xs sm:text-sm leading-tight">
-                                    {t.name}
-                                  </p>
-                                  <p className={`text-xs font-bold mt-0.5 ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
-                                    {t.badge}
-                                  </p>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <p className="text-xs font-extrabold uppercase text-[#64616C]">
-                          Model Bingkai Retro (Tengah):
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                          {(
-                            [
-                              {
-                                id: 'retro-monitor',
-                                title: 'Retro Monitor',
-                                desc: 'WW Poster • Stiker & speaker',
-                                icon: <Monitor className="w-5 h-5" />,
-                                accent: '#158467',
-                              },
-                              {
-                                id: 'playverse-arcade',
-                                title: 'Playverse Arcade',
-                                desc: 'Ungu • Joystick & tombol',
-                                icon: <Gamepad2 className="w-5 h-5" />,
-                                accent: '#7C3AED',
-                              },
-                              {
-                                id: 'classic-tv',
-                                title: 'Classic CRT TV',
-                                desc: 'Antena kelinci & knob putar',
-                                icon: <Tv className="w-5 h-5" />,
-                                accent: '#EC5A29',
-                              },
-                            ] as const
-                          ).map((f) => {
-                            const active = frameStyle === f.id;
-                            return (
-                              <button
-                                key={f.id}
-                                type="button"
-                                onClick={() => {
-                                  sfx.playPop(620);
-                                  setFrameStyle(f.id);
-                                }}
-                                className={`p-3.5 rounded-2xl border-2 text-left transition cursor-pointer ${
-                                  active
-                                    ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_4px_0_#0A0A0D]'
-                                    : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
-                                }`}
-                              >
-                                <span
-                                  style={{ backgroundColor: f.accent }}
-                                  className="w-9 h-9 rounded-xl text-white flex items-center justify-center mb-2 border-2 border-[#1E1E24]"
-                                >
-                                  {f.icon}
-                                </span>
-                                <p className="font-display font-bold text-sm leading-tight">{f.title}</p>
-                                <p className={`text-[11px] font-semibold mt-0.5 ${active ? 'text-white/75' : 'text-[#64616C]'}`}>
-                                  {f.desc}
-                                </p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="rounded-[24px] bg-[#FAF7F2] border-2 border-[#1E1E24]/15 p-4 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-extrabold uppercase text-[#64616C] flex items-center gap-1.5">
-                            <SlidersHorizontal className="w-4 h-4 text-[#2568EF]" />
-                            <span>Kemiringan Bingkai &amp; Framing Foto</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              sfx.playPop();
-                              setFrameTiltDeg(-2.2);
-                              setZoom(1.0);
-                              setPanX(0);
-                              setPanY(0);
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-white border border-[#1E1E24]/15 text-[11px] font-bold hover:border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer"
-                          >
-                            <RotateCcw className="w-3 h-3" />
-                            <span>Reset</span>
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <label className="block space-y-1">
-                            <div className="flex justify-between text-xs font-bold">
-                              <span>Kemiringan Bingkai</span>
-                              <span className="text-[#EC5A29] tabular-nums">
-                                {frameTiltDeg > 0 ? `+${frameTiltDeg.toFixed(1)}°` : `${frameTiltDeg.toFixed(1)}°`}
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min={-4}
-                              max={4}
-                              step={0.2}
-                              value={frameTiltDeg}
-                              onChange={(e) => setFrameTiltDeg(parseFloat(e.target.value))}
-                              className="w-full accent-[#EC5A29] cursor-pointer"
-                            />
-                          </label>
-
-                          <label className="block space-y-1">
-                            <div className="flex justify-between text-xs font-bold">
-                              <span className="inline-flex items-center gap-1">
-                                <ZoomIn className="w-3.5 h-3.5 text-[#158467]" />
-                                <span>Zoom Foto</span>
-                              </span>
-                              <span className="text-[#158467] tabular-nums">{zoom.toFixed(2)}x</span>
-                            </div>
-                            <input
-                              type="range"
-                              min={1}
-                              max={2.4}
-                              step={0.05}
-                              value={zoom}
-                              onChange={(e) => setZoom(parseFloat(e.target.value))}
-                              className="w-full accent-[#158467] cursor-pointer"
-                            />
-                          </label>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#1E1E24]/10">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              sfx.playPop();
-                              setCrtFilter((v) => !v);
-                            }}
-                            className={`px-3.5 py-2 rounded-full border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition ${
-                              crtFilter ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-white text-[#64616C]'
-                            }`}
-                          >
-                            <Film className="w-3.5 h-3.5" />
-                            <span>Filter CRT Scanlines: {crtFilter ? 'ON' : 'OFF'}</span>
-                          </button>
-
-                          {photoImg && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                sfx.playPop(420);
-                                setPhotoImg(null);
-                              }}
-                              className="px-3 py-2 rounded-full bg-[#FFE4E2] text-[#B42318] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Hapus Foto</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="rounded-[24px] bg-[#FAF7F2] border-2 border-[#1E1E24]/15 p-4 space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2.5">
-                            <span className="w-9 h-9 rounded-xl bg-[#D8317E] text-white border-2 border-[#1E1E24] flex items-center justify-center">
-                              <Smile className="w-5 h-5" />
-                            </span>
-                            <div>
-                              <p className="font-display font-bold text-sm">Mascot Bermain di Sekeliling</p>
-                              <p className="text-[11px] font-semibold text-[#64616C]">
-                                4 stiker Grok-bot ikonik di sudut bingkai
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              sfx.playPop();
-                              setShowMascots((v) => !v);
-                            }}
-                            className={`px-3.5 py-1.5 rounded-full border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition ${
-                              showMascots ? 'bg-[#4AE3B5] text-[#1E1E24]' : 'bg-white text-[#64616C]'
-                            }`}
-                          >
-                            {showMascots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                            <span>{showMascots ? 'Aktif' : 'Sembunyi'}</span>
-                          </button>
-                        </div>
-
-                        {showMascots && (
-                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#1E1E24]/10">
-                            <span className="text-[11px] font-extrabold uppercase text-[#64616C]">
-                              Ekspresi Mascot:
-                            </span>
-                            {(
-                              [
-                                { id: 'playful', label: '😄 Ceria Campur' },
-                                { id: 'mocking', label: '🤣 Ngeledek Kalah' },
-                                { id: 'cool', label: '😎 Kacamata Cool' },
-                              ] as { id: MascotMoodPreset; label: string }[]
-                            ).map((m) => (
-                              <button
-                                key={m.id}
-                                type="button"
-                                onClick={() => {
-                                  sfx.playPop(640);
-                                  setMascotMoodPreset(m.id);
-                                }}
-                                className={`px-3 py-1 rounded-full text-xs font-display font-bold border-2 transition cursor-pointer ${
-                                  mascotMoodPreset === m.id
-                                    ? 'bg-[#FBBF24] text-[#1E1E24] border-[#1E1E24]'
-                                    : 'bg-white text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
-                                }`}
-                              >
-                                {m.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <span className="text-xs font-bold text-[#64616C]">{t.name}:</span>
+                      <input
+                        type="text"
+                        value={t.handle}
+                        onChange={(e) => updateTeamTagHandle(t.id, e.target.value)}
+                        className="w-24 text-xs font-extrabold text-[#D8317E] bg-transparent outline-none"
+                        placeholder="@ig_kamu"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
           </div>
         </main>
       </div>
