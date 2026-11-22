@@ -14,7 +14,6 @@ import {
   Flame,
   X,
   Sparkles,
-  Camera,
 } from 'lucide-react';
 import { useGameStore, type Player } from '../../store/useGameStore';
 import { PlayerProfileAvatar } from '../characters/PlayerProfileAvatar';
@@ -334,19 +333,28 @@ const FullPodiumAndPunishmentModal: React.FC<{
                   </p>
                 </motion.div>
 
-                {/* Shortcut to End-Game Final Punishment Photobooth */}
+                {/* Footer: lanjut game selanjutnya tanpa photo booth */}
                 <div className="pt-2 flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      sfx.playFanfare();
+                      sfx.playPop();
                       onClose();
-                      navigate('/photobooth');
                     }}
-                    className="flex-1 py-3 px-4 rounded-xl bg-[#D8317E] hover:bg-[#C82373] text-white font-display font-bold text-xs sm:text-sm border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] transition flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3 px-4 rounded-xl bg-[#158467] hover:bg-[#0F5E49] text-white font-display font-bold text-xs sm:text-sm border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] transition flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Camera className="w-4 h-4 text-[#FBBF24]" />
-                    <span>📸 Hukuman Terakhir: Photo Booth (Yang Kalah Di Depan!)</span>
+                    <span>Selesai Hukuman &amp; Lanjut Main</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop();
+                      onClose();
+                      navigate('/room/podium');
+                    }}
+                    className="py-3 px-4 rounded-xl bg-white hover:bg-[#FAF7F2] text-[#1E1E24] font-display font-bold text-xs sm:text-sm border-2 border-[#1E1E24] cursor-pointer transition"
+                  >
+                    Akhiri &amp; Lihat Podium Akhir
                   </button>
                 </div>
               </div>
@@ -510,7 +518,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
               className="px-3 py-1.5 rounded-xl bg-[#1E1E24] text-white hover:bg-[#2C2C35] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer active:translate-y-[2px] transition"
             >
               <Home className="w-3.5 h-3.5 text-[#FBBF24]" />
-              <span className="hidden sm:inline">Menu Utama</span>
+              <span className="hidden sm:inline">Hub Game</span>
             </button>
 
             {/* UNDO BUTTON (Jika Tersedia) */}

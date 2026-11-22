@@ -223,7 +223,7 @@ export default function G6Match() {
         {/* Pitch Item & Absurd Buyer Banner */}
         <div className="rounded-[32px] bg-gradient-to-b from-[#65A30D] to-[#4D7C0F] text-white p-6 md:p-8 shadow-[0_12px_28px_rgba(101,163,13,0.25)] border-2 border-[#3F6212]/30 mb-5 relative overflow-hidden text-center">
           <div className="flex items-center justify-between mb-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider shadow-xs">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-[#BEF264]" />
               <span>SELL ME THIS TRASH!</span>
             </div>
@@ -243,7 +243,7 @@ export default function G6Match() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
-            <div className="p-3.5 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/10">
+            <div className="p-3.5 rounded-2xl bg-white/15 border border-white/10">
               <span className="text-xs font-black uppercase bg-[#EF4444] text-white px-2.5 py-0.5 rounded-full shadow-xs">
                 Barang Rusak / Aneh
               </span>
@@ -255,7 +255,7 @@ export default function G6Match() {
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/10">
+            <div className="p-3.5 rounded-2xl bg-white/15 border border-white/10">
               <span className="text-xs font-black uppercase bg-[#FBBF24] text-[#1E1E24] px-2.5 py-0.5 rounded-full shadow-xs">
                 Calon Pembeli Absurd
               </span>

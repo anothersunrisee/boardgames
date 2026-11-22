@@ -285,7 +285,6 @@ export const GrokMascot: React.FC<{
   headphones = false,
   coffeeCup = false,
   stickerBorder = true,
-  blinkDelay = 0,
   lookX = 0,
   className = '',
 }) => {
@@ -375,11 +374,6 @@ export const GrokMascot: React.FC<{
       height={size}
       viewBox="0 0 120 120"
       className={`block overflow-visible select-none ${className}`}
-      style={{
-        filter: stickerBorder
-          ? 'drop-shadow(0 5px 8px rgba(30,30,36,0.18))'
-          : 'drop-shadow(0 3px 5px rgba(30,30,36,0.12))',
-      }}
     >
       {/* Headphones Back Band */}
       {headphones && (
@@ -401,25 +395,13 @@ export const GrokMascot: React.FC<{
       {/* Subtle Top Highlight */}
       <ellipse cx="44" cy="37" rx="11" ry="5" fill="#FFFFFF" opacity="0.22" transform="rotate(-18 44 37)" />
 
-      {/* Animated Blinking Eyes */}
-      <motion.g
-        animate={{
-          scaleY: mood === 'chill' ? 1 : [1, 1, 1, 0.08, 1, 1],
-          x: lookX,
-        }}
-        transition={{
-          scaleY: {
-            duration: 3.6,
-            times: [0, 0.44, 0.47, 0.5, 0.54, 1],
-            repeat: Infinity,
-            delay: blinkDelay,
-          },
-          x: { type: 'spring', stiffness: 200, damping: 18 },
-        }}
-        style={{ transformOrigin: `60px ${eyeY}px` }}
+      {/* Crisp Eyes (zero idle infinite animation) */}
+      {/* Crisp Eyes */}
+      <g
+        style={{ transform: `translateX(${lookX}px)` }}
       >
         {renderEyes()}
-      </motion.g>
+      </g>
 
       {/* Developer Round Glasses */}
       {glasses && (
@@ -438,27 +420,24 @@ export const GrokMascot: React.FC<{
         </g>
       )}
 
-      {/* Cute Mini Coffee Mug + Animated Steam */}
+      {/* Cute Mini Coffee Mug */}
       {coffeeCup && (
         <g transform="translate(76, 68)">
-          {/* Animated steam wisps */}
-          <motion.path
+          <path
             d="M8,-4 Q11,-10 8,-16"
             stroke="#FAF7F2"
             strokeWidth="2.6"
             strokeLinecap="round"
             fill="none"
-            animate={{ y: [0, -4, 0], opacity: [0.35, 0.95, 0.35] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            opacity="0.7"
           />
-          <motion.path
+          <path
             d="M16,-3 Q19,-9 16,-15"
             stroke="#FBBF24"
             strokeWidth="2.6"
             strokeLinecap="round"
             fill="none"
-            animate={{ y: [0, -5, 0], opacity: [0.25, 0.9, 0.25] }}
-            transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+            opacity="0.7"
           />
           {/* Mug handle */}
           <path d="M22,6 C29,6 29,18 22,18" stroke="#1E1E24" strokeWidth="3.5" fill="none" />
@@ -700,17 +679,13 @@ export const PlayfulPartyFooter: React.FC<{
               if (peekBubble === 'Hai! Klik aku!') setPeekBubble(null);
             }}
             animate={{
-              y: peekDucking ? 26 : [0, -5, 0],
+              y: peekDucking ? 26 : 0,
               scaleY: peekDucking ? 0.82 : 1,
               scaleX: peekDucking ? 1.14 : 1,
             }}
-            transition={
-              peekDucking
-                ? { type: 'spring', stiffness: 420, damping: 16 }
-                : { y: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' } }
-            }
+            transition={{ type: 'spring', stiffness: 420, damping: 16 }}
             aria-label="Mascot mengintip"
-            className="relative cursor-pointer focus:outline-none"
+            className="relative cursor-pointer focus:outline-none hover:-translate-y-1 transition-transform"
           >
             <MiniSparkleBurst burstKey={peekBurst} color="#4AE3B5" />
             <GrokMascot
@@ -790,12 +765,7 @@ export const PlayfulPartyFooter: React.FC<{
                   onClick={() =>
                     triggerPlaygroundBot('bouncer', ['Boop! 🫧', 'Hehe geli!', 'Lompat lagi!'], 620)
                   }
-                  animate={{
-                    y: [0, -18, 0],
-                    scaleX: [1.05, 0.94, 1.05],
-                    scaleY: [0.93, 1.08, 0.93],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  whileHover={{ y: -8, scale: 1.06 }}
                   whileTap={{ scaleX: 1.28, scaleY: 0.72 }}
                   className="relative cursor-pointer focus:outline-none"
                   aria-label="Mascot Berry Melompat"
@@ -813,25 +783,20 @@ export const PlayfulPartyFooter: React.FC<{
                       initial={{ opacity: 0, y: 6, scale: 0.7 }}
                       animate={{ opacity: 1, y: -6, scale: 1 }}
                       exit={{ opacity: 0, y: -14 }}
-                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#2568EF] text-white font-display font-bold text-[11px] whitespace-nowrap shadow-sm border border-[#1E1E24]"
+                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#2568EF] text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border border-[#1E1E24]"
                     >
                       {botStates.chaser.bubble}
                     </motion.span>
                   )}
                 </AnimatePresence>
 
-                <motion.div
-                  animate={{ x: [-18, 22, -18] }}
-                  transition={{ duration: 4.4, repeat: Infinity, ease: 'easeInOut' }}
-                  className="relative flex items-end gap-1"
-                >
+                <div className="relative flex items-end gap-1">
                   <motion.button
                     type="button"
                     onClick={() =>
                       triggerPlaygroundBot('chaser', ['Tunggu aku! 🏃', 'Wuss~ ⚡', 'Ayo main!'], 540)
                     }
-                    animate={{ y: [0, -10, 0], rotate: [-6, 6, -6] }}
-                    transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
+                    whileHover={{ y: -6, rotate: 4 }}
                     whileTap={{ scaleX: 1.26, scaleY: 0.74 }}
                     className="relative cursor-pointer focus:outline-none"
                     aria-label="Mascot Cobalt Berlari"
@@ -840,12 +805,8 @@ export const PlayfulPartyFooter: React.FC<{
                     <GrokMascot shape="squircle" color="#2568EF" size={64} mood="idle" blinkDelay={0.8} />
                   </motion.button>
 
-                  <motion.div
-                    animate={{ y: [0, -14, 0] }}
-                    transition={{ duration: 0.75, repeat: Infinity, delay: 0.25 }}
-                    className="w-5 h-5 rounded-full bg-[#FBBF24] border-2 border-[#1E1E24] mb-1.5 shadow-xs"
-                  />
-                </motion.div>
+                  <div className="w-5 h-5 rounded-full bg-[#FBBF24] border-2 border-[#1E1E24] mb-1.5 shadow-xs" />
+                </div>
               </div>
 
               {/* MASCOT 3: Juggler */}
@@ -856,32 +817,23 @@ export const PlayfulPartyFooter: React.FC<{
                       initial={{ opacity: 0, y: 6, scale: 0.7 }}
                       animate={{ opacity: 1, y: -6, scale: 1 }}
                       exit={{ opacity: 0, y: -14 }}
-                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#EC5A29] text-white font-display font-bold text-[11px] whitespace-nowrap shadow-sm border border-[#1E1E24]"
+                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#EC5A29] text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border border-[#1E1E24]"
                     >
                       {botStates.juggler.bubble}
                     </motion.span>
                   )}
                 </AnimatePresence>
 
-                <motion.div
-                  animate={{
-                    y: [-4, -36, -4],
-                    x: [-10, 10, -10],
-                    rotate: [0, 180, 360],
-                  }}
-                  transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-                  className="mb-0.5 text-[#FBBF24] drop-shadow-xs"
-                >
+                <div className="mb-1 text-[#FBBF24]">
                   <Star className="w-5 h-5 fill-[#FBBF24] stroke-[#1E1E24]" strokeWidth={2.5} />
-                </motion.div>
+                </div>
 
                 <motion.button
                   type="button"
                   onClick={() =>
                     triggerPlaygroundBot('juggler', ['Hap! Kena! ⭐', 'Jago kan?', 'Gas ronde 1!'], 700)
                   }
-                  animate={{ rotate: [-5, 5, -5], y: [0, -4, 0] }}
-                  transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                  whileHover={{ y: -6, rotate: -4 }}
                   whileTap={{ scaleX: 1.25, scaleY: 0.75 }}
                   className="relative cursor-pointer focus:outline-none"
                   aria-label="Mascot Tangerine Bermain Bintang"
@@ -899,28 +851,23 @@ export const PlayfulPartyFooter: React.FC<{
                       initial={{ opacity: 0, y: 6, scale: 0.7 }}
                       animate={{ opacity: 1, y: -6, scale: 1 }}
                       exit={{ opacity: 0, y: -14 }}
-                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#9D71E8] text-white font-display font-bold text-[11px] whitespace-nowrap shadow-sm border border-[#1E1E24]"
+                      className="absolute -top-9 px-2.5 py-1 rounded-xl bg-[#9D71E8] text-white font-display font-bold text-xs whitespace-nowrap shadow-sm border border-[#1E1E24]"
                     >
                       {botStates.chiller.bubble}
                     </motion.span>
                   )}
                 </AnimatePresence>
 
-                <motion.span
-                  animate={{ y: [0, -18], x: [0, 8], opacity: [0, 1, 0], scale: [0.7, 1.05, 0.9] }}
-                  transition={{ duration: 2.6, repeat: Infinity, ease: 'easeOut' }}
-                  className="absolute -top-5 right-0 font-display font-bold text-xs text-[#9D71E8] pointer-events-none"
-                >
+                <span className="absolute -top-5 right-0 font-display font-bold text-xs text-[#9D71E8] pointer-events-none">
                   zZz
-                </motion.span>
+                </span>
 
                 <motion.button
                   type="button"
                   onClick={() =>
                     triggerPlaygroundBot('chiller', ['Lagi vibing 🎧', 'Santuy dulu~', 'Ngantuk zZz'], 430)
                   }
-                  animate={{ y: [0, -3, 0], rotate: [-2, 2, -2] }}
-                  transition={{ duration: 3.1, repeat: Infinity, ease: 'easeInOut' }}
+                  whileHover={{ y: -5, scale: 1.05 }}
                   whileTap={{ scaleX: 1.24, scaleY: 0.78 }}
                   className="relative cursor-pointer focus:outline-none"
                   aria-label="Mascot Lavender Santai"
@@ -953,8 +900,8 @@ export const PlayfulPartyFooter: React.FC<{
                   <h2 className="font-display text-2xl font-bold leading-none text-[#FAF7F2]">
                     Party Games Hub!
                   </h2>
-                  <span className="text-[11px] font-bold text-[#4AE3B5] tracking-wide">
-                    PASS-THE-DEVICE EDITION
+                  <span className="text-xs font-bold text-[#4AE3B5] tracking-wide">
+                    PARTY GAMES EDITION
                   </span>
                 </div>
               </div>
@@ -963,11 +910,11 @@ export const PlayfulPartyFooter: React.FC<{
                 Satu layar untuk rame-rame. Bikin tongkrongan, jeda kuliah, dan kumpul bareng makin pecah!
               </p>
 
-              {/* Offline Status Pills */}
+              {/* Status Pills */}
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-[#4AE3B5]">
                   <WifiOff className="w-3.5 h-3.5" />
-                  <span>100% Offline</span>
+                  <span>Main Offline / HP</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-[#FBBF24]">
                   <Lock className="w-3.5 h-3.5" />
@@ -975,7 +922,7 @@ export const PlayfulPartyFooter: React.FC<{
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-[#FF8AC2]">
                   <HardDrive className="w-3.5 h-3.5" />
-                  <span>Local Cache</span>
+                  <span>Langsung Main</span>
                 </span>
               </div>
             </div>

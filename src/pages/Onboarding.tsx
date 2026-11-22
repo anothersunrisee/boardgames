@@ -897,12 +897,12 @@ const FruitNinjaMascotCanvas: React.FC<{
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
@@ -939,7 +939,7 @@ const FruitNinjaMascotCanvas: React.FC<{
     let isTouchDevice = false;
 
     const spawnMascot = (xOverride?: number) => {
-      if (mascots.length >= 9) return;
+      if (mascots.length >= 6) return;
       const template = MASCOT_TEMPLATES[Math.floor(Math.random() * MASCOT_TEMPLATES.length)];
       const baseR = width < 640 ? 34 : 42;
       const radius = baseR + Math.random() * 10;
@@ -1226,7 +1226,7 @@ const FruitNinjaMascotCanvas: React.FC<{
         const roll = Math.random();
         const waveSize = roll > 0.72 ? 3 : roll > 0.36 ? 2 : 1;
         for (let k = 0; k < waveSize; k++) {
-          if (mascots.length < 9) {
+          if (mascots.length < 6) {
             spawnMascot();
           }
         }
@@ -1507,92 +1507,27 @@ const FruitNinjaMascotCanvas: React.FC<{
         ctx.restore();
       }
 
-      // Draw high-visibility Fruit Ninja interactive slicing reticle at cursor position
+      // Lightweight crisp reticle cursor (no per-frame gradient allocations)
       if (isMouseInside && mouseX > 0 && mouseY > 0 && !isTouchDevice) {
+        const curR = isPointerDown ? 17 : 13;
         ctx.save();
         ctx.translate(mouseX, mouseY);
-
-        const pulse = Math.sin(elapsedSec * 6) * 1.5;
-        const baseR = isPointerDown ? 20 : 15;
-        const curR = baseR + pulse;
-
-        // 1. Soft Ambient Luminous Halo (Visible over both light cream and dark elements)
-        const haloGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, curR + 14);
-        if (isPointerDown) {
-          haloGrad.addColorStop(0, 'rgba(255, 90, 38, 0.45)');
-          haloGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.25)');
-          haloGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
-        } else {
-          haloGrad.addColorStop(0, 'rgba(251, 191, 36, 0.35)');
-          haloGrad.addColorStop(0.6, 'rgba(236, 90, 41, 0.15)');
-          haloGrad.addColorStop(1, 'rgba(236, 90, 41, 0)');
-        }
-        ctx.fillStyle = haloGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, curR + 14, 0, Math.PI * 2);
+        ctx.arc(0, 0, curR + 6, 0, Math.PI * 2);
+        ctx.fillStyle = isPointerDown ? 'rgba(255, 90, 38, 0.22)' : 'rgba(251, 191, 36, 0.2)';
         ctx.fill();
 
-        // 2. High-Contrast Outer Reticle Ring (White Halo + Dark Ink Outline)
         ctx.beginPath();
         ctx.arc(0, 0, curR, 0, Math.PI * 2);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 4.5;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, curR, 0, Math.PI * 2);
-        ctx.strokeStyle = isPointerDown ? '#FF5A26' : '#F59E0B';
+        ctx.strokeStyle = isPointerDown ? '#FF5A26' : '#1E1E24';
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(0, 0, curR - 1.5, 0, Math.PI * 2);
-        ctx.strokeStyle = '#1E1E24';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // 3. Slicing Crosshair Ticks with White Backing
-        const rot = elapsedSec * (isPointerDown ? 3.5 : 1.2);
-        for (let k = 0; k < 4; k++) {
-          const angle = rot + (k * Math.PI) / 2;
-          const cos = Math.cos(angle);
-          const sin = Math.sin(angle);
-          const rInner = curR - 5;
-          const rOuter = curR + 7;
-
-          ctx.beginPath();
-          ctx.moveTo(cos * rInner, sin * rInner);
-          ctx.lineTo(cos * rOuter, sin * rOuter);
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 4;
-          ctx.lineCap = 'round';
-          ctx.stroke();
-
-          ctx.beginPath();
-          ctx.moveTo(cos * rInner, sin * rInner);
-          ctx.lineTo(cos * rOuter, sin * rOuter);
-          ctx.strokeStyle = isPointerDown ? '#FF5A26' : '#1E1E24';
-          ctx.lineWidth = 2;
-          ctx.lineCap = 'round';
-          ctx.stroke();
-        }
-
-        // 4. Center Glowing Pip
-        ctx.beginPath();
-        ctx.arc(0, 0, isPointerDown ? 4.5 : 3.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
         ctx.fill();
-        ctx.strokeStyle = '#1E1E24';
-        ctx.lineWidth = 1.5;
         ctx.stroke();
-
-        // 5. Mini Orbiting Sparkle Star
-        const orbitR = curR + 10;
-        const starAngle = -elapsedSec * 4;
-        const sx = Math.cos(starAngle) * orbitR;
-        const sy = Math.sin(starAngle) * orbitR;
-        drawFourPointStar(ctx, sx, sy, isPointerDown ? 6 : 4.5, isPointerDown ? '#FF5A26' : '#F59E0B');
-
         ctx.restore();
       }
 
@@ -1619,7 +1554,7 @@ const FruitNinjaMascotCanvas: React.FC<{
     <canvas
       ref={canvasRef}
       style={{ touchAction: 'none' }}
-      className="fixed inset-0 z-10 cursor-ninja select-none"
+      className="fixed inset-0 z-10 cursor-crosshair select-none"
     />
   );
 };
@@ -2105,9 +2040,6 @@ export default function Onboarding() {
   return (
     <div className="relative w-screen h-screen bg-[#FAF7F2] text-[#1E1E24] font-sans selection:bg-[#FBBF24] overflow-hidden select-none dot-bg">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        .font-display { font-family: 'Fredoka', sans-serif; letter-spacing: -0.015em; }
-        .font-sans { font-family: 'Plus Jakarta Sans', sans-serif; }
         .dot-bg {
           background-image: radial-gradient(rgba(30, 30, 36, 0.075) 1.5px, transparent 1.5px);
           background-size: 26px 26px;
@@ -2175,7 +2107,7 @@ export default function Onboarding() {
           animate={{ scale: explodeCount > 0 ? [1.24, 0.94, 1] : 1 }}
           transition={{ duration: 0.24 }}
           title="Mascot yang berhasil diledakkan"
-          className="px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-xs border-2 border-[#1E1E24]/12 shadow-[0_4px_0_rgba(30,30,36,0.08)] font-display font-bold text-sm text-[#1E1E24] flex items-center gap-1.5"
+          className="px-3.5 py-2 rounded-full bg-white/95 border-2 border-[#1E1E24]/12 shadow-[0_4px_0_rgba(30,30,36,0.08)] font-display font-bold text-sm text-[#1E1E24] flex items-center gap-1.5"
         >
           <span className="text-base leading-none">💥</span>
           <span className="tabular-nums">{explodeCount}</span>

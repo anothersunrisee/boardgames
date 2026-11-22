@@ -521,7 +521,7 @@ export default function G5Play() {
               <div className="rounded-[32px] bg-gradient-to-b from-[#7C3AED] to-[#6D28D9] text-white p-5 md:p-7 shadow-lg border-2 border-[#5B21B6]/30 text-center relative overflow-hidden">
                 {/* Category & Inline Shuffle Button */}
                 <div className="flex items-center justify-between mb-2.5">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-xs text-xs font-black uppercase tracking-wider shadow-xs">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider shadow-xs">
                     <FluentEmoji emoji={currentQuestion?.categoryEmoji} size={18} />
                     <span>Kategori: {currentQuestion?.category}</span>
                   </div>

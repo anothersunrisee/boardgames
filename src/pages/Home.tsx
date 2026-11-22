@@ -11,7 +11,6 @@ import { ScoreBoard } from '../components/ScoreBoard';
 import { GameOnboardingModal, type GameId } from '../components/modals/GameOnboardingModal';
 import {
   PlayfulPartyFooter,
-  DeveloperCornerButton,
   DeveloperInfoModal,
   QrisCoffeeModal,
 } from '../components/PlayfulPartyFooter';
@@ -358,7 +357,7 @@ export const Home: React.FC = () => {
       {/* Cumulative Scoreboard Modal (Refined Responsive Width & Height) */}
       <AnimatePresence>
         {showScoreModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -435,9 +434,6 @@ export const Home: React.FC = () => {
           onSelectGame={(gId) => handleGameCardClick(gId as GameId)}
         />
       </div>
-
-      {/* Floating Developer Pill on Bottom-Right */}
-      <DeveloperCornerButton onClick={() => openDevModal('features')} />
 
       {/* Developer Bio & Features / Limitations Modal */}
       <DeveloperInfoModal

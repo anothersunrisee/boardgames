@@ -30,7 +30,7 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-full bg-[#1E1E24] text-[#FAF7F2] shadow-lg border border-white/10">
+    <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 px-2.5 py-2 rounded-full bg-[#1E1E24] text-[#FAF7F2] shadow-xl border-2 border-white/15">
       {/* Undo Button (Jika Tersedia) */}
       {onUndo && (
         <button
@@ -40,7 +40,7 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
             onUndo();
           }}
           title={undoTitle}
-          className="px-2.5 py-1.5 rounded-full bg-[#EF4444]/20 hover:bg-[#EF4444]/30 text-[#FCA5A5] flex items-center gap-1 transition cursor-pointer text-xs font-bold"
+          className="px-3 py-1.5 min-h-[38px] rounded-full bg-[#EF4444]/20 hover:bg-[#EF4444]/35 text-[#FCA5A5] flex items-center gap-1.5 transition cursor-pointer text-xs font-bold"
         >
           <Undo2 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Undo</span>
@@ -56,10 +56,10 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
             onShuffle();
           }}
           title={shuffleTitle}
-          className="px-2.5 py-1.5 rounded-full bg-[#7C3AED]/30 hover:bg-[#7C3AED]/45 text-[#C4B5FD] flex items-center gap-1 transition cursor-pointer text-xs font-bold"
+          className="px-3 py-1.5 min-h-[38px] rounded-full bg-[#7C3AED]/35 hover:bg-[#7C3AED]/50 text-[#DDD6FE] flex items-center gap-1.5 transition cursor-pointer text-xs font-bold"
         >
           <Shuffle className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Ganti</span>
+          <span className="hidden sm:inline">Ganti Soal</span>
         </button>
       )}
 
@@ -69,11 +69,11 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
           sfx.playPop();
           navigate('/hub');
         }}
-        title="Hub Game"
-        aria-label="Kembali ke Hub Game"
-        className="w-10 h-10 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
+        title="Kembali ke Hub Game"
+        className="px-3 py-1.5 min-h-[38px] rounded-full hover:bg-white/15 flex items-center gap-1.5 transition cursor-pointer text-xs font-bold"
       >
-        <Home className="w-4 h-4" />
+        <Home className="w-4 h-4 text-[#4AE3B5]" />
+        <span className="hidden sm:inline">Menu Game</span>
       </button>
 
       <button
@@ -82,17 +82,19 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
           sfx.playPop();
           navigate('/room/podium');
         }}
-        title="Juara & Klasemen Room"
-        className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer text-[#F59E0B]"
+        title="Leaderboard & Podium Akhir"
+        className="px-3 py-1.5 min-h-[38px] rounded-full hover:bg-white/15 flex items-center gap-1.5 transition cursor-pointer text-xs font-bold text-[#FBBF24]"
       >
         <Trophy className="w-4 h-4" />
+        <span className="hidden sm:inline">Leaderboard</span>
       </button>
 
       <button
         type="button"
         onClick={toggleMute}
         title={muted ? 'Nyalakan Suara' : 'Matikan Suara'}
-        className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
+        aria-label={muted ? 'Nyalakan Suara' : 'Matikan Suara'}
+        className="w-10 h-10 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
       >
         {muted ? (
           <VolumeX className="w-4 h-4 text-[#F04438]" />
@@ -108,10 +110,11 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
             sfx.playPop();
             onSkipRound();
           }}
-          title="Skip Ronde"
-          className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
+          title="Lanjut / Skip Ronde"
+          className="px-3 py-1.5 min-h-[38px] rounded-full hover:bg-white/15 flex items-center gap-1.5 transition cursor-pointer text-xs font-bold text-[#FBBF24]"
         >
-          <FastForward className="w-4 h-4 text-[#FBBF24]" />
+          <FastForward className="w-4 h-4" />
+          <span className="hidden md:inline">Lewati</span>
         </button>
       )}
 
@@ -122,8 +125,8 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
             sfx.playPop();
             onResetGame();
           }}
-          title="Reset Permainan"
-          className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
+          title="Ulang Game Ini"
+          className="w-10 h-10 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
         >
           <RotateCcw className="w-4 h-4 text-[#FF85C0]" />
         </button>

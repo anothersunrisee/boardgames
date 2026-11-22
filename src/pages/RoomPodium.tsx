@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Trophy,
@@ -9,10 +9,7 @@ import {
   Crown,
   Home,
   UserPlus,
-  Camera,
-  Download,
   Sparkles,
-  X,
 } from 'lucide-react';
 
 const Instagram: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -42,16 +39,13 @@ import { CHARACTER_PACK, getCharacterById } from '../assets-library/characters';
 import { FluentEmoji } from '../components/ui/FluentEmoji';
 import { sfx } from '../assets-library/soundEngine';
 import { generatePartyWrappedAwards } from '../utils/partyWrapped';
-import { generateStoryCardPng } from '../utils/storyCardGenerator';
 import { syncHostRoomState } from '../services/firebase';
 
 export default function RoomPodium() {
   const navigate = useNavigate();
-  const { roomName, roomCode, roomVibe, players, resetRoomScores } = useGameStore();
+  const { roomName, roomCode, players, resetRoomScores } = useGameStore();
   const [showPunishment, setShowPunishment] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [showTvBackdrop, setShowTvBackdrop] = useState(false);
-  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
   const [podiumRevealKey, setPodiumRevealKey] = useState(1);
 
   useEffect(() => {
@@ -72,35 +66,18 @@ export default function RoomPodium() {
   const winner = sortedPlayers[0];
   const second = sortedPlayers[1];
   const third = sortedPlayers[2];
-  const bottom3 = sortedPlayers.length <= 3 ? sortedPlayers : sortedPlayers.slice(-3);
+  // 3-4 peserta -> 1 terbawah di depan; 5-7 peserta -> 2 di depan; 8+ peserta -> 3 di depan
+  const frontLoserCount = players.length >= 8 ? 3 : players.length >= 5 ? 2 : 1;
+  const frontLosers =
+    sortedPlayers.length <= frontLoserCount
+      ? sortedPlayers
+      : sortedPlayers.slice(-frontLoserCount);
   const awards = useMemo(() => generatePartyWrappedAwards(players), [players]);
 
   const handleResetScores = () => {
     sfx.playPop();
     resetRoomScores();
     setShowResetConfirm(false);
-  };
-
-  const handleDownloadStory = async () => {
-    sfx.playPop(750);
-    setIsGeneratingStory(true);
-    try {
-      const dataUrl = await generateStoryCardPng({
-        roomName,
-        roomVibe: roomVibe || 'tongkrongan',
-        players,
-        awards,
-      });
-      const link = document.createElement('a');
-      link.download = `partyhub_${roomName.toLowerCase().replace(/\s+/g, '_')}_story.png`;
-      link.href = dataUrl;
-      link.click();
-      sfx.playSuccess();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGeneratingStory(false);
-    }
   };
 
   return (
@@ -300,43 +277,6 @@ export default function RoomPodium() {
           </div>
         </div>
 
-        {/* Viral Loop: Photo Booth, TV Backdrop & Story Download Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <button
-            type="button"
-            onClick={() => {
-              sfx.playFanfare();
-              navigate('/photobooth');
-            }}
-            className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D8317E] to-[#EC5A29] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98 border-2 border-[#1E1E24]"
-          >
-            <Instagram className="w-4 h-4 text-[#FBBF24]" />
-            <span>📸 Photo Booth IG Story!</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              sfx.playFanfare();
-              setShowTvBackdrop(true);
-            }}
-            className="p-3.5 rounded-2xl bg-[#7C3AED] text-white font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition cursor-pointer active:scale-98"
-          >
-            <Camera className="w-4 h-4" />
-            <span>📺 TV Backdrop</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isGeneratingStory}
-            onClick={handleDownloadStory}
-            className="p-3.5 rounded-2xl bg-[#1E1E24] text-[#FBBF24] border-2 border-[#FBBF24]/40 font-display text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:bg-black transition cursor-pointer active:scale-98 disabled:opacity-50"
-          >
-            <Download className="w-4 h-4" />
-            <span>{isGeneratingStory ? 'Memproses...' : '📲 Unduh Kartu Podium'}</span>
-          </button>
-        </div>
-
         {/* Superlative Awards (Party Wrapped) */}
         {awards.length > 0 && (
           <Card className="mb-6 p-5 bg-white shadow-xs rounded-[28px] border-2 border-[#1E1E24]/10">
@@ -391,7 +331,7 @@ export default function RoomPodium() {
           <div className="space-y-2">
             {sortedPlayers.map((player, idx) => {
               const isFirst = idx === 0;
-              const isLast = players.length > 1 && idx === sortedPlayers.length - 1;
+              const isFrontLoser = players.length > 1 && idx >= sortedPlayers.length - frontLoserCount;
               const isNegative = player.score < 0;
               const char = getCharacterById(player.avatarId || CHARACTER_PACK[idx % CHARACTER_PACK.length].id);
 
@@ -401,7 +341,7 @@ export default function RoomPodium() {
                   className={`p-3 rounded-2xl border flex items-center justify-between transition ${
                     isFirst
                       ? 'bg-[#FEF3C7] border-[#F59E0B]'
-                      : isLast
+                      : isFrontLoser
                       ? 'bg-[#FFE8DF] border-[#EC5A29]/60'
                       : 'bg-[#FAF7F2] border-[#1E1E24]/10'
                   }`}
@@ -413,13 +353,13 @@ export default function RoomPodium() {
                     <PlayerProfileAvatar
                       character={char}
                       size={36}
-                      mood={isFirst ? 'winner' : isLast ? 'shocked' : 'idle'}
+                      mood={isFirst ? 'winner' : isFrontLoser ? 'shocked' : 'idle'}
                     />
                     <div>
                       <p className="font-display text-sm font-bold text-[#1E1E24] flex flex-wrap items-center gap-1.5">
                         <span>{player.name}</span>
                         {isFirst && <FluentEmoji name="crown" variant="3d" size={16} />}
-                        {isLast && (
+                        {isFrontLoser && (
                           <span className="px-2 py-0.5 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                             WAJIB DI DEPAN FOTO
                           </span>
@@ -449,31 +389,31 @@ export default function RoomPodium() {
         </Card>
 
         {/* 📸 ZONA HUKUMAN TERAKHIR END-GAME: PHOTO BOOTH + WAJIB IG STORY */}
-        {bottom3.length > 0 && players.length > 1 && (
+        {frontLosers.length > 0 && players.length > 1 && (
           <div className="mb-6">
             <div className="p-5 rounded-[30px] bg-gradient-to-br from-[#FFE8DF] to-[#FCE4F0] border-[3px] border-[#EC5A29] shadow-[0_6px_0_#EC5A29] space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[11px] font-black uppercase text-white px-3 py-1 rounded-full bg-[#EC5A29] inline-flex items-center gap-1.5 shadow-xs">
+                <span className="text-xs font-black uppercase text-white px-3 py-1 rounded-full bg-[#EC5A29] inline-flex items-center gap-1.5 shadow-xs">
                   <FluentEmoji name="fire" variant="3d" size={14} />
-                  <span>HUKUMAN TERAKHIR END-GAME • PHOTO BOOTH</span>
+                  <span>HUKUMAN TERAKHIR END-GAME • {frontLoserCount} TERBAWAH</span>
                 </span>
-                <span className="text-[11px] font-black uppercase text-[#D8317E] bg-white px-3 py-1 rounded-full border border-[#D8317E]/30">
-                  📸 WAJIB SHARE IG STORY &amp; TAG SEMUA TIM!
+                <span className="text-xs font-black uppercase text-[#D8317E] bg-white px-3 py-1 rounded-full border border-[#D8317E]/30">
+                  WAJIB SHARE IG STORY &amp; TAG SEMUA TIM
                 </span>
               </div>
 
               <div>
                 <h3 className="font-display text-xl sm:text-2xl font-black text-[#1E1E24]">
-                  Foto Bersama: Yang Kalah Wajib Di Depan!
+                  Foto Bersama: {frontLoserCount} Terbawah Wajib Di Depan!
                 </h3>
                 <p className="text-xs sm:text-sm text-[#4A4752] font-semibold mt-1">
-                  Pemain di posisi terbawah wajib berdiri paling depan saat sesi foto studio 9:16, lalu <strong>WAJIB di-upload ke Instagram Story &amp; tag seluruh anggota tim!</strong>
+                  Dari total {players.length} peserta, <strong>{frontLoserCount} pemain terbawah</strong> wajib berdiri paling depan saat sesi Photo Booth 9:16, lalu <strong>WAJIB upload IG Story &amp; tag seluruh tim!</strong>
                 </p>
               </div>
 
-              {/* Bottom Players Chips (Ranked Lowest First) */}
+              {/* Bottom Players Chips (Ranked Lowest First - all frontLosers get DI DEPAN) */}
               <div className="flex flex-wrap gap-2">
-                {[...bottom3].reverse().map((p, idx) => {
+                {[...frontLosers].reverse().map((p, idx) => {
                   const rank = sortedPlayers.indexOf(p) + 1;
                   const isAbsoluteLast = idx === 0;
                   return (
@@ -482,7 +422,7 @@ export default function RoomPodium() {
                       className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl border-2 shadow-2xs ${
                         isAbsoluteLast
                           ? 'bg-[#1E1E24] text-white border-[#FBBF24]'
-                          : 'bg-white text-[#1E1E24] border-[#EC5A29]/30'
+                          : 'bg-white text-[#1E1E24] border-[#EC5A29]'
                       }`}
                     >
                       <span
@@ -494,13 +434,11 @@ export default function RoomPodium() {
                       </span>
                       <PlayerProfileAvatar characterId={p.avatarId} size={30} name={p.name} />
                       <div>
-                        <p className="font-display font-bold text-xs leading-tight flex items-center gap-1">
+                        <p className="font-display font-bold text-xs leading-tight flex items-center gap-1.5">
                           <span>{p.name}</span>
-                          {isAbsoluteLast && (
-                            <span className="text-xs font-black bg-[#EC5A29] text-white px-2 py-0.5 rounded-md">
-                              DI DEPAN
-                            </span>
-                          )}
+                          <span className="text-xs font-black bg-[#EC5A29] text-white px-2 py-0.5 rounded-md">
+                            DI DEPAN
+                          </span>
                         </p>
                         <span
                           className={`text-xs font-bold ${
@@ -589,19 +527,19 @@ export default function RoomPodium() {
         open={showPunishment}
         onClose={() => setShowPunishment(false)}
         targetType="bottom3"
-        targetPlayers={bottom3}
+        targetPlayers={frontLosers}
       />
 
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65">
           <div className="w-full max-w-sm rounded-[32px] bg-white p-6 border-3 border-[#1E1E24] shadow-xl text-center">
             <div className="w-12 h-12 rounded-full bg-[#FFE4E2] text-[#F04438] flex items-center justify-center mx-auto mb-3">
               <RotateCcw className="w-6 h-6" />
             </div>
             <h3 className="font-display text-xl font-bold mb-1">Reset Semua Poin Room?</h3>
             <p className="text-xs text-[#64616C] font-semibold mb-5">
-              Poin seluruh pemain akan kembali ke 0. Nama & kubu pemain tetap tersimpan.
+              Poin seluruh pemain akan kembali ke 0. Nama &amp; kubu pemain tetap tersimpan.
             </p>
             <div className="flex gap-2.5">
               <button
@@ -622,91 +560,6 @@ export default function RoomPodium() {
           </div>
         </div>
       )}
-
-      {/* 📸 FULL-SCREEN TV BACKDROP FOR GROUP PHOTO */}
-      <AnimatePresence>
-        {showTvBackdrop && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#121217] text-white flex flex-col justify-between p-6 sm:p-12 overflow-hidden"
-          >
-            {/* Confetti in backdrop */}
-            <ConfettiShower active particleCount={80} />
-
-            {/* Top Bar with Close Button */}
-            <div className="flex items-center justify-between z-10">
-              <span className="font-display text-sm tracking-widest text-[#FBBF24] font-black uppercase">
-                PARTYHUB INDONESIA 🇮🇩 • TV PHOTO BACKDROP
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowTvBackdrop(false)}
-                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer transition active:scale-90"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Giant Centerpiece for Room Photo */}
-            <div className="text-center my-auto z-10">
-              <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FBBF24] via-[#F43F5E] to-[#A855F7] tracking-tight mb-2">
-                {roomName}
-              </h1>
-              <p className="font-display text-lg sm:text-2xl font-bold text-white/90">
-                🎉 TOURNAMENT CHAMPIONS 🎉
-              </p>
-
-              {/* Big Podium Displays */}
-              <div className="grid grid-cols-3 items-end gap-4 max-w-4xl mx-auto mt-8">
-                {second && (
-                  <div className="flex flex-col items-center">
-                    <PlayerProfileAvatar characterId={second.avatarId} size={72} name={second.name} />
-                    <p className="font-display text-xl sm:text-2xl font-bold mt-2">{second.name}</p>
-                    <span className="text-sm font-bold text-white/70">{second.score} pts</span>
-                    <div className="w-full h-32 rounded-t-3xl bg-white/10 border-2 border-white/20 flex flex-col items-center justify-center mt-3">
-                      <span className="font-display text-3xl font-black text-white">#2</span>
-                    </div>
-                  </div>
-                )}
-
-                {winner && (
-                  <div className="flex flex-col items-center">
-                    <FluentEmoji name="crown" variant="3d" size={48} />
-                    <PlayerProfileAvatar characterId={winner.avatarId} size={96} name={winner.name} />
-                    <p className="font-display text-2xl sm:text-4xl font-black text-[#FBBF24] mt-2">
-                      {winner.name}
-                    </p>
-                    <span className="text-base font-extrabold text-[#FBBF24]">{winner.score} pts</span>
-                    <div className="w-full h-44 rounded-t-3xl bg-gradient-to-t from-[#F59E0B] to-[#FBBF24] text-[#1E1E24] flex flex-col items-center justify-center mt-3 shadow-2xl">
-                      <span className="font-display text-5xl font-black">#1</span>
-                    </div>
-                  </div>
-                )}
-
-                {third && (
-                  <div className="flex flex-col items-center">
-                    <PlayerProfileAvatar characterId={third.avatarId} size={64} name={third.name} />
-                    <p className="font-display text-lg sm:text-xl font-bold mt-2">{third.name}</p>
-                    <span className="text-sm font-bold text-white/70">{third.score} pts</span>
-                    <div className="w-full h-24 rounded-t-3xl bg-white/10 border-2 border-white/20 flex flex-col items-center justify-center mt-3">
-                      <span className="font-display text-2xl font-black text-white">#3</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Bottom Photo Callout */}
-            <div className="text-center z-10">
-              <p className="font-display text-xs sm:text-sm font-bold text-white/60 tracking-wider">
-                Ayo foto bareng di depan layar TV sekarang! 📸✨ (Tekan tombol X untuk kembali)
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <HostUtilityBar />
     </div>

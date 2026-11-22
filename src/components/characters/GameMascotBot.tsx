@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import type { CharacterDef, CharacterMood } from '../../assets-library/types';
 
 // ============================================================================
@@ -250,40 +249,22 @@ export const GameMascotBot: React.FC<{
     }
   };
 
-  // Motion physics per mood (smooth anticipation & squash-and-stretch)
-  const bodyAnim = !animated
-    ? undefined
-    : mood === 'winner'
-    ? { y: [0, -12, 0], scaleX: [1.04, 0.94, 1.04], scaleY: [0.95, 1.07, 0.95], rotate: [-3, 3, -3] }
-    : mood === 'happy'
-    ? { y: [0, -8, 0], scaleY: [0.97, 1.04, 0.97] }
-    : mood === 'shocked'
-    ? { x: [-2, 2, -2, 2, 0], scale: [1, 1.04, 1] }
-    : mood === 'dizzy'
-    ? { rotate: [-6, 6, -6], y: [0, -3, 0] }
-    : { y: [0, -5, 0], rotate: [-1.5, 1.5, -1.5] };
-
   return (
-    <motion.div
-      className={`inline-flex items-center justify-center select-none ${className}`}
-      style={{ width: size, height: size }}
-      animate={bodyAnim}
-      transition={{
-        duration: mood === 'winner' ? 0.85 : mood === 'shocked' ? 0.5 : 2.8,
-        repeat: Infinity,
-        delay,
-        ease: 'easeInOut',
+    <div
+      className={`inline-flex items-center justify-center select-none transition-transform duration-200 hover:scale-105 ${
+        animated ? 'animate-mascot-float' : ''
+      } ${className}`}
+      style={{
+        width: size,
+        height: size,
+        animationDelay: animated ? `${delay}s` : undefined,
       }}
-      whileHover={animated ? { scale: 1.1 } : undefined}
     >
       <svg
         width={size}
         height={size}
         viewBox="0 0 120 120"
         className="overflow-visible"
-        style={{
-          filter: stickerBorder ? 'drop-shadow(0 5px 8px rgba(30,30,36,0.14))' : 'drop-shadow(0 4px 6px rgba(30,30,36,0.1))',
-        }}
       >
         {/* Optional Die-Cut Sticker Contour */}
         {stickerBorder && renderOrganicBody(true)}
@@ -302,30 +283,14 @@ export const GameMascotBot: React.FC<{
           />
         )}
 
-        {/* Signature White Pill Eyes with smooth 60fps blink & subtle glance */}
-        <motion.g
-          animate={
-            animated
-              ? {
-                  scaleY: [1, 1, 1, 0.08, 1, 1],
-                  x: mood === 'idle' ? [0, 3, 3, 0, -3, 0] : [0, 0, 0, 0, 0, 0],
-                }
-              : undefined
-          }
-          transition={{
-            duration: 3.8,
-            times: [0, 0.42, 0.45, 0.48, 0.52, 1],
-            repeat: Infinity,
-            delay,
-          }}
-          style={{ transformOrigin: '60px 58px' }}
-        >
+        {/* Signature White Pill Eyes */}
+        <g>
           {renderGrokPillEyes()}
-        </motion.g>
+        </g>
 
         {/* Mini Accent Spark */}
         {renderSparkAccent()}
       </svg>
-    </motion.div>
+    </div>
   );
 };

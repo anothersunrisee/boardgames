@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { CustomGameCursor } from './components/ui/CustomGameCursor';
 import { ScrollToTop } from './components/navigation/ScrollToTop';
 
 // ── Lazy-loaded Core & Outgame Pages ─────────────────────────────────────────
@@ -67,7 +66,6 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      <CustomGameCursor />
       <Suspense fallback={<RouteLoadingSpinner />}>
         <Routes>
           {/* 1. Onboarding Screen */}

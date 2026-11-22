@@ -66,7 +66,7 @@ export const GameCard: React.FC<GameCardProps> = ({
             {categoryPill}
           </span>
 
-          <span className="px-2.5 py-1 rounded-full bg-black/20 backdrop-blur-xs text-[11px] font-extrabold tracking-wider uppercase">
+          <span className="px-2.5 py-1 rounded-full bg-black/25 text-xs font-extrabold tracking-wider uppercase">
             {numberBadge}
           </span>
         </div>

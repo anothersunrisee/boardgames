@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import type { CharacterDef, CharacterMood } from '../../assets-library/types';
 import { getCharacterById } from '../../assets-library/characters';
 
@@ -20,7 +19,7 @@ export const PlayerProfileAvatar: React.FC<{
   characterId,
   size = 84,
   mood = 'idle',
-  animated = true,
+  animated = false,
   className = '',
 }) => {
   const character = propCharacter || getCharacterById(characterId || 'c01');
@@ -220,14 +219,12 @@ export const PlayerProfileAvatar: React.FC<{
     }
   };
 
-  const animDelay = (character.index % 7) * 0.28;
-
   return (
-    <motion.div
-      className={`inline-flex items-center justify-center select-none ${className}`}
+    <div
+      className={`inline-flex items-center justify-center select-none ${
+        animated ? 'transition-transform duration-200 hover:scale-105' : ''
+      } ${className}`}
       style={{ width: size, height: size }}
-      whileHover={animated ? { scale: 1.08, rotate: -2 } : undefined}
-      transition={{ type: 'spring', stiffness: 320, damping: 18 }}
     >
       <svg width={size} height={size} viewBox="0 0 120 120" className="overflow-visible">
         <defs>
@@ -239,49 +236,19 @@ export const PlayerProfileAvatar: React.FC<{
         {/* Crisp Black Circular Portrait Backdrop */}
         <circle cx="60" cy="60" r="56" fill="#121216" />
 
-        {/* Clipped Geometric Character + Subtle Animated Face */}
+        {/* Clipped Geometric Character + Crisp Face */}
         <g clipPath={`url(#${clipId})`}>
-          <motion.g
-            animate={
-              animated
-                ? mood === 'winner'
-                  ? { y: [0, -5, 0], rotate: [-2, 2, -2] }
-                  : { y: [0, -2.5, 0] }
-                : undefined
-            }
-            transition={{
-              duration: mood === 'winner' ? 1.1 : 3.2,
-              repeat: Infinity,
-              delay: animDelay,
-              ease: 'easeInOut',
-            }}
-            style={{ transformOrigin: '60px 95px' }}
-          >
+          <g>
             {renderAbstractSilhouette()}
-            <motion.g
-              animate={
-                animated
-                  ? {
-                      scaleY: [1, 1, 1, 0.14, 1, 1],
-                    }
-                  : undefined
-              }
-              transition={{
-                duration: 4.2,
-                times: [0, 0.45, 0.48, 0.5, 0.53, 1],
-                repeat: Infinity,
-                delay: animDelay,
-              }}
-              style={{ transformOrigin: '60px 60px' }}
-            >
+            <g>
               {renderMinimalistFace()}
-            </motion.g>
-          </motion.g>
+            </g>
+          </g>
         </g>
 
         {/* Subtle Inner Ring Highlight */}
         <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2" />
       </svg>
-    </motion.div>
+    </div>
   );
 };

@@ -2158,18 +2158,10 @@ const GrokMascotSvg: React.FC<{
       height={size}
       viewBox="0 0 120 120"
       className="block overflow-visible select-none"
-      style={{ filter: 'drop-shadow(0 5px 7px rgba(30,30,36,0.2))' }}
     >
       {renderPath(true)}
       {renderPath(false)}
-      <motion.g
-        animate={{ scaleY: [1, 1, 1, 0.1, 1, 1], x: lookX }}
-        transition={{
-          scaleY: { duration: 3.6, times: [0, 0.44, 0.47, 0.5, 0.54, 1], repeat: Infinity },
-          x: { type: 'spring', stiffness: 200, damping: 18 },
-        }}
-        style={{ transformOrigin: '60px 58px' }}
-      >
+      <g style={{ transform: `translateX(${lookX}px)` }}>
         {mood === 'happy' ? (
           <g stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" fill="none">
             <path d="M40,61 Q47,50 54,61" />
@@ -2181,7 +2173,7 @@ const GrokMascotSvg: React.FC<{
             <rect x="67.5" y="47" width="9.5" height="22" rx="4.75" />
           </g>
         )}
-      </motion.g>
+      </g>
     </svg>
   );
 };
@@ -2232,17 +2224,13 @@ const PartyHubScallopedFooter: React.FC = () => {
             type="button"
             onClick={handlePeek}
             animate={{
-              y: ducking ? 24 : [0, -5, 0],
+              y: ducking ? 24 : 0,
               scaleY: ducking ? 0.82 : 1,
               scaleX: ducking ? 1.14 : 1,
             }}
-            transition={
-              ducking
-                ? { type: 'spring', stiffness: 420, damping: 16 }
-                : { y: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' } }
-            }
+            transition={{ type: 'spring', stiffness: 420, damping: 16 }}
             aria-label="Mascot mengintip di footer"
-            className="cursor-pointer focus:outline-none"
+            className="cursor-pointer focus:outline-none hover:-translate-y-1 transition-transform"
           >
             <GrokMascotSvg shape="cloud" color="#158467" size={82} mood={ducking ? 'happy' : 'idle'} lookX={lookX} />
           </motion.button>
@@ -2457,9 +2445,51 @@ const IgStoryShareModal: React.FC<{
 // ============================================================================
 // 8. MAIN APPLICATION — PARTYGAMESHUB 9:16 PHOTOBOOTH STUDIO
 // ============================================================================
+const getFrontLoserCount = (totalParticipants: number): number => {
+  if (totalParticipants >= 8) return 3;
+  if (totalParticipants >= 5) return 2;
+  return 1;
+};
+
 export default function PhotoBooth() {
   const navigate = useNavigate();
   const { players: storePlayers, roomName: storeRoomName } = useGameStore();
+
+  // Compute initial losers directly from storePlayers (descending rank -> bottom N reversed)
+  const initialRoomData = useMemo(() => {
+    if (storePlayers.length > 0) {
+      const rankedDesc = [...storePlayers].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+      const frontCount = getFrontLoserCount(rankedDesc.length);
+      const bottom = rankedDesc.slice(-frontCount).reverse();
+      const defaultRots = [-5.5, 3.8, -4.2];
+      return {
+        losers: bottom.map((p, idx) => {
+          const pal = STICKER_LABEL_PALETTE[idx % STICKER_LABEL_PALETTE.length];
+          return {
+            id: p.id || `store-${idx}`,
+            name: p.name,
+            rotation: defaultRots[idx % defaultRots.length],
+            color: pal.bg,
+            textColor: pal.text,
+            frontSpot: true,
+          };
+        }),
+        tags: storePlayers.map((p) => ({
+          id: p.id,
+          name: p.name,
+          handle: `@${p.name.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
+        })),
+      };
+    }
+    return {
+      losers: DEFAULT_LOSERS,
+      tags: DEFAULT_LOSERS.map((l) => ({
+        id: l.id,
+        name: l.name,
+        handle: `@${l.name.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
+      })),
+    };
+  }, [storePlayers]);
 
   // UI & Audio state
   const [muted, setMuted] = useState(false);
@@ -2482,26 +2512,13 @@ export default function PhotoBooth() {
   const [subDialogIdx, setSubDialogIdx] = useState(0);
   const [customSubDialog, setCustomSubDialog] = useState<string | null>(null);
   const [losersHeading, setLosersHeading] = useState("PARTY'S LOSERS!");
-  const [losers, setLosers] = useState<LoserLabelItem[]>(DEFAULT_LOSERS);
+  const [losers, setLosers] = useState<LoserLabelItem[]>(() => initialRoomData.losers);
   const [newLoserName, setNewLoserName] = useState('');
   const [footerHook, setFooterHook] = useState('Cobain bareng gengmu!');
   const [footerSubCta, setFooterSubCta] = useState('Coba gratis sekarang!');
 
   // Team Tags State (Wajib Tag Semua Tim di IG Story!)
-  const [teamTags, setTeamTags] = useState<TeamTagItem[]>(() => {
-    if (storePlayers.length > 0) {
-      return storePlayers.map((p) => ({
-        id: p.id,
-        name: p.name,
-        handle: `@${p.name.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
-      }));
-    }
-    return DEFAULT_LOSERS.map((l) => ({
-      id: l.id,
-      name: l.name,
-      handle: `@${l.name.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
-    }));
-  });
+  const [teamTags, setTeamTags] = useState<TeamTagItem[]>(() => initialRoomData.tags);
 
   // Camera, Photo & Pan/Zoom State
   const [photoImg, setPhotoImg] = useState<HTMLImageElement | null>(null);
@@ -2561,13 +2578,14 @@ export default function PhotoBooth() {
   }, []);
 
   // Auto-import lowest-scoring players from Zustand Store OR Room Cache
+  // Ranking & aturan depan: 3-4 peserta = 1 depan, 5-7 = 2 depan, 8+ = 3 depan
   const importRoomCache = useCallback(
     (silent = false) => {
       // 1. Prioritas dari Zustand Active Store!
       if (storePlayers.length > 0) {
-        const sortedLowest = [...storePlayers]
-          .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))
-          .slice(0, 3);
+        const rankedDesc = [...storePlayers].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+        const frontCount = getFrontLoserCount(rankedDesc.length);
+        const sortedLowest = rankedDesc.slice(-frontCount).reverse();
 
         const defaultRots = [-5.5, 3.8, -4.2];
         const imported: LoserLabelItem[] = sortedLowest.map((p, idx) => {
@@ -2578,7 +2596,7 @@ export default function PhotoBooth() {
             rotation: defaultRots[idx % defaultRots.length],
             color: pal.bg,
             textColor: pal.text,
-            frontSpot: idx === 0, // Peringkat paling bawah wajib di depan!
+            frontSpot: true,
           };
         });
         setLosers(imported);
@@ -2592,7 +2610,9 @@ export default function PhotoBooth() {
         );
         if (!silent) {
           sfx.playFanfare();
-          showToast(`Import ${imported.length} pemain terbawah & ${storePlayers.length} tag anggota tim! 💀`);
+          showToast(
+            `Tersinkron! ${imported.length} terbawah wajib di depan (${storePlayers.length} anggota tim)`
+          );
         }
         return;
       }
@@ -2606,13 +2626,15 @@ export default function PhotoBooth() {
         }
         const parsed = JSON.parse(raw) as {
           roomName?: string;
-          players?: { id: string; name: string; roomScore?: number }[];
+          players?: { id: string; name: string; score?: number; roomScore?: number }[];
         };
         if (!parsed.players || parsed.players.length === 0) return;
 
-        const sortedLowest = [...parsed.players]
-          .sort((a, b) => (a.roomScore ?? 0) - (b.roomScore ?? 0))
-          .slice(0, 3);
+        const rankedDesc = [...parsed.players].sort(
+          (a, b) => (b.score ?? b.roomScore ?? 0) - (a.score ?? a.roomScore ?? 0)
+        );
+        const frontCount = getFrontLoserCount(rankedDesc.length);
+        const sortedLowest = rankedDesc.slice(-frontCount).reverse();
 
         const defaultRots = [-5.5, 3.8, -4.2];
         const imported: LoserLabelItem[] = sortedLowest.map((p, idx) => {
@@ -2623,14 +2645,21 @@ export default function PhotoBooth() {
             rotation: defaultRots[idx % defaultRots.length],
             color: pal.bg,
             textColor: pal.text,
-            frontSpot: idx === 0,
+            frontSpot: true,
           };
         });
         setLosers(imported);
+        setTeamTags(
+          parsed.players.map((p) => ({
+            id: p.id,
+            name: p.name,
+            handle: `@${p.name.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
+          }))
+        );
         if (parsed.roomName) setTeamName(parsed.roomName);
         if (!silent) {
           sfx.playFanfare();
-          showToast(`Import ${imported.length} pemain terbawah dari Room Cache! 💀`);
+          showToast(`Import ${imported.length} pemain terbawah dari Room Cache!`);
         }
       } catch {
         if (!silent) showToast('Gagal membaca data Room.');
@@ -3077,35 +3106,35 @@ export default function PhotoBooth() {
       {/* TOP WORKSPACE HEADER                                                 */}
       {/* ==================================================================== */}
       <div className="dot-canvas flex-1">
-        <header className="sticky top-0 z-30 bg-[#FAF7F2]/92 backdrop-blur-md border-b-[3px] border-[#1E1E24]/10">
-          <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 bg-[#FAF7F2] border-b-[3px] border-[#1E1E24]/10">
+          <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => {
                   sfx.playPop();
                   navigate('/room/podium');
                 }}
-                className="px-3 py-2 rounded-2xl bg-white hover:bg-[#F2ECE1] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] active:translate-y-[2px] transition font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 min-h-[38px] rounded-2xl bg-white hover:bg-[#F2ECE1] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] active:translate-y-[2px] transition font-display font-bold text-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Podium</span>
               </button>
 
-              <div className="w-11 h-11 rounded-2xl bg-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_4px_0_#0A0A0D] flex items-center justify-center shrink-0">
-                <GrokMascotSvg shape="squircle" color="#FBBF24" size={34} mood="happy" />
+              <div className="w-9 h-9 rounded-xl bg-[#1E1E24] border-2 border-[#1E1E24] flex items-center justify-center shrink-0">
+                <GrokMascotSvg shape="squircle" color="#FBBF24" size={28} mood="happy" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="font-display text-lg sm:text-2xl font-bold leading-none text-[#1E1E24]">
+                  <h1 className="font-display text-base sm:text-xl font-bold leading-none text-[#1E1E24]">
                     Hukuman Terakhir Photo Booth
                   </h1>
                   <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFE4E2] text-[#B42318] border border-[#DC2626]/30 text-xs font-extrabold uppercase">
-                    YANG KALAH DI DEPAN • WAJIB IG STORY
+                    {losers.length} TERBAWAH DI DEPAN
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-[#64616C] mt-0.5">
-                  Foto bersama tim (yang kalah berdiri paling depan!) + Wajib Share IG Story &amp; Tag Semua Tim
+                  Foto bersama tim + Wajib Share IG Story &amp; Tag Semua Tim
                 </p>
               </div>
             </div>
@@ -3114,10 +3143,10 @@ export default function PhotoBooth() {
               <button
                 type="button"
                 onClick={() => importRoomCache(false)}
-                className="px-3.5 py-2 rounded-[16px] bg-white hover:bg-[#F2ECE1] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[3px] transition font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 min-h-[38px] rounded-2xl bg-white hover:bg-[#F2ECE1] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] active:translate-y-[2px] transition font-display font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Database className="w-3.5 h-3.5 text-[#158467]" />
-                <span className="hidden sm:inline">Sinkron Skor Room</span>
+                <span className="hidden sm:inline">Sinkron Anggota</span>
                 <span className="sm:hidden">Sync</span>
               </button>
 
@@ -3125,7 +3154,7 @@ export default function PhotoBooth() {
                 type="button"
                 onClick={toggleMute}
                 aria-label={muted ? 'Nyalakan SFX' : 'Matikan SFX'}
-                className="w-10 h-10 rounded-full bg-[#1E1E24] text-[#FAF7F2] flex items-center justify-center shadow-[0_4px_0_#0A0A0D] active:translate-y-[3px] transition cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#1E1E24] text-[#FAF7F2] flex items-center justify-center shadow-[0_3px_0_#0A0A0D] active:translate-y-[2px] transition cursor-pointer"
               >
                 {muted ? (
                   <VolumeX className="w-4 h-4 text-[#F04438]" />
@@ -3138,25 +3167,22 @@ export default function PhotoBooth() {
         </header>
 
         {/* ==================================================================== */}
-        {/* MAIN 2-COLUMN STUDIO                                                 */}
+        {/* MAIN 2-COLUMN STUDIO (COMPACT ONE-SCREEN PREVIEW + BUTTONS)          */}
         {/* ==================================================================== */}
-        <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
-            {/* LEFT SHOWCASE COLUMN: LIVE 1080x1920 WYSIWYG CANVAS */}
-            <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col items-center space-y-4">
-              <div className="w-full max-w-[396px] flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FBBF24] text-xs font-extrabold uppercase tracking-wider shadow-[0_3px_0_rgba(30,30,36,0.16)]">
-                  <span>WYSIWYG 1080×1920 CANVAS</span>
-                </span>
-                {(photoImg || cameraActive) && (
+        <main className="max-w-6xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* LEFT SHOWCASE COLUMN: COMPACT 9:16 PREVIEW + ACTION BUTTONS TOGETHER */}
+            <div className="lg:col-span-5 lg:sticky lg:top-16 flex flex-col items-center space-y-2.5">
+              {(photoImg || cameraActive) && (
+                <div className="w-full max-w-[290px] flex items-center justify-end">
                   <span className="text-xs font-bold text-[#64616C] inline-flex items-center gap-1">
                     <Move className="w-3.5 h-3.5" />
                     <span>Drag foto untuk geser</span>
                   </span>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="relative w-full max-w-[396px] aspect-[9/16] rounded-[30px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24,0_24px_42px_rgba(30,30,36,0.18)] overflow-hidden bg-[#1E1E24] select-none">
+              <div className="relative w-full max-w-[255px] sm:max-w-[280px] aspect-[9/16] rounded-[26px] border-[4px] border-[#1E1E24] shadow-[0_10px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
                 <AnimatePresence>
                   {flashActive && (
                     <motion.div
@@ -3252,14 +3278,12 @@ export default function PhotoBooth() {
                 </div>
               )}
 
-              <div className="w-full max-w-[396px] space-y-2.5">
-                <div className="grid grid-cols-2 gap-2.5">
-                  <motion.button
+              <div className="w-full max-w-[290px] space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98, y: 3 }}
                     onClick={() => (cameraActive ? stopCamera() : startCamera(facingMode))}
-                    className={`py-3 px-3.5 rounded-[18px] border-[3px] border-[#1E1E24] shadow-[0_5px_0_#1E1E24] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    className={`py-2.5 px-3 min-h-[42px] rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                       cameraActive
                         ? 'bg-[#F04438] text-white'
                         : 'bg-[#2568EF] hover:bg-[#3576F8] text-white'
@@ -3267,59 +3291,53 @@ export default function PhotoBooth() {
                   >
                     <Camera className="w-4 h-4" />
                     <span>{cameraActive ? 'Tutup Kamera' : photoImg ? 'Foto Ulang' : 'Buka Kamera'}</span>
-                  </motion.button>
+                  </button>
 
-                  <motion.button
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98, y: 3 }}
                     onClick={() => {
                       sfx.playPop();
                       fileInputRef.current?.click();
                     }}
-                    className="py-3 px-3.5 rounded-[18px] bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[3px] border-[#1E1E24] shadow-[0_5px_0_#1E1E24] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <Upload className="w-4 h-4" />
                     <span>{photoImg ? 'Ganti Foto' : 'Upload Foto'}</span>
-                  </motion.button>
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <motion.button
+                <div className="grid grid-cols-2 gap-2">
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98, y: 3 }}
                     disabled={isExporting}
                     onClick={handleDownloadPng}
-                    className="py-3.5 px-3.5 rounded-[20px] bg-[#158467] hover:bg-[#199978] text-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_#1E1E24] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
                     <Download className="w-4 h-4 text-[#FBBF24]" />
                     <span>{isExporting ? 'Export...' : 'Download PNG'}</span>
-                  </motion.button>
+                  </button>
 
-                  <motion.button
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98, y: 3 }}
                     disabled={isExporting}
                     onClick={handleShareIgStory}
-                    className="py-3.5 px-3.5 rounded-[20px] bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_#1E1E24] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-2.5 px-3 min-h-[42px] rounded-2xl bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
                     <Share2 className="w-4 h-4 text-[#FBBF24]" />
                     <span>{isExporting ? 'Siapkan...' : 'Wajib IG Story!'}</span>
-                  </motion.button>
+                  </button>
                 </div>
               </div>
             </div>
 
             {/* RIGHT CONTROL PANEL */}
-            <div className="lg:col-span-7 space-y-5">
+            <div className="lg:col-span-7 space-y-4">
               {/* 🏆 MANDATORY END-GAME PUNISHMENT CHECKLIST CARD */}
-              <div className="rounded-[26px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_6px_0_#EC5A29] p-4 sm:p-5 space-y-3">
+              <div className="rounded-[24px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_5px_0_#EC5A29] p-4 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                     <Instagram className="w-3.5 h-3.5" />
-                    <span>ATURAN HUKUMAN TERAKHIR END-GAME (WAJIB!)</span>
+                    <span>ATURAN END-GAME ({teamTags.length} ANGGOTA • {losers.length} DI DEPAN)</span>
                   </span>
                   <button
                     type="button"
@@ -3328,7 +3346,7 @@ export default function PhotoBooth() {
                       sfx.playFanfare();
                       showToast('Semua tag @anggota tim disalin! Siap paste di IG Story 📸');
                     }}
-                    className="px-3 py-1.5 min-h-[38px] rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3 py-1.5 min-h-[36px] rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Copy className="w-3.5 h-3.5 text-[#D8317E]" />
                     <span>Copy Tag Semua Tim</span>
@@ -3336,17 +3354,14 @@ export default function PhotoBooth() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-bold text-[#1E1E24]">
-                  <div className="p-2.5 rounded-xl bg-white border border-[#EC5A29]/30 flex items-center gap-2">
-                    <span className="text-base">👇</span>
-                    <span>1. Yang kalah wajib berdiri paling depan saat foto!</span>
+                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
+                    1. {losers.length} terbawah wajib berdiri paling depan saat foto!
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-[#EC5A29]/30 flex items-center gap-2">
-                    <span className="text-base">📸</span>
-                    <span>2. Foto bareng pakai bingkai 9:16 di samping.</span>
+                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
+                    2. Foto bareng pakai bingkai 9:16 di samping.
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-[#EC5A29]/30 flex items-center gap-2">
-                    <span className="text-base">🏷️</span>
-                    <span>3. Wajib Share IG Story &amp; Tag Semua Tim!</span>
+                  <div className="p-2 rounded-xl bg-white border border-[#EC5A29]/30">
+                    3. Wajib Share IG Story &amp; Tag Semua Tim!
                   </div>
                 </div>
 
@@ -3955,21 +3970,6 @@ export default function PhotoBooth() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-
-              <div className="rounded-[26px] bg-gradient-to-r from-[#FFF6D6] to-[#D6F5EC] border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.12)] p-4 flex items-center gap-4">
-                <div className="shrink-0">
-                  <GrokMascotSvg shape="squircle" color="#2568EF" size={50} mood="happy" />
-                </div>
-                <div className="space-y-0.5">
-                  <p className="font-display font-bold text-sm sm:text-base text-[#1E1E24]">
-                    QR Code Tab Pojok Kanan 100% Asli &amp; Bisa Langsung Di-Scan! 📱
-                  </p>
-                  <p className="text-xs font-semibold text-[#3A5E54] leading-snug">
-                    Menggunakan generator QR ISO/IEC 18004 murni langsung ke{' '}
-                    <strong>{TARGET_WEBSITE_URL}</strong>, tajam di 1080×1920px saat di-upload ke Instagram Story!
-                  </p>
-                </div>
               </div>
             </div>
           </div>

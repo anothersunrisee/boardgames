@@ -286,7 +286,7 @@ export default function G4Match() {
 
           {/* Combatants Dual Cards (2v2 Tim) */}
           <div className="grid grid-cols-2 gap-3 mt-5">
-            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
+            <div className="rounded-2xl bg-white/15 p-3.5 flex flex-col justify-between">
               <div>
                 <span className="text-xs font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
                   TIM PRO (Duo)
@@ -307,7 +307,7 @@ export default function G4Match() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
+            <div className="rounded-2xl bg-white/15 p-3.5 flex flex-col justify-between">
               <div>
                 <span className="text-xs font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
                   TIM KONTRA (Duo)
