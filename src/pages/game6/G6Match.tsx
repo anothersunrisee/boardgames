@@ -244,25 +244,25 @@ export default function G6Match() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
             <div className="p-3.5 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/10">
-              <span className="text-[10px] font-black uppercase bg-[#EF4444] text-white px-2.5 py-0.5 rounded-full shadow-xs">
+              <span className="text-xs font-black uppercase bg-[#EF4444] text-white px-2.5 py-0.5 rounded-full shadow-xs">
                 Barang Rusak / Aneh
               </span>
               <p className="font-display text-base font-bold text-white mt-1.5">
                 {match.pitchItem.product}
               </p>
-              <p className="text-xs text-white/80 italic mt-0.5">
+              <p className="text-xs text-white/90 italic mt-0.5">
                 Kondisi: {match.pitchItem.flaw}
               </p>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/10">
-              <span className="text-[10px] font-black uppercase bg-[#FBBF24] text-[#1E1E24] px-2.5 py-0.5 rounded-full shadow-xs">
+              <span className="text-xs font-black uppercase bg-[#FBBF24] text-[#1E1E24] px-2.5 py-0.5 rounded-full shadow-xs">
                 Calon Pembeli Absurd
               </span>
               <p className="font-display text-base font-bold text-white mt-1.5">
                 {match.pitchItem.targetBuyer}
               </p>
-              <p className="text-xs text-white/80 italic mt-0.5">
+              <p className="text-xs text-white/90 italic mt-0.5">
                 Tantangan: Yakinkan target pembeli ini agar mau beli!
               </p>
             </div>
@@ -278,7 +278,7 @@ export default function G6Match() {
                 : 'bg-white border-[#1E1E24]/10 shadow-xs'
             }`}
           >
-            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#65A30D] text-white shadow-xs">
+            <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-[#4D7C0F] text-white shadow-xs">
               DUO SALES A
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
@@ -292,7 +292,7 @@ export default function G6Match() {
               ))}
             </div>
             {stage === 'pitchA' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#65A30D] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
+              <span className="inline-flex items-center gap-1 text-xs font-black text-[#4D7C0F] animate-pulse mt-2 bg-white/90 px-2.5 py-0.5 rounded-full border border-[#65A30D]/20">
                 <FluentEmoji name="microphone" variant="3d" size={14} />
                 <span>Sedang Presentasi!</span>
               </span>
@@ -306,7 +306,7 @@ export default function G6Match() {
                 : 'bg-white border-[#1E1E24]/10 shadow-xs'
             }`}
           >
-            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#3F6212] text-white shadow-xs">
+            <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-[#3F6212] text-white shadow-xs">
               DUO SALES B
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">

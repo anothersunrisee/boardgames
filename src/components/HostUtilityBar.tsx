@@ -67,10 +67,11 @@ export const HostUtilityBar: React.FC<HostUtilityBarProps> = ({
         type="button"
         onClick={() => {
           sfx.playPop();
-          navigate('/');
+          navigate('/hub');
         }}
-        title="Menu Utama"
-        className="w-9 h-9 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
+        title="Hub Game"
+        aria-label="Kembali ke Hub Game"
+        className="w-10 h-10 rounded-full hover:bg-white/15 flex items-center justify-center transition cursor-pointer"
       >
         <Home className="w-4 h-4" />
       </button>

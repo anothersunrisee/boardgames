@@ -192,7 +192,7 @@ export default function G4RoundResult() {
               <p className="font-display text-sm font-bold text-[#1E1E24] mt-1">
                 {teamAPlayers.map((p) => p.name).join(' & ')}
               </p>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#12B76A] text-white inline-block mt-0.5 mb-1.5">
+              <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#12B76A] text-white inline-block mt-0.5 mb-1.5">
                 TIM PRO
               </span>
               <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesA} suara</p>
@@ -221,7 +221,7 @@ export default function G4RoundResult() {
               <p className="font-display text-sm font-bold text-[#1E1E24] mt-1">
                 {teamBPlayers.map((p) => p.name).join(' & ')}
               </p>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#F04438] text-white inline-block mt-0.5 mb-1.5">
+              <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#F04438] text-white inline-block mt-0.5 mb-1.5">
                 TIM KONTRA
               </span>
               <p className="font-display text-2xl font-bold text-[#1E1E24]">{match.votesB} suara</p>

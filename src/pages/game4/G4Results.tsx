@@ -159,8 +159,8 @@ export default function G4Results() {
           <div className="mb-6">
             <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
-                  <Flame className="w-3 h-3 text-[#EC5A29]" />
+                <span className="text-xs font-black uppercase text-[#B93815] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
+                  <Flame className="w-3.5 h-3.5 text-[#EC5A29]" />
                   <span>3 PEMAIN TERBAWAH KENA HUKUMAN</span>
                 </span>
                 <div className="flex flex-wrap gap-1.5 mt-1">
@@ -168,10 +168,10 @@ export default function G4Results() {
                     const rank = sortedPlayers.indexOf(p) + 1;
                     return (
                       <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EC5A29]/20 shadow-2xs">
-                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                        <span className="font-display font-black text-xs text-[#DC2626]">#{rank}</span>
                         <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
                         <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
-                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                        <span className="text-xs font-extrabold text-[#64616C]">({p.score} pt)</span>
                       </div>
                     );
                   })}

@@ -301,10 +301,10 @@ export default function G5Play() {
                       <p className="font-display text-sm font-bold text-[#1E1E24]">
                         Ronde #{rIdx + 1}
                       </p>
-                      <p className="text-[11px] text-[#64616C] font-medium mt-0.5">
+                      <p className="text-xs text-[#64616C] font-medium mt-0.5">
                         4 Soal Estafet
                       </p>
-                      <span className="text-[10px] font-extrabold text-[#158467] bg-[#ECFDF5] px-2 py-0.5 rounded-lg mt-2">
+                      <span className="text-xs font-extrabold text-[#158467] bg-[#ECFDF5] px-2 py-0.5 rounded-lg mt-2">
                         +2 Poin Tim
                       </span>
                     </div>
@@ -364,7 +364,7 @@ export default function G5Play() {
                           ? 'bg-[#ECFDF5] text-[#065F46] font-bold border border-[#12B76A]/30'
                           : isCurrent
                           ? 'bg-[#7C3AED] text-white font-black shadow-xs ring-2 ring-[#7C3AED]/30'
-                          : 'bg-[#F9FAFB] text-[#9CA3AF] font-medium border border-[#E5E7EB]'
+                          : 'bg-[#F9FAFB] text-[#64616C] font-medium border border-[#E5E7EB]'
                       }`}
                     >
                       <span>{isDone ? `✓ Ronde ${rIdx + 1}` : isCurrent ? `▶ Ronde ${rIdx + 1}` : `Ronde ${rIdx + 1}`}</span>
@@ -376,7 +376,7 @@ export default function G5Play() {
 
             {/* Visual 4-Question Relay Stepper for the CURRENT Round */}
             <div className="mb-3.5 p-3 rounded-2xl bg-white border border-[#1E1E24]/10 shadow-xs">
-              <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#1E1E24]/8 text-[11px] font-extrabold text-[#64616C]">
+              <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#1E1E24]/8 text-xs font-extrabold text-[#64616C]">
                 <span>Estafet Soal Ronde #{currentRoundIdx + 1}:</span>
                 <span className="text-[#7C3AED]">Minimal 3 Benar = Poin Ronde</span>
               </div>
@@ -402,11 +402,11 @@ export default function G5Play() {
                             ? 'bg-[#FEF2F2] text-[#991B1B] border border-[#EF4444]/40 font-bold'
                             : isCurrent
                             ? 'bg-[#7C3AED] text-white border-2 border-[#6D28D9] shadow-xs font-black scale-102 ring-2 ring-[#7C3AED]/30'
-                            : 'bg-[#F9FAFB] text-[#9CA3AF] border border-[#E5E7EB] font-medium'
+                            : 'bg-[#F9FAFB] text-[#64616C] border border-[#E5E7EB] font-medium'
                         }`}
                       >
                         <PlayerProfileAvatar characterId={mem?.avatarId} size={18} name={mem?.name} />
-                        <span className="text-[11px] truncate max-w-[85px]">
+                        <span className="text-xs truncate max-w-[85px]">
                           {isDone
                             ? isCorrect
                               ? `✓ ${mem?.name}`
@@ -481,7 +481,7 @@ export default function G5Play() {
                 <button
                   type="button"
                   onClick={() => setIsTimerPaused(!isTimerPaused)}
-                  className="text-[10px] font-bold text-[#64616C] hover:text-[#1E1E24] px-1.5 py-0.5 rounded-md hover:bg-black/5"
+                  className="text-xs font-bold text-[#64616C] hover:text-[#1E1E24] px-2.5 py-1 rounded-lg hover:bg-black/5 cursor-pointer"
                 >
                   {isTimerPaused ? '▶ Lanjut' : '⏸ Jeda'}
                 </button>
@@ -504,7 +504,7 @@ export default function G5Play() {
               <button
                 type="button"
                 onClick={() => setTimeLeft(15)}
-                className="text-[10px] font-bold text-[#64616C] hover:text-[#7C3AED] px-1.5 py-0.5 rounded-md hover:bg-black/5 shrink-0"
+                className="text-xs font-bold text-[#64616C] hover:text-[#7C3AED] px-2.5 py-1 rounded-lg hover:bg-black/5 shrink-0 cursor-pointer"
                 title="Reset timer ke 15 detik"
               >
                 ↺ Reset 15s
@@ -692,7 +692,7 @@ export default function G5Play() {
                       <Flame className="w-4 h-4 text-[#EA580C] animate-pulse" />
                       <span>KARTU TANTANGAN AKTIF (WAJIB DIJALANKAN SAMPAI RONDE 4):</span>
                     </span>
-                    <span className="text-[10px] font-bold bg-[#EA580C] text-white px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold bg-[#EA580C] text-white px-2.5 py-0.5 rounded-full">
                       Tetap Berlaku
                     </span>
                   </div>
@@ -708,7 +708,7 @@ export default function G5Play() {
                           <PlayerProfileAvatar characterId={mem?.avatarId} size={26} name={mem?.name} />
                           <div className="min-w-0">
                             <span className="font-display text-xs font-bold text-[#1E1E24]">{mem?.name}</span>
-                            <span className="text-[10px] text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
+                            <span className="text-xs text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
                             <p className="text-xs font-extrabold text-[#B45309]">"{c.challenge}"</p>
                           </div>
                         </div>
@@ -814,7 +814,7 @@ export default function G5Play() {
                       <Flame className="w-4 h-4 text-[#EF4444]" />
                       <span>Pemain yang Kena Penalti (-2 Pts) & Tantangan:</span>
                     </span>
-                    <span className="text-[10px] font-bold bg-[#EF4444] text-white px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold bg-[#EF4444] text-white px-2.5 py-0.5 rounded-full">
                       Tantangan Tuntas
                     </span>
                   </div>
@@ -830,9 +830,9 @@ export default function G5Play() {
                           <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
                           <div>
                             <span className="font-display text-xs font-bold text-[#1E1E24]">{p.name}</span>
-                            <span className="text-[10px] text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
+                            <span className="text-xs text-[#DC2626] font-bold ml-1">(-2 Pts)</span>
                             {chal && (
-                              <p className="text-[10px] text-[#B45309] font-semibold italic">"{chal.challenge}"</p>
+                              <p className="text-xs text-[#B45309] font-semibold italic">"{chal.challenge}"</p>
                             )}
                           </div>
                         </div>

@@ -1840,7 +1840,7 @@ const LottieExportModal: React.FC<{
             {/* Header */}
             <div className="bg-[#1E1E24] text-[#FAF7F2] px-6 py-4 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#4AE3B5]">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[#4AE3B5]">
                   BODYMOVIN v5.7.4 • 60 FPS • LOTTIE-REACT READY
                 </span>
                 <h3 className="font-display text-xl font-bold">Export Lottie JSON</h3>

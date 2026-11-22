@@ -396,8 +396,8 @@ export default function G1Round() {
                           />
                           <div className="min-w-0 flex-1 text-left">
                             <p className="text-xs font-bold truncate leading-tight">{p.name}</p>
-                            <span className="text-[10px] font-semibold block">
-                              {isSubmitted ? '✅ Terkunci' : '⏳ Mengetik...'}
+                            <span className="text-xs font-semibold block">
+                              {isSubmitted ? 'Terkunci' : 'Mengetik...'}
                             </span>
                           </div>
                         </div>
@@ -546,7 +546,7 @@ export default function G1Round() {
                             <p className="font-display text-sm font-bold truncate leading-tight">
                               {player.name}
                             </p>
-                            <span className="text-[10px] font-semibold text-[#64616C]">
+                            <span className="text-xs font-semibold text-[#64616C]">
                               {player.kubu}
                             </span>
                           </div>
@@ -604,18 +604,18 @@ export default function G1Round() {
                                 <span>Jawaban Kertas / Lisan</span>
                               </p>
                             )}
-                            <p className="text-[10px] text-[#A09CA8] font-semibold mt-0.5">
-                              {isFailed ? '⚠️ Dinyatakan Kembar oleh Host (-1)' : '✨ Belum ada yang kembar (+2)'}
+                            <p className="text-xs text-[#64616C] font-semibold mt-0.5">
+                              {isFailed ? 'Dinyatakan Kembar oleh Host (-1)' : 'Belum ada yang kembar (+2)'}
                             </p>
                           </div>
                         ) : (
                           <>
                             <p className="font-display text-lg font-black text-[#1E1E24] break-words">
-                              {rawAnswer ? `"${rawAnswer}"` : <span className="italic text-[#F04438] text-xs font-bold">Tidak submit via HP</span>}
+                              {rawAnswer ? `"${rawAnswer}"` : <span className="italic text-[#DC2626] text-xs font-bold">Tidak submit via HP</span>}
                             </p>
                             {matchedGroup && (
-                              <span className="text-[10px] font-bold text-[#F04438] block mt-0.5">
-                                🔗 Sama dengan: "{matchedGroup.canonicalAnswer}"
+                              <span className="text-xs font-bold text-[#DC2626] block mt-0.5">
+                                Sama dengan: "{matchedGroup.canonicalAnswer}"
                               </span>
                             )}
                           </>

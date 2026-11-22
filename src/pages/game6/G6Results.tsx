@@ -174,11 +174,11 @@ export default function G6Results() {
                   </p>
 
                   <div className="flex items-center justify-between text-xs font-semibold text-[#64616C] mt-2 pt-2 border-t border-[#1E1E24]/10">
-                    <span className={isWinnerA ? 'font-bold text-[#65A30D]' : ''}>
+                    <span className={isWinnerA ? 'font-bold text-[#4D7C0F]' : ''}>
                       Duo A ({teamAPlayers.map((p) => p.name).join(' & ')}): {m.votesA} vote
                     </span>
-                    <span className="text-[10px] font-black uppercase text-[#64616C]/60">VS</span>
-                    <span className={isWinnerB ? 'font-bold text-[#65A30D]' : ''}>
+                    <span className="text-xs font-black uppercase text-[#64616C]">VS</span>
+                    <span className={isWinnerB ? 'font-bold text-[#4D7C0F]' : ''}>
                       Duo B ({teamBPlayers.map((p) => p.name).join(' & ')}): {m.votesB} vote
                     </span>
                   </div>
@@ -198,7 +198,7 @@ export default function G6Results() {
           <div className="mb-6">
             <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EA580C] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#EA580C] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
+                <span className="text-xs font-black uppercase text-[#B93815] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
                   <FluentEmoji name="fire" variant="3d" size={14} />
                   <span>3 PEMAIN TERBAWAH KENA HUKUMAN</span>
                 </span>
@@ -210,10 +210,10 @@ export default function G6Results() {
                     const rank = sortedPlayers.indexOf(p) + 1;
                     return (
                       <div key={p.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#EA580C]/20 shadow-2xs">
-                        <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                        <span className="font-display font-black text-xs text-[#DC2626]">#{rank}</span>
                         <PlayerProfileAvatar characterId={p.avatarId} size={20} name={p.name} />
                         <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
-                        <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                        <span className="text-xs font-extrabold text-[#64616C]">({p.score} pt)</span>
                       </div>
                     );
                   })}

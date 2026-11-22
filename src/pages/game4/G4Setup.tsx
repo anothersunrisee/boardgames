@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Flame, Users, Sparkles } from 'lucide-react'
+import { ArrowLeft, Flame, Users } from 'lucide-react'
 import { useGameStore, type Player, type DebateMatch } from '../../store/useGameStore'
 import { getRandomTopic, getRandomChaosCard } from '../../data/game4-topics'
 import { Button } from '../../components/ui/Button'
@@ -152,18 +152,18 @@ export default function G4Setup() {
           </h1>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider mt-2">
             <Flame className="w-3.5 h-3.5" />
-            <span>1 VS 1 HOT TAKES DEBATE BATTLE</span>
+            <span>DEBAT 2 VS 2 &amp; GRAND FINAL</span>
           </div>
           <p className="text-sm font-semibold text-[#64616C] mt-2 max-w-md mx-auto">
-            Dua orang berdebat membela opini absurd, sisa pemain menjadi audiens dan juri pemberi nilai!
+            Dua tim berdebat membela opini absurd, sementara pemain lainnya menjadi audiens &amp; juri pemberi voting!
           </p>
         </div>
 
         {/* Chaos Card Toggle */}
-        <Card className="mb-4 p-4 bg-white shadow-xs flex items-center justify-between border-2 border-[#EC5A29]/20">
+        <Card className="mb-4 p-4 bg-white shadow-xs flex items-center justify-between gap-3 border-2 border-[#EC5A29]/20">
           <div>
             <p className="font-display text-base font-bold text-[#1E1E24] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#EC5A29]" />
+              <Flame className="w-4 h-4 text-[#EC5A29]" />
               <span>Fitur CHAOS CARD</span>
             </p>
             <p className="text-xs text-[#64616C] font-medium mt-0.5">
@@ -172,7 +172,7 @@ export default function G4Setup() {
           </div>
           <button
             type="button"
-            className={`px-4 py-2 rounded-2xl font-display text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 min-h-[40px] shrink-0 rounded-2xl font-display text-xs font-bold transition-all cursor-pointer ${
               enableChaos
                 ? 'bg-[#EC5A29] text-white shadow-[0_4px_0_#B53B10]'
                 : 'bg-black/10 text-[#64616C]'
@@ -182,22 +182,22 @@ export default function G4Setup() {
               setEnableChaos(!enableChaos)
             }}
           >
-            {enableChaos ? '🔥 AKTIF' : 'NONAKTIF'}
+            {enableChaos ? 'AKTIF' : 'NONAKTIF'}
           </button>
         </Card>
 
         {/* Player Roster */}
         <Card className="mb-6 p-5 bg-white shadow-xs">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <p className="font-display text-base font-bold text-[#1E1E24] flex items-center gap-1.5">
               <Users className="w-4 h-4 text-[#EC5A29]" />
-              <span>Daftar Peserta ({rows.length} Pemain = {rows.length / 2} Match)</span>
+              <span>Daftar Peserta ({rows.length} Orang • {Math.max(1, Math.floor(rows.length / 4))} Match 2v2)</span>
             </p>
             <div className="flex gap-2">
               {rows.length > 4 && (
                 <button
                   type="button"
-                  className="px-2.5 py-1 text-xs font-bold rounded-xl border-2 border-red-200 text-red-600 bg-red-50 hover:bg-red-100 cursor-pointer"
+                  className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-red-200 text-red-700 bg-red-50 hover:bg-red-100 cursor-pointer"
                   onClick={removePlayerPair}
                 >
                   - 2 Orang
@@ -206,7 +206,7 @@ export default function G4Setup() {
               {rows.length < 16 && (
                 <button
                   type="button"
-                  className="px-2.5 py-1 text-xs font-bold rounded-xl border-2 border-orange-200 text-orange-700 bg-orange-50 hover:bg-orange-100 cursor-pointer"
+                  className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl border-2 border-orange-200 text-orange-800 bg-orange-50 hover:bg-orange-100 cursor-pointer"
                   onClick={addPlayerPair}
                 >
                   + 2 Orang
@@ -250,7 +250,7 @@ export default function G4Setup() {
             disabled={!isValid}
             onClick={handleStart}
           >
-            ⚔️ Undi Pasangan & Mulai Debat!
+            Undi Pasangan &amp; Mulai Debat!
           </Button>
         </div>
       </motion.div>

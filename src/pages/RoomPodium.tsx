@@ -186,7 +186,7 @@ export default function RoomPodium() {
                       <p className="font-display font-bold text-sm sm:text-lg mt-1 leading-tight truncate w-full">
                         {second.name}
                       </p>
-                      <span className="text-[10px] text-white/70 font-semibold truncate w-full">
+                      <span className="text-xs text-white/85 font-semibold truncate w-full">
                         {second.kubu}
                       </span>
                       <span className="mt-1 px-2.5 py-0.5 rounded-full bg-white text-[#1E1E24] font-display font-bold text-xs sm:text-sm">
@@ -203,7 +203,7 @@ export default function RoomPodium() {
                       <span className="w-9 h-9 rounded-full bg-[#1E1E24] text-white font-display text-lg font-bold flex items-center justify-center">
                         2
                       </span>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider mt-1.5 text-[#64616C]">
+                      <span className="text-xs font-extrabold uppercase tracking-wider mt-1.5 text-[#64616C]">
                         RUNNER UP
                       </span>
                     </motion.div>
@@ -272,7 +272,7 @@ export default function RoomPodium() {
                       <p className="font-display font-bold text-sm sm:text-lg mt-1 leading-tight truncate w-full">
                         {third.name}
                       </p>
-                      <span className="text-[10px] text-white/70 font-semibold truncate w-full">
+                      <span className="text-xs text-white/85 font-semibold truncate w-full">
                         {third.kubu}
                       </span>
                       <span className="mt-1 px-2.5 py-0.5 rounded-full bg-[#FFE8DF] text-[#1E1E24] font-display font-bold text-xs sm:text-sm">
@@ -289,7 +289,7 @@ export default function RoomPodium() {
                       <span className="w-8 h-8 rounded-full bg-[#1E1E24] text-white font-display text-base font-bold flex items-center justify-center">
                         3
                       </span>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider mt-1 opacity-90">
+                      <span className="text-xs font-extrabold uppercase tracking-wider mt-1 opacity-95">
                         3RD
                       </span>
                     </motion.div>
@@ -360,13 +360,13 @@ export default function RoomPodium() {
                     {award.icon}
                   </span>
                   <div className="min-w-0">
-                    <span className="text-[10px] font-black uppercase text-[#9333EA] tracking-wider block">
+                    <span className="text-xs font-black uppercase text-[#9333EA] tracking-wider block">
                       {award.badge}
                     </span>
-                    <p className="font-display text-xs font-bold text-[#1E1E24] truncate">
-                      {award.playerName} — {award.title}
+                    <p className="font-display text-sm font-bold text-[#1E1E24] truncate">
+                      {award.playerName}: {award.title}
                     </p>
-                    <p className="text-[11px] text-[#64616C] font-semibold mt-0.5 leading-tight">
+                    <p className="text-xs text-[#64616C] font-semibold mt-0.5 leading-snug">
                       {award.description}
                     </p>
                   </div>
@@ -420,13 +420,13 @@ export default function RoomPodium() {
                         <span>{player.name}</span>
                         {isFirst && <FluentEmoji name="crown" variant="3d" size={16} />}
                         {isLast && (
-                          <span className="px-2 py-0.5 rounded-full bg-[#EC5A29] text-white text-[9px] font-black uppercase tracking-wider">
-                            👇 WAJIB DI DEPAN FOTO
+                          <span className="px-2 py-0.5 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
+                            WAJIB DI DEPAN FOTO
                           </span>
                         )}
                       </p>
-                      <p className="text-[11px] text-[#64616C] font-semibold">
-                        {player.gender === 'cewek' ? '👧 Cewek' : '👦 Cowok'} • {player.kubu}
+                      <p className="text-xs text-[#64616C] font-semibold">
+                        {player.gender === 'cewek' ? 'Cewek' : 'Cowok'} • {player.kubu}
                       </p>
                     </div>
                   </div>
@@ -464,7 +464,7 @@ export default function RoomPodium() {
 
               <div>
                 <h3 className="font-display text-xl sm:text-2xl font-black text-[#1E1E24]">
-                  Foto Bersama — Yang Kalah Wajib Di Depan! 👇
+                  Foto Bersama: Yang Kalah Wajib Di Depan!
                 </h3>
                 <p className="text-xs sm:text-sm text-[#4A4752] font-semibold mt-1">
                   Pemain di posisi terbawah wajib berdiri paling depan saat sesi foto studio 9:16, lalu <strong>WAJIB di-upload ke Instagram Story &amp; tag seluruh anggota tim!</strong>
@@ -497,14 +497,14 @@ export default function RoomPodium() {
                         <p className="font-display font-bold text-xs leading-tight flex items-center gap-1">
                           <span>{p.name}</span>
                           {isAbsoluteLast && (
-                            <span className="text-[9px] font-black bg-[#EC5A29] text-white px-1.5 py-0.5 rounded-md">
-                              DI DEPAN!
+                            <span className="text-xs font-black bg-[#EC5A29] text-white px-2 py-0.5 rounded-md">
+                              DI DEPAN
                             </span>
                           )}
                         </p>
                         <span
-                          className={`text-[10px] font-bold ${
-                            isAbsoluteLast ? 'text-white/75' : 'text-[#64616C]'
+                          className={`text-xs font-bold ${
+                            isAbsoluteLast ? 'text-white/85' : 'text-[#64616C]'
                           }`}
                         >
                           {p.score} pts

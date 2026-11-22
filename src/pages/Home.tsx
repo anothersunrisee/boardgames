@@ -28,9 +28,9 @@ const GAMES: GameItem[] = [
     id: 'game1',
     route: '/game1/round',
     numberBadge: 'GAME 01',
-    categoryPill: 'Host Mode • 30s',
+    categoryPill: 'Timer • 30 Detik',
     title: 'Same Brain? NO!',
-    description: 'Semua tulis di HP masing-masing! Host hitung mundur 30 detik & tandai jawaban kembar.',
+    description: 'Semua tulis jawaban unik di kertas atau HP! Host hitung mundur 30 detik & tandai jawaban kembar.',
     playerCount: 'Semua Pemain Room',
     bgColor: '#158467',      // Emerald Green
     pillColor: '#43B896',
@@ -41,9 +41,9 @@ const GAMES: GameItem[] = [
     id: 'game2',
     route: '/game2/secret',
     numberBadge: 'GAME 02',
-    categoryPill: 'Host Mode • Live',
+    categoryPill: 'Live Interogasi',
     title: 'Beauty Expert?!',
-    description: 'Sistem otomatis acak benda skincare/makeup ke tiap cewek. 3 cowok interogasi live di ruangan!',
+    description: 'Sistem acak benda skincare & makeup ke tim cewek. Tim cowok interogasi live di ruangan!',
     playerCount: 'Cewek vs Cowok Room',
     bgColor: '#C82373',      // Berry Pink
     pillColor: '#EC5FA0',
@@ -54,9 +54,9 @@ const GAMES: GameItem[] = [
     id: 'game3',
     route: '/game3/secret',
     numberBadge: 'GAME 03',
-    categoryPill: 'Host Mode • Live',
+    categoryPill: 'Live Interogasi',
     title: 'Boys Stuff, Girls Guess!',
-    description: 'Sistem otomatis acak istilah otomotif/game ke cowok. Cewek interogasi & tebak live!',
+    description: 'Sistem acak istilah otomotif & game ke tim cowok. Tim cewek interogasi & tebak live!',
     playerCount: 'Cowok vs Cewek Room',
     bgColor: '#2568EF',      // Cobalt Blue
     pillColor: '#5B95FF',
@@ -67,10 +67,10 @@ const GAMES: GameItem[] = [
     id: 'game4',
     route: '/game4/match',
     numberBadge: 'GAME 04',
-    categoryPill: 'Hot Takes 1v1',
+    categoryPill: 'Debat 2v2 • Chaos',
     title: "The Devil's Advocate",
-    description: 'Sistem mengacak pasangan duel 1v1 & topik absurd (mas parkir jadi presiden?) + Chaos Card kocak!',
-    playerCount: 'Duel 1 vs 1 Acak',
+    description: 'Sistem mengacak duel debat 2 lawan 2 & topik absurd + Chaos Card untuk membalik keadaan!',
+    playerCount: 'Duel 2 vs 2 Acak',
     bgColor: '#E85D2A',      // Warm Terracotta Orange
     pillColor: '#FF8A5B',
     characterId: 'c15',      // Bimi
@@ -92,11 +92,11 @@ const GAMES: GameItem[] = [
   {
     id: 'game6',
     route: '/game6/match',
-    numberBadge: 'GAME 09',
+    numberBadge: 'GAME 06',
     categoryPill: 'Pitch Duel • 45s',
     title: 'Sell Me This Trash!',
-    description: 'Sistem acak barang nggak guna (payung bolong?) + pembeli absurd. Adu bacot jualan paling masuk akal!',
-    playerCount: '👥 Duel 1 vs 1 Acak',
+    description: 'Sistem acak barang nggak guna + pembeli absurd. Adu argumen jualan tim 2 vs 2 paling masuk akal!',
+    playerCount: 'Duel 2 vs 2 Acak',
     bgColor: '#65A30D',      // Lime Green
     pillColor: '#84CC16',
     characterId: 'c17',      // Juno
@@ -224,7 +224,7 @@ export const Home: React.FC = () => {
                 <span className="font-display text-base font-bold text-[#1E1E24] truncate">
                   {roomName}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#12B76A]/15 text-[#12B76A] text-[10px] font-extrabold uppercase">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#12B76A]/15 text-[#0F5E49] text-xs font-extrabold uppercase">
                   Room Aktif
                 </span>
               </div>
@@ -245,7 +245,7 @@ export const Home: React.FC = () => {
                 />
               ))}
               {players.length > 6 && (
-                <div className="w-8 h-8 rounded-full bg-[#1E1E24] text-white text-[10px] font-extrabold flex items-center justify-center border-2 border-white">
+                <div className="w-8 h-8 rounded-full bg-[#1E1E24] text-white text-xs font-extrabold flex items-center justify-center border-2 border-white">
                   +{players.length - 6}
                 </div>
               )}
@@ -258,10 +258,10 @@ export const Home: React.FC = () => {
                   sfx.playPop();
                   navigate('/');
                 }}
-                className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#1E1E24] text-white hover:bg-[#2C2C35] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
-                title="Buka kembali layar Onboarding Fruit Ninja"
+                className="px-3.5 py-2 min-h-[40px] rounded-2xl text-xs font-bold bg-[#1E1E24] text-white hover:bg-[#2C2C35] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                title="Buka kembali layar Onboarding"
               >
-                <span>🎮 Intro</span>
+                <span>Intro Game</span>
               </button>
 
               <button
@@ -270,10 +270,10 @@ export const Home: React.FC = () => {
                   sfx.playPop();
                   navigate('/room');
                 }}
-                className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#FAF7F2] text-[#1E1E24] hover:bg-black/5 border border-[#1E1E24]/10 flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                className="px-3.5 py-2 min-h-[40px] rounded-2xl text-xs font-bold bg-[#FAF7F2] text-[#1E1E24] hover:bg-black/5 border border-[#1E1E24]/15 flex items-center gap-1.5 cursor-pointer shadow-xs transition"
               >
                 <Edit3 className="w-3.5 h-3.5 text-[#2568EF]" />
-                <span>Edit</span>
+                <span>Edit Room</span>
               </button>
 
               <button
@@ -282,7 +282,7 @@ export const Home: React.FC = () => {
                   sfx.playPop();
                   setShowScoreModal(true);
                 }}
-                className="px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#FCD34D] text-[#1E1E24] hover:bg-[#FBBF24] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                className="px-3.5 py-2 min-h-[40px] rounded-2xl text-xs font-bold bg-[#FCD34D] text-[#1E1E24] hover:bg-[#FBBF24] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
               >
                 <Trophy className="w-3.5 h-3.5" />
                 <span>Skor</span>
@@ -294,9 +294,10 @@ export const Home: React.FC = () => {
                   sfx.playPop();
                   navigate('/room/podium');
                 }}
-                className="px-3.5 py-1.5 rounded-2xl text-xs font-extrabold bg-[#F59E0B] text-white hover:bg-[#D97706] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                className="px-4 py-2 min-h-[40px] rounded-2xl text-xs font-extrabold bg-[#B45309] text-white hover:bg-[#92400E] flex items-center gap-1.5 cursor-pointer shadow-xs transition"
               >
-                <span>🏆 Juara</span>
+                <Trophy className="w-3.5 h-3.5 text-[#FDE68A]" />
+                <span>Juara &amp; Podium</span>
               </button>
             </div>
           </div>

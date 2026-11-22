@@ -15,7 +15,7 @@ function genId() {
 
 export default function G1Setup() {
   const navigate = useNavigate()
-  const { players: storePlayers, setPlayers, g1Reset } = useGameStore()
+  const { players: storePlayers, playMode, setPlayers, g1Reset } = useGameStore()
 
   const [rows, setRows] = useState<{ id: string; name: string; kubu: string }[]>(() => {
     if (storePlayers && storePlayers.length >= 2) {
@@ -98,13 +98,17 @@ export default function G1Setup() {
             size={100}
           />
           <span className="inline-block px-3 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-xs font-black uppercase tracking-wider mb-2">
-            HOST MODE • LIVE PARTY
+            {playMode === 'multi_device'
+              ? 'MULTI-DEVICE • HP CONTROLLER'
+              : 'MODE MODERATOR • 1 LAYAR'}
           </span>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-[#158467]">
             Same Brain? NO!
           </h1>
           <p className="text-sm font-semibold text-[#64616C] mt-1 max-w-sm mx-auto">
-            Host memegang timer 30 detik & menilai skor. Semua pemain menulis 1 jawaban di HP masing-masing!
+            {playMode === 'multi_device'
+              ? 'Host memegang timer 30 detik & menilai skor. Semua pemain menulis 1 jawaban di HP masing-masing!'
+              : 'Host memegang timer 30 detik & menilai skor. Pemain menulis jawaban di kertas atau HP catatan pribadi!'}
           </p>
         </div>
 
@@ -144,7 +148,8 @@ export default function G1Setup() {
                   <button
                     type="button"
                     onClick={() => removeRow(row.id)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
+                    aria-label={`Hapus ${row.name || 'pemain'}`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-red-600 hover:bg-red-50 transition cursor-pointer shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -174,7 +179,7 @@ export default function G1Setup() {
             disabled={!isValid}
             onClick={handleStart}
           >
-            Mulai Ronde 1 (Mode Host 30s) →
+            Mulai Ronde 1 (Timer 30 Detik)
           </Button>
         </div>
       </motion.div>

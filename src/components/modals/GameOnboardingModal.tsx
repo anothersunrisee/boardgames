@@ -115,15 +115,15 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span
                   style={{ backgroundColor: detail.themeColor }}
-                  className="px-2.5 py-0.5 rounded-full text-white text-[10px] font-black uppercase tracking-wider"
+                  className="px-2.5 py-0.5 rounded-full text-white text-xs font-black uppercase tracking-wider"
                 >
                   {detail.numberBadge}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#1E1E24]/5 text-[#64616C] text-[10px] font-extrabold uppercase">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#1E1E24]/8 text-[#475467] text-xs font-extrabold uppercase">
                   {detail.categoryPill}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">
-                  ⚡ {detail.difficulty}
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold">
+                  {detail.difficulty}
                 </span>
               </div>
 
@@ -292,7 +292,7 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
                           {sc.points}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#64616C] font-semibold leading-relaxed">
+                      <p className="text-xs text-[#64616C] font-semibold leading-relaxed">
                         {sc.desc}
                       </p>
                     </div>
@@ -312,7 +312,7 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
                     <p className="text-xs font-bold text-[#9F1239]">
                       <strong>Siapa yang Kena Hukuman:</strong> {detail.punishmentWho}
                     </p>
-                    <p className="text-[11px] text-[#BE123C] font-semibold mt-0.5">
+                    <p className="text-xs text-[#BE123C] font-semibold mt-0.5">
                       {detail.punishmentRule}
                     </p>
                   </div>
@@ -321,15 +321,15 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
                 {/* Interactive Shuffle Punishment Card Preview */}
                 <div className="rounded-[28px] bg-white border-2 border-[#1E1E24]/15 p-4 shadow-xs text-center relative overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#64616C]">
-                      🃏 CONTOH KARTU HUKUMAN
+                    <span className="text-xs font-black uppercase tracking-wider text-[#64616C]">
+                      Contoh Kartu Hukuman
                     </span>
 
                     <button
                       type="button"
                       onClick={handleShufflePreview}
                       disabled={isShufflingPunishment}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] cursor-pointer transition active:scale-95"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-full bg-[#FAF7F2] hover:bg-[#F2ECE1] border border-[#1E1E24]/10 text-xs font-bold text-[#1E1E24] cursor-pointer transition active:scale-95"
                     >
                       <Shuffle
                         className={`w-3.5 h-3.5 text-[#EC5A29] ${
@@ -349,7 +349,7 @@ export const GameOnboardingModal: React.FC<GameOnboardingModalProps> = ({
                       <span className="text-2xl">{previewPunishment.emoji}</span>
                       <span
                         style={{ backgroundColor: previewPunishment.color }}
-                        className="px-2.5 py-0.5 rounded-full text-white text-[10px] font-black uppercase"
+                        className="px-2.5 py-0.5 rounded-full text-white text-xs font-black uppercase"
                       >
                         {previewPunishment.intensity} • {previewPunishment.duration}
                       </span>

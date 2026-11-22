@@ -1003,7 +1003,7 @@ export const PlayfulPartyFooter: React.FC<{
                         />
                         <span>{game.name}</span>
                       </span>
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+                      <span className="text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-white/15 text-white/85">
                         {game.tag}
                       </span>
                     </button>
@@ -1068,7 +1068,7 @@ export const PlayfulPartyFooter: React.FC<{
                     <span>Sound FX</span>
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase ${
                       muted ? 'bg-[#F43F5E]/20 text-[#FDA4AF]' : 'bg-[#158467]/40 text-[#4AE3B5]'
                     }`}
                   >
@@ -1166,7 +1166,7 @@ export const DeveloperCornerButton: React.FC<{
           />
         </div>
         <div className="text-left leading-tight">
-          <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[#158467]">
+          <span className="block text-xs font-extrabold uppercase tracking-wider text-[#158467]">
             Info Dev
           </span>
           <span className="font-display font-bold text-sm text-[#1E1E24] flex items-center gap-1">
@@ -1244,8 +1244,7 @@ export const DeveloperInfoModal: React.FC<{
                 </motion.div>
 
                 <div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#158467] text-white text-[10px] font-extrabold uppercase tracking-wider mb-1.5">
-                    <Sparkles className="w-3 h-3 text-[#FBBF24]" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#158467] text-white text-xs font-extrabold uppercase tracking-wider mb-1.5">
                     <span>Creator &amp; Indie Developer</span>
                   </span>
                   <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight flex items-center gap-2">
@@ -1268,7 +1267,7 @@ export const DeveloperInfoModal: React.FC<{
               {/* Sambutan Game */}
               <div className="rounded-[22px] bg-white border-2 border-[#1E1E24]/10 p-4 shadow-[0_4px_0_rgba(30,30,36,0.06)]">
                 <p className="text-xs sm:text-sm text-[#1E1E24] font-semibold leading-relaxed">
-                  Selamat datang di <strong className="text-[#158467]">Party Games Hub!</strong> 🎉 Game ini aku buat biar momen nongkrong, jeda kuliah, atau kumpul bareng teman gak cuma sibuk scroll HP masing-masing—cukup pakai{' '}
+                  Selamat datang di <strong className="text-[#158467]">Party Games Hub!</strong> Game ini aku buat biar momen nongkrong, jeda kuliah, atau kumpul bareng teman gak cuma sibuk scroll HP masing-masing. Cukup pakai{' '}
                   <strong>1 layar rame-rame</strong> buat seru-seruan, debat receh, sampai bagi hukuman kocak!
                 </p>
               </div>
@@ -1531,7 +1530,7 @@ export const QrisCoffeeModal: React.FC<{
                   <Coffee className="w-4 h-4" />
                 </span>
                 <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-widest text-[#FBBF24]">
+                  <span className="block text-xs font-extrabold uppercase tracking-widest text-[#FBBF24]">
                     SAWER &amp; TRAKTIR KOPI
                   </span>
                   <h3 className="font-display text-lg font-bold leading-none">QRIS Fajarahnf</h3>
@@ -1647,7 +1646,7 @@ export const QrisCoffeeModal: React.FC<{
                               <div className="flex items-center justify-between gap-1">
                                 <FluentEmoji emoji={tier.emoji} size={20} />
                                 <span
-                                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                  className={`text-xs font-extrabold px-2 py-0.5 rounded-full ${
                                     active ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-[#F2ECE1] text-[#64616C]'
                                   }`}
                                 >
@@ -1701,11 +1700,11 @@ export const QrisCoffeeModal: React.FC<{
                             <span className="font-display font-bold text-xl tracking-tight text-[#1E1E24]">
                               QRIS
                             </span>
-                            <span className="px-2 py-0.5 rounded-md bg-[#E11D48] text-white text-[9px] font-extrabold uppercase tracking-wider">
+                            <span className="px-2 py-0.5 rounded-md bg-[#E11D48] text-white text-xs font-extrabold uppercase tracking-wider">
                               QR Indonesia
                             </span>
                           </div>
-                          <p className="text-[10px] font-mono font-bold text-[#64616C] mt-0.5">
+                          <p className="text-xs font-mono font-bold text-[#64616C] mt-0.5">
                             NMID: ID1026FAJARAHNF
                           </p>
                         </div>
@@ -1714,7 +1713,7 @@ export const QrisCoffeeModal: React.FC<{
                           <p className="font-display font-bold text-xs text-[#1E1E24]">
                             FAJARAHNF DEV
                           </p>
-                          <p className="text-[10px] font-extrabold text-[#158467]">
+                          <p className="text-xs font-extrabold text-[#158467]">
                             KOPI STUDIO
                           </p>
                         </div>
@@ -1771,7 +1770,7 @@ export const QrisCoffeeModal: React.FC<{
 
                       {/* Supported E-Wallet Badges Strip */}
                       <div className="px-4 py-3 bg-[#FAF7F2] border-t border-[#1E1E24]/10">
-                        <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#64616C] text-center mb-2">
+                        <p className="text-xs font-extrabold uppercase tracking-wider text-[#64616C] text-center mb-2">
                           Scan pakai aplikasi pembayaran favoritmu:
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-1.5">
@@ -1779,7 +1778,7 @@ export const QrisCoffeeModal: React.FC<{
                             <span
                               key={ew.name}
                               style={{ backgroundColor: ew.bg, color: ew.text }}
-                              className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold"
+                              className="px-2.5 py-0.5 rounded-full text-xs font-extrabold"
                             >
                               {ew.name}
                             </span>

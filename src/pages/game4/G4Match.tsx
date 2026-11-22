@@ -32,37 +32,37 @@ const STAGE_CONFIG: Record<
     tip: 'Kedua pemain menyusun poin argumen & membaca Chaos Card masing-masing!',
   },
   openingA: {
-    label: 'Opening Argument — PRO',
+    label: 'Opening Argument: PRO',
     speaker: 'A',
     duration: 30,
     tip: 'Pemain PRO menyampaikan argumen pembuka paling meyakinkan!',
   },
   openingB: {
-    label: 'Opening Argument — KONTRA',
+    label: 'Opening Argument: KONTRA',
     speaker: 'B',
     duration: 30,
     tip: 'Pemain KONTRA menyampaikan argumen pembuka untuk membela posisinya!',
   },
   rebuttalA: {
-    label: 'Rebuttal Battle — PRO',
+    label: 'Rebuttal Battle: PRO',
     speaker: 'A',
     duration: 20,
     tip: 'Pemain PRO membalas & mematahkan argumen dari Pemain KONTRA!',
   },
   rebuttalB: {
-    label: 'Rebuttal Battle — KONTRA',
+    label: 'Rebuttal Battle: KONTRA',
     speaker: 'B',
     duration: 20,
     tip: 'Pemain KONTRA membalas & menyerang balik poin dari Pemain PRO!',
   },
   finalA: {
-    label: 'Final Statement — PRO',
+    label: 'Final Statement: PRO',
     speaker: 'A',
     duration: 10,
     tip: 'Pernyataan penutup pamungkas dari Pemain PRO!',
   },
   finalB: {
-    label: 'Final Statement — KONTRA',
+    label: 'Final Statement: KONTRA',
     speaker: 'B',
     duration: 10,
     tip: 'Pernyataan penutup pamungkas dari Pemain KONTRA!',
@@ -288,7 +288,7 @@ export default function G4Match() {
           <div className="grid grid-cols-2 gap-3 mt-5">
             <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
+                <span className="text-xs font-extrabold uppercase tracking-wider bg-[#12B76A] text-white px-2.5 py-0.5 rounded-full inline-block">
                   TIM PRO (Duo)
                 </span>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -302,14 +302,14 @@ export default function G4Match() {
                   ))}
                 </div>
               </div>
-              <p className="text-xs text-white/80 italic mt-2 leading-snug">
+              <p className="text-xs text-white/85 italic mt-2 leading-snug">
                 "{match.topic.proStance}"
               </p>
             </div>
 
             <div className="rounded-2xl bg-white/15 p-3.5 backdrop-blur-xs flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
+                <span className="text-xs font-extrabold uppercase tracking-wider bg-[#F04438] text-white px-2.5 py-0.5 rounded-full inline-block">
                   TIM KONTRA (Duo)
                 </span>
                 <div className="flex flex-wrap items-center gap-2 mt-2">

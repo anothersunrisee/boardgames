@@ -113,7 +113,7 @@ export default function G3Results() {
                   : 'bg-white border-[#1E1E24]/10'
               }`}
             >
-              <span className="text-[10px] font-black uppercase text-[#2568EF] px-2.5 py-0.5 rounded-full bg-[#2568EF]/10">
+              <span className="text-xs font-black uppercase text-[#2568EF] px-2.5 py-0.5 rounded-full bg-[#2568EF]/10">
                 Tim Cowok (Bertahan)
               </span>
               <p className="font-display text-3xl font-bold text-[#2568EF] mt-1">{g3BoyWins}</p>
@@ -127,7 +127,7 @@ export default function G3Results() {
                   : 'bg-white border-[#1E1E24]/10'
               }`}
             >
-              <span className="text-[10px] font-black uppercase text-[#D8317E] px-2.5 py-0.5 rounded-full bg-[#D8317E]/10">
+              <span className="text-xs font-black uppercase text-[#D8317E] px-2.5 py-0.5 rounded-full bg-[#D8317E]/10">
                 Tim Cewek (Menebak)
               </span>
               <p className="font-display text-3xl font-bold text-[#D8317E] mt-1">{g3GirlWins}</p>
@@ -140,8 +140,8 @@ export default function G3Results() {
         <div className="mb-6">
           <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EC5A29] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
             <div>
-              <span className="text-[10px] font-black uppercase text-[#EC5A29] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
-                <Flame className="w-3 h-3 text-[#EC5A29]" />
+              <span className="text-xs font-black uppercase text-[#B93815] px-2.5 py-0.5 rounded-full bg-[#EC5A29]/15 inline-flex items-center gap-1 mb-1.5">
+                <Flame className="w-3.5 h-3.5 text-[#EC5A29]" />
                 <span>HUKUMAN: 1 TIM KALAH ({losingTeamName})</span>
               </span>
               <p className="text-xs text-[#64616C] font-semibold mb-2">

@@ -6,7 +6,6 @@ import {
   Upload,
   Download,
   Share2,
-  Sparkles,
   Volume2,
   VolumeX,
   Shuffle,
@@ -2335,7 +2334,7 @@ const IgStoryShareModal: React.FC<{
               <div className="flex items-center gap-2.5">
                 <Instagram className="w-5 h-5" />
                 <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-white/85">
+                  <span className="block text-xs font-extrabold uppercase tracking-wider text-white/90">
                     HUKUMAN WAJIB END-GAME • 1080×1920 PNG
                   </span>
                   <h3 className="font-display text-lg font-bold leading-none">
@@ -2390,7 +2389,7 @@ const IgStoryShareModal: React.FC<{
               {/* Team Tags Box */}
               <div className="rounded-2xl bg-[#FCE4F0] border-2 border-[#D8317E]/30 p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase text-[#D8317E] tracking-wider">
+                  <span className="text-xs font-black uppercase text-[#D8317E] tracking-wider">
                     TAG SEMUA ANGGOTA TIM (WAJIB):
                   </span>
                   <button
@@ -2400,9 +2399,9 @@ const IgStoryShareModal: React.FC<{
                       setCopiedTags(true);
                       setTimeout(() => setCopiedTags(false), 1800);
                     }}
-                    className="px-2 py-0.5 rounded-lg bg-[#D8317E] text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 min-h-[32px] rounded-lg bg-[#D8317E] text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
                   >
-                    {copiedTags ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copiedTags ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedTags ? 'Tag Disalin!' : 'Salin Tag Saja'}</span>
                   </button>
                 </div>
@@ -2602,7 +2601,7 @@ export default function PhotoBooth() {
       try {
         const raw = window.localStorage.getItem(ROOM_CACHE_KEY);
         if (!raw) {
-          if (!silent) showToast('Belum ada data room — menggunakan skuad contoh 3 orang!');
+          if (!silent) showToast('Belum ada data room, menggunakan skuad contoh 3 orang!');
           return;
         }
         const parsed = JSON.parse(raw) as {
@@ -2976,9 +2975,9 @@ export default function PhotoBooth() {
     }
   };
 
-  const igCaptionText = `${effectiveSubDialog} — ${losersHeading}: ${losers
+  const igCaptionText = `${effectiveSubDialog} (${losersHeading}: ${losers
     .map((l) => l.name)
-    .join(', ')} (WAJIB DI DEPAN 📸)! ${footerHook} Main gratis di ${TARGET_WEBSITE_URL}\n\nTag semua tim: ${teamTagString}`;
+    .join(', ')} wajib di depan). ${footerHook} Main gratis di ${TARGET_WEBSITE_URL}\n\nTag semua tim: ${teamTagString}`;
 
   const handleShareIgStory = async () => {
     if (isExporting) return;
@@ -2994,7 +2993,7 @@ export default function PhotoBooth() {
         try {
           await nav.share({
             files: [pngFile],
-            title: 'PartyGamesHub — Hukuman Photo Booth 9:16',
+            title: 'PartyGamesHub: Hukuman Photo Booth 9:16',
             text: igCaptionText,
           });
           sfx.playFanfare();
@@ -3101,12 +3100,12 @@ export default function PhotoBooth() {
                   <h1 className="font-display text-lg sm:text-2xl font-bold leading-none text-[#1E1E24]">
                     Hukuman Terakhir Photo Booth
                   </h1>
-                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFE4E2] text-[#B42318] border border-[#DC2626]/30 text-[10px] font-extrabold uppercase">
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFE4E2] text-[#B42318] border border-[#DC2626]/30 text-xs font-extrabold uppercase">
                     YANG KALAH DI DEPAN • WAJIB IG STORY
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs font-semibold text-[#64616C] mt-0.5">
-                  Foto bersama tim (yang kalah berdiri paling depan!) + Wajib Share IG Story &amp; Tag Semua Tim 📸
+                <p className="text-xs font-semibold text-[#64616C] mt-0.5">
+                  Foto bersama tim (yang kalah berdiri paling depan!) + Wajib Share IG Story &amp; Tag Semua Tim
                 </p>
               </div>
             </div>
@@ -3146,13 +3145,12 @@ export default function PhotoBooth() {
             {/* LEFT SHOWCASE COLUMN: LIVE 1080x1920 WYSIWYG CANVAS */}
             <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col items-center space-y-4">
               <div className="w-full max-w-[396px] flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-extrabold uppercase tracking-wider shadow-[0_3px_0_rgba(30,30,36,0.16)]">
-                  <Sparkles className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FBBF24] text-xs font-extrabold uppercase tracking-wider shadow-[0_3px_0_rgba(30,30,36,0.16)]">
                   <span>WYSIWYG 1080×1920 CANVAS</span>
                 </span>
                 {(photoImg || cameraActive) && (
-                  <span className="text-[11px] font-bold text-[#64616C] inline-flex items-center gap-1">
-                    <Move className="w-3 h-3" />
+                  <span className="text-xs font-bold text-[#64616C] inline-flex items-center gap-1">
+                    <Move className="w-3.5 h-3.5" />
                     <span>Drag foto untuk geser</span>
                   </span>
                 )}
@@ -3319,7 +3317,7 @@ export default function PhotoBooth() {
               {/* 🏆 MANDATORY END-GAME PUNISHMENT CHECKLIST CARD */}
               <div className="rounded-[26px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_6px_0_#EC5A29] p-4 sm:p-5 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EC5A29] text-white text-[10px] font-black uppercase tracking-wider">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                     <Instagram className="w-3.5 h-3.5" />
                     <span>ATURAN HUKUMAN TERAKHIR END-GAME (WAJIB!)</span>
                   </span>
@@ -3330,7 +3328,7 @@ export default function PhotoBooth() {
                       sfx.playFanfare();
                       showToast('Semua tag @anggota tim disalin! Siap paste di IG Story 📸');
                     }}
-                    className="px-3 py-1 rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3 py-1.5 min-h-[38px] rounded-xl bg-white border-2 border-[#1E1E24] text-xs font-extrabold text-[#1E1E24] hover:bg-[#FBBF24] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Copy className="w-3.5 h-3.5 text-[#D8317E]" />
                     <span>Copy Tag Semua Tim</span>
@@ -3354,7 +3352,7 @@ export default function PhotoBooth() {
 
                 {/* Editable Team Members Instagram Tags */}
                 <div className="pt-2 border-t border-[#EC5A29]/20">
-                  <p className="text-[11px] font-extrabold text-[#B42318] mb-1.5 flex items-center gap-1">
+                  <p className="text-xs font-extrabold text-[#B42318] mb-1.5 flex items-center gap-1">
                     <AtSign className="w-3.5 h-3.5" />
                     <span>Daftar Tag Instagram Anggota Tim ({teamTags.length} Orang):</span>
                   </p>
@@ -3362,9 +3360,9 @@ export default function PhotoBooth() {
                     {teamTags.map((t) => (
                       <div
                         key={t.id}
-                        className="inline-flex items-center bg-white border border-[#1E1E24]/20 rounded-xl px-2 py-1 gap-1 shadow-2xs"
+                        className="inline-flex items-center bg-white border border-[#1E1E24]/20 rounded-xl px-2.5 py-1.5 gap-1 shadow-2xs"
                       >
-                        <span className="text-[10px] font-bold text-[#64616C]">{t.name}:</span>
+                        <span className="text-xs font-bold text-[#64616C]">{t.name}:</span>
                         <input
                           type="text"
                           value={t.handle}
@@ -3428,7 +3426,7 @@ export default function PhotoBooth() {
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#E0EBFF] text-[#1084C8] text-[10px] font-extrabold uppercase">
+                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#E0EBFF] text-[#1084C8] text-xs font-extrabold uppercase">
                               SUB-DIALOG HEADER
                             </span>
                             <h3 className="font-display text-xl font-bold mt-1">
@@ -3514,8 +3512,8 @@ export default function PhotoBooth() {
                       <div className="space-y-3.5">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-[10px] font-extrabold uppercase">
-                              YANG KALAH WAJIB DI DEPAN 👇
+                            <span className="inline-block px-3 py-0.5 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-extrabold uppercase">
+                              YANG KALAH WAJIB DI DEPAN
                             </span>
                             <h3 className="font-display text-xl font-bold mt-1">
                               Judul &amp; Nama Yang Kalah
@@ -3587,7 +3585,7 @@ export default function PhotoBooth() {
                               className="rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] p-2.5 space-y-2"
                             >
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-[10px] font-extrabold bg-white/80 text-[#1E1E24] px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-extrabold bg-white/85 text-[#1E1E24] px-2 py-0.5 rounded-full">
                                   {item.rotation > 0 ? `+${item.rotation}°` : `${item.rotation}°`}
                                 </span>
                                 <div className="flex items-center gap-1">
@@ -3595,22 +3593,22 @@ export default function PhotoBooth() {
                                     type="button"
                                     onClick={() => toggleFrontSpot(item.id)}
                                     title="Tandai paling depan"
-                                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border border-[#1E1E24] inline-flex items-center gap-0.5 cursor-pointer transition ${
+                                    className={`px-2 py-1 rounded-full text-xs font-extrabold border border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer transition ${
                                       item.frontSpot
                                         ? 'bg-[#EC5A29] text-white'
-                                        : 'bg-white/85 text-[#1E1E24] hover:bg-white'
+                                        : 'bg-white/90 text-[#1E1E24] hover:bg-white'
                                     }`}
                                   >
-                                    <Crown className="w-2.5 h-2.5" />
+                                    <Crown className="w-3 h-3" />
                                     <span>Depan</span>
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => removeLoserLabel(item.id)}
                                     aria-label={`Hapus ${item.name}`}
-                                    className="w-6 h-6 rounded-full bg-white/80 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer"
+                                    className="w-8 h-8 rounded-full bg-white/85 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer"
                                   >
-                                    <Trash2 className="w-3 h-3" />
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </div>
@@ -3631,7 +3629,7 @@ export default function PhotoBooth() {
                       {/* Section C: Bottom Footer CTA */}
                       <div className="space-y-3">
                         <div>
-                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#D6F5EC] text-[#158467] text-[10px] font-extrabold uppercase">
+                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#D6F5EC] text-[#158467] text-xs font-extrabold uppercase">
                             FOOTER AJAKAN &amp; QR POJOK KANAN
                           </span>
                           <h3 className="font-display text-lg font-bold mt-1">
@@ -3693,7 +3691,7 @@ export default function PhotoBooth() {
                     >
                       <div className="space-y-2.5">
                         <div>
-                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FCE4F0] text-[#C82373] text-[10px] font-extrabold uppercase">
+                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FCE4F0] text-[#C82373] text-xs font-extrabold uppercase">
                             4 VISUAL KEY POSTER
                           </span>
                           <h3 className="font-display text-xl font-bold mt-1">
@@ -3731,7 +3729,7 @@ export default function PhotoBooth() {
                                   <p className="font-display font-bold text-xs sm:text-sm leading-tight">
                                     {t.name}
                                   </p>
-                                  <p className={`text-[10px] font-bold mt-0.5 ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
+                                  <p className={`text-xs font-bold mt-0.5 ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
                                     {t.badge}
                                   </p>
                                 </div>
@@ -3969,7 +3967,7 @@ export default function PhotoBooth() {
                   </p>
                   <p className="text-xs font-semibold text-[#3A5E54] leading-snug">
                     Menggunakan generator QR ISO/IEC 18004 murni langsung ke{' '}
-                    <strong>{TARGET_WEBSITE_URL}</strong> — tajam di 1080×1920px saat di-upload ke Instagram Story!
+                    <strong>{TARGET_WEBSITE_URL}</strong>, tajam di 1080×1920px saat di-upload ke Instagram Story!
                   </p>
                 </div>
               </div>

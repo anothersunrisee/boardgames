@@ -199,7 +199,7 @@ export default function PlayerJoin() {
       <div>
         {/* Header App Branding */}
         <div className="text-center mb-5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-[10px] font-black uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E1E24] text-[#FAF7F2] text-xs font-black uppercase tracking-wider mb-2">
             <Smartphone className="w-3.5 h-3.5 text-[#FBBF24]" />
             <span>PLAYER MOBILE CONTROLLER</span>
           </div>
@@ -207,7 +207,7 @@ export default function PlayerJoin() {
             Masuk Room Pesta
           </h1>
           <p className="text-xs text-[#64616C] font-semibold mt-1">
-            Gunakan HP kamu sebagai controller untuk menjawab tebakan & voting rahasia!
+            Gunakan HP kamu sebagai controller untuk menjawab tebakan &amp; voting rahasia!
           </p>
         </div>
 
@@ -222,7 +222,7 @@ export default function PlayerJoin() {
             <div className="flex-1">
               <p>{errorMessage}</p>
               {!isFirebaseConfigured() && (
-                <p className="text-[10px] text-[#B91C1C] mt-1 font-semibold">
+                <p className="text-xs text-[#B91C1C] mt-1 font-semibold">
                   (Tips: Host dapat mengonfigurasi Firebase Realtime di file .env)
                 </p>
               )}
@@ -244,13 +244,13 @@ export default function PlayerJoin() {
                 name={savedSession.player.name}
               />
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] font-black uppercase tracking-wider bg-[#158467] text-white px-2 py-0.5 rounded-full inline-block">
+                <span className="text-xs font-black uppercase tracking-wider bg-[#158467] text-white px-2.5 py-0.5 rounded-full inline-block">
                   Sesi Kamu Ditemukan
                 </span>
                 <h4 className="font-display text-base font-black text-[#1E1E24] truncate mt-0.5">
                   {savedSession.player.name}
                 </h4>
-                <p className="text-[11px] font-semibold text-[#158467]">
+                <p className="text-xs font-semibold text-[#158467]">
                   Tersambung ke Room <strong>{savedSession.roomCode}</strong>
                 </p>
               </div>
@@ -260,7 +260,7 @@ export default function PlayerJoin() {
                 type="button"
                 onClick={handleResumeSession}
                 disabled={isLoading}
-                className="flex-1 py-2 px-3 bg-[#158467] hover:bg-[#0F5E49] text-white text-xs font-extrabold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
+                className="flex-1 py-2.5 px-3 min-h-[42px] bg-[#158467] hover:bg-[#0F5E49] text-white text-xs font-extrabold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
               >
                 <Zap className="w-3.5 h-3.5 text-[#FBBF24]" />
                 <span>Lanjut Sebagai {savedSession.player.name}</span>
@@ -268,10 +268,10 @@ export default function PlayerJoin() {
               <button
                 type="button"
                 onClick={handleClearSession}
-                className="py-2 px-3 bg-white hover:bg-[#FEE2E2] text-[#DC2626] text-xs font-bold rounded-xl transition cursor-pointer border border-[#DC2626]/20 flex items-center gap-1"
+                className="py-2.5 px-3 min-h-[42px] bg-white hover:bg-[#FEE2E2] text-[#DC2626] text-xs font-bold rounded-xl transition cursor-pointer border border-[#DC2626]/20 flex items-center gap-1"
                 title="Ganti nama atau daftar ulang"
               >
-                <RotateCcw className="w-3 h-3" />
+                <RotateCcw className="w-3.5 h-3.5" />
                 <span>Ganti</span>
               </button>
             </div>
@@ -283,12 +283,12 @@ export default function PlayerJoin() {
           {/* Room Code Input */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[11px] font-bold text-[#64616C] uppercase tracking-wider">
+              <label className="text-xs font-bold text-[#64616C] uppercase tracking-wider">
                 Kode Room (4 Huruf di Layar TV):
               </label>
               {onlineRoom && (
-                <span className="text-[10px] font-extrabold text-[#158467] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#158467] animate-pulse" />
+                <span className="text-xs font-extrabold text-[#158467] flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-[#158467] animate-pulse" />
                   Room Aktif
                 </span>
               )}
@@ -311,11 +311,11 @@ export default function PlayerJoin() {
           {rosterSlots.length > 0 && !isCustomNameMode && (
             <div className="pt-2 border-t border-[#1E1E24]/10">
               <div className="flex items-center justify-between mb-2">
-                <label className="text-[11px] font-black text-[#1E1E24] uppercase tracking-wider flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#1E1E24] uppercase tracking-wider flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-[#2568EF]" />
                   <span>Pilih Namamu di Layar TV:</span>
                 </label>
-                <span className="text-[10px] font-bold text-[#64616C]">
+                <span className="text-xs font-bold text-[#64616C]">
                   {rosterSlots.filter((s) => s.connectedFromHp).length}/{rosterSlots.length} HP Connect
                 </span>
               </div>
@@ -334,11 +334,11 @@ export default function PlayerJoin() {
                       type="button"
                       disabled={isClaimedByOther}
                       onClick={() => handleSelectRosterSlot(slot)}
-                      className={`p-2.5 rounded-2xl border-2 text-left transition flex items-center gap-2 cursor-pointer relative ${
+                      className={`p-2.5 min-h-[54px] rounded-2xl border-2 text-left transition flex items-center gap-2 cursor-pointer relative ${
                         isSelected
                           ? 'bg-[#D6F5EC] border-[#158467] shadow-xs'
                           : isClaimedByOther
-                          ? 'bg-gray-100/80 border-gray-200 opacity-60 cursor-not-allowed'
+                          ? 'bg-gray-100/80 border-gray-200 opacity-65 cursor-not-allowed'
                           : 'bg-[#FAF7F2] hover:bg-white border-[#1E1E24]/10 hover:border-[#1E1E24]/30'
                       }`}
                     >
@@ -352,19 +352,19 @@ export default function PlayerJoin() {
                         <p className="font-display text-xs font-black text-[#1E1E24] truncate">
                           {slot.name}
                         </p>
-                        <p className="text-[10px] font-semibold text-[#64616C]">
-                          {slot.gender === 'cewek' ? '👧 Cewek' : '👦 Cowok'}
+                        <p className="text-xs font-semibold text-[#64616C]">
+                          {slot.gender === 'cewek' ? 'Cewek' : 'Cowok'}
                         </p>
                       </div>
 
                       {isClaimedByOther ? (
-                        <span className="text-[8px] font-black text-gray-500 bg-gray-200 px-1 py-0.5 rounded">
+                        <span className="text-xs font-bold text-[#475467] bg-gray-200 px-1.5 py-0.5 rounded">
                           HP Lain
                         </span>
                       ) : isSelected ? (
                         <CheckCircle2 className="w-4 h-4 text-[#158467] shrink-0" />
                       ) : (
-                        <span className="text-[10px] text-[#158467] font-bold">Pilih</span>
+                        <span className="text-xs text-[#158467] font-bold">Pilih</span>
                       )}
                     </button>
                   );
@@ -381,7 +381,7 @@ export default function PlayerJoin() {
                     setSelectedRosterPlayerId(null);
                     setName('');
                   }}
-                  className="text-[11px] font-bold text-[#2568EF] hover:underline cursor-pointer"
+                  className="text-xs font-bold text-[#2568EF] hover:underline cursor-pointer py-2 px-3 min-h-[40px]"
                 >
                   + Nama saya belum ada di TV (Daftar Baru)
                 </button>
@@ -398,23 +398,23 @@ export default function PlayerJoin() {
             >
               {rosterSlots.length > 0 && (
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[11px] font-bold text-[#1E1E24]">Daftar Nama Baru:</span>
+                  <span className="text-xs font-bold text-[#1E1E24]">Daftar Nama Baru:</span>
                   <button
                     type="button"
                     onClick={() => {
                       sfx.playPop();
                       setIsCustomNameMode(false);
                     }}
-                    className="text-[11px] font-bold text-[#64616C] hover:text-[#1E1E24] underline cursor-pointer"
+                    className="text-xs font-bold text-[#475467] hover:text-[#1E1E24] underline cursor-pointer py-1.5 px-2 min-h-[36px]"
                   >
-                    ← Kembali Pilih dari TV
+                    Kembali Pilih dari TV
                   </button>
                 </div>
               )}
 
               {/* Name Input */}
               <div>
-                <label className="block text-[11px] font-bold text-[#64616C] uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-[#64616C] uppercase tracking-wider mb-1">
                   Nama Panggilanmu:
                 </label>
                 <input
@@ -426,13 +426,13 @@ export default function PlayerJoin() {
                     setSelectedRosterPlayerId(null);
                   }}
                   placeholder="Ketik nama kamu..."
-                  className="input-field text-sm font-bold py-2 rounded-2xl w-full"
+                  className="input-field text-sm font-bold py-2.5 rounded-2xl w-full"
                 />
               </div>
 
               {/* Gender Selector */}
               <div>
-                <label className="block text-[11px] font-bold text-[#64616C] uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-[#64616C] uppercase tracking-wider mb-1">
                   Gender (Untuk Adu Cewek vs Cowok):
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -442,13 +442,13 @@ export default function PlayerJoin() {
                       sfx.playPop(700);
                       setGender('cewek');
                     }}
-                    className={`py-2 px-3 rounded-xl font-display text-xs font-bold border-2 transition ${
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl font-display text-xs font-bold border-2 transition cursor-pointer ${
                       gender === 'cewek'
                         ? 'bg-[#FCE4F0] border-[#D8317E] text-[#D8317E] shadow-2xs'
                         : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
                     }`}
                   >
-                    👧 Cewek
+                    Cewek
                   </button>
                   <button
                     type="button"
@@ -456,20 +456,20 @@ export default function PlayerJoin() {
                       sfx.playPop(700);
                       setGender('cowok');
                     }}
-                    className={`py-2 px-3 rounded-xl font-display text-xs font-bold border-2 transition ${
+                    className={`py-2.5 px-3 min-h-[44px] rounded-xl font-display text-xs font-bold border-2 transition cursor-pointer ${
                       gender === 'cowok'
                         ? 'bg-[#E0EBFF] border-[#2568EF] text-[#2568EF] shadow-2xs'
                         : 'bg-[#FAF7F2] border-[#1E1E24]/10 text-[#64616C]'
                     }`}
                   >
-                    👦 Cowok
+                    Cowok
                   </button>
                 </div>
               </div>
 
               {/* Avatar Selector */}
               <div>
-                <label className="block text-[11px] font-bold text-[#64616C] uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-[#64616C] uppercase tracking-wider mb-1">
                   Avatar Karakter:
                 </label>
                 <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10">
@@ -484,9 +484,9 @@ export default function PlayerJoin() {
                         sfx.playPop();
                         setAvatarPickerOpen(!avatarPickerOpen);
                       }}
-                      className="text-[11px] font-extrabold text-[#7C3AED] hover:underline cursor-pointer"
+                      className="text-xs font-extrabold text-[#7C3AED] hover:underline cursor-pointer py-1"
                     >
-                      {avatarPickerOpen ? 'Tutup Pilihan Avatar' : 'Ganti Karakter Lain →'}
+                      {avatarPickerOpen ? 'Tutup Pilihan Avatar' : 'Ganti Karakter Lain'}
                     </button>
                   </div>
                 </div>
@@ -514,7 +514,7 @@ export default function PlayerJoin() {
                         }`}
                       >
                         <PlayerProfileAvatar characterId={c.id} size={30} name={c.name} />
-                        <span className="text-[9px] font-bold text-[#1E1E24] mt-1 truncate w-full text-center">
+                        <span className="text-xs font-bold text-[#1E1E24] mt-1 truncate w-full text-center">
                           {c.name}
                         </span>
                       </button>
@@ -540,13 +540,13 @@ export default function PlayerJoin() {
             {isLoading
               ? 'Menyambungkan ke TV...'
               : selectedRosterPlayerId
-              ? `Masuk Sebagai ${name} & Connect ke TV 🚀`
-              : 'Masuk ke Room Party 🚀'}
+              ? `Masuk Sebagai ${name} & Connect ke TV`
+              : 'Masuk ke Room Party'}
           </span>
           <ArrowRight className="w-4 h-4" />
         </Button>
-        <p className="text-center text-[10px] text-[#64616C] font-semibold">
-          🔒 Layar TV utama di depan akan langsung mendeteksi koneksi HP kamu secara otomatis.
+        <p className="text-center text-xs text-[#64616C] font-semibold">
+          Layar TV utama di depan akan langsung mendeteksi koneksi HP kamu secara otomatis.
         </p>
       </div>
     </div>

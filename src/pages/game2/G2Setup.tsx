@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useGameStore, type Player, type G2GirlSlot } from '../../store/useGameStore'
 import { getRandomItems } from '../../data/game2-items'
 import { Button } from '../../components/ui/Button'
@@ -124,21 +124,20 @@ export default function G2Setup() {
             size={100}
           />
           <span className="inline-block px-3 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-xs font-black uppercase tracking-wider mb-2">
-            HOST MODE • LIVE INTEROGASI
+            LIVE INTEROGASI • CEWEK VS COWOK
           </span>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-[#D8317E]">
             Beauty Expert?!
           </h1>
           <p className="text-sm font-semibold text-[#64616C] mt-1 max-w-sm mx-auto">
-            Host memegang benda rahasia. 3 cowok bertanya 2 pertanyaan live lalu menebak!
+            Host memegang benda rahasia. {boyRows.length} cowok bertanya 2 pertanyaan live ke tiap cewek lalu menebak!
           </p>
         </div>
 
         {/* Girls */}
         <Card className="mb-4 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#D8317E] flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" />
-            <span>Tim Cewek ({girlRows.length} Pemain)</span>
+          <p className="font-display text-base font-bold mb-3 text-[#D8317E]">
+            Tim Cewek ({girlRows.length} Pemain)
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {girlRows.map((row, i) => (
@@ -155,9 +154,8 @@ export default function G2Setup() {
 
         {/* Boys */}
         <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#2568EF] flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" />
-            <span>Tim Cowok Penebak ({boyRows.length} Pemain)</span>
+          <p className="font-display text-base font-bold mb-3 text-[#2568EF]">
+            Tim Cowok Penebak ({boyRows.length} Pemain)
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {boyRows.map((row, i) => (
@@ -180,7 +178,7 @@ export default function G2Setup() {
             disabled={!isValid}
             onClick={handleStart}
           >
-            Mulai Interogasi Live (Mode Host) →
+            Mulai Interogasi Live
           </Button>
         </div>
       </motion.div>

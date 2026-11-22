@@ -137,7 +137,7 @@ export const G5Setup: React.FC = () => {
                   {/* Team Card Header */}
                   <div className="flex items-center justify-between pb-3 border-b border-[#1E1E24]/10 mb-3">
                     <div>
-                      <span className="text-[10px] font-black uppercase text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full inline-block mb-1">
+                      <span className="text-xs font-black uppercase text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full inline-block mb-1">
                         TIM #{tIdx + 1}
                       </span>
                       <h3 className="font-display text-lg font-bold text-[#1E1E24]">
@@ -151,7 +151,7 @@ export const G5Setup: React.FC = () => {
 
                   {/* Team Members Relay Sequence */}
                   <div className="space-y-2 mb-3">
-                    <p className="text-[11px] font-extrabold uppercase text-[#64616C] tracking-wider mb-2">
+                    <p className="text-xs font-extrabold uppercase text-[#64616C] tracking-wider mb-2">
                       Urutan Menjawab Soal:
                     </p>
                     {Array.from({ length: 4 }).map((_, qIdx) => {
@@ -165,14 +165,14 @@ export const G5Setup: React.FC = () => {
                           className="flex items-center justify-between p-2 rounded-xl bg-[#FAF7F2] border border-[#1E1E24]/8 text-xs font-bold"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                            <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center text-xs font-black shrink-0">
                               {qIdx + 1}
                             </span>
                             <PlayerProfileAvatar characterId={member?.avatarId} size={24} name={member?.name} />
                             <span className="truncate text-[#1E1E24]">{member?.name}</span>
                           </div>
 
-                          <span className="text-[10px] text-[#7C3AED] font-extrabold bg-[#EDE9FE] px-2 py-0.5 rounded-lg shrink-0">
+                          <span className="text-xs text-[#7C3AED] font-extrabold bg-[#EDE9FE] px-2 py-0.5 rounded-lg shrink-0">
                             {isRepeat ? 'Soal 4 (Ulang)' : `Soal ${qIdx + 1}`}
                           </span>
                         </div>
@@ -182,7 +182,7 @@ export const G5Setup: React.FC = () => {
                 </div>
 
                 {/* Team Footer Note */}
-                <div className="pt-3 border-t border-[#1E1E24]/8 text-[11px] text-[#64616C] font-semibold flex items-center justify-between">
+                <div className="pt-3 border-t border-[#1E1E24]/8 text-xs text-[#64616C] font-semibold flex items-center justify-between">
                   <span>Target: 4 Ronde (16 Soal)</span>
                   <span className="text-[#158467] font-bold">+10 Poin Jackpot</span>
                 </div>

@@ -81,8 +81,8 @@ export default function G5Results() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-2">
             {/* Champion Team Card */}
             <div className="p-4 rounded-2xl bg-white border-2 border-[#7C3AED]/30 shadow-xs text-center flex flex-col items-center justify-between">
-              <span className="text-[10px] font-black uppercase text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full mb-1">
-                🏆 TIM JUARA 1
+              <span className="text-xs font-black uppercase text-[#7C3AED] bg-[#EDE9FE] px-2.5 py-0.5 rounded-full mb-1">
+                TIM JUARA 1
               </span>
               <p className="font-display text-xl font-black text-[#1E1E24]">
                 {championTeam?.name}
@@ -94,8 +94,8 @@ export default function G5Results() {
 
             {/* Individual MVP Card */}
             <div className="p-4 rounded-2xl bg-white border-2 border-[#F59E0B]/40 shadow-xs text-center flex flex-col items-center justify-between">
-              <span className="text-[10px] font-black uppercase text-[#B45309] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full mb-1">
-                👑 MVP PERORANGAN
+              <span className="text-xs font-black uppercase text-[#B45309] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full mb-1">
+                MVP PERORANGAN
               </span>
               <div className="flex items-center gap-2 mt-0.5">
                 <PlayerProfileAvatar characterId={winner?.avatarId} size={30} name={winner?.name} />
@@ -160,7 +160,7 @@ export default function G5Results() {
                     >
                       {team.successfulRoundsCount || 0}/4 Ronde ({team.correctCount || 0}/16 Soal)
                     </span>
-                    <p className="text-[10px] font-bold text-[#64616C] mt-0.5">
+                    <p className="text-xs font-bold text-[#64616C] mt-0.5">
                       {team.teamScore || 0} Poin Tim
                     </p>
                   </div>
@@ -180,7 +180,7 @@ export default function G5Results() {
           <div className="mb-6">
             <div className="p-4 rounded-[26px] bg-[#FFE8DF] border-2 border-[#EA580C] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#EA580C] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
+                <span className="text-xs font-black uppercase text-[#B93815] px-2.5 py-0.5 rounded-full bg-[#EA580C]/15 inline-flex items-center gap-1 mb-1.5">
                   <FluentEmoji name="fire" variant="3d" size={14} />
                   <span>HUKUMAN: 1 TIM GUGUR ({failingTeam.name})</span>
                 </span>

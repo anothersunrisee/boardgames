@@ -114,7 +114,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                   />
                   <div className="truncate min-w-0">
                     <p className="text-xs font-bold leading-tight truncate">{player.name}</p>
-                    <p className="text-[10px] opacity-75 font-semibold truncate">
+                    <p className="text-xs text-[#64616C] font-semibold truncate">
                       {player.kubu || player.team}
                     </p>
                   </div>

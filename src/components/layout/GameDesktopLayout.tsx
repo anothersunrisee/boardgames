@@ -184,12 +184,12 @@ const FullPodiumAndPunishmentModal: React.FC<{
                       <p className="font-display font-bold text-xs sm:text-sm mt-1.5 truncate max-w-full text-center">
                         {sorted[1].name}
                       </p>
-                      <span className="text-[11px] text-white/70 font-bold mb-2">
+                      <span className="text-xs text-white/85 font-bold mb-2">
                         {sorted[1].score > 0 ? `+${sorted[1].score}` : sorted[1].score} pt
                       </span>
                       <div className="w-full h-22 sm:h-24 rounded-t-2xl bg-[#FAF7F2] text-[#1E1E24] border-2 border-b-0 border-[#1E1E24] flex flex-col items-center justify-center">
                         <span className="font-display text-xl sm:text-2xl font-black">#2</span>
-                        <span className="text-[9px] font-extrabold uppercase text-[#64616C]">Runner Up</span>
+                        <span className="text-xs font-extrabold uppercase text-[#64616C]">Runner Up</span>
                       </div>
                     </div>
                   ) : <div />}
@@ -210,12 +210,12 @@ const FullPodiumAndPunishmentModal: React.FC<{
                       <p className="font-display font-bold text-sm sm:text-base text-[#FBBF24] mt-1.5 truncate max-w-full text-center">
                         {sorted[0].name}
                       </p>
-                      <span className="text-xs font-black text-white/90 mb-2">
+                      <span className="text-xs font-black text-white/95 mb-2">
                         {sorted[0].score > 0 ? `+${sorted[0].score}` : sorted[0].score} pt
                       </span>
                       <div className="w-full h-30 sm:h-32 rounded-t-2xl bg-[#FDE68A] text-[#1E1E24] border-2 border-b-0 border-[#1E1E24] flex flex-col items-center justify-center shadow-xs">
                         <span className="font-display text-2xl sm:text-3xl font-black">#1</span>
-                        <span className="text-[10px] font-black uppercase text-[#92400E]">Champion</span>
+                        <span className="text-xs font-black uppercase text-[#92400E]">Champion</span>
                       </div>
                     </div>
                   ) : <div />}
@@ -227,12 +227,12 @@ const FullPodiumAndPunishmentModal: React.FC<{
                       <p className="font-display font-bold text-xs sm:text-sm mt-1.5 truncate max-w-full text-center">
                         {sorted[2].name}
                       </p>
-                      <span className="text-[11px] text-white/70 font-bold mb-2">
+                      <span className="text-xs text-white/85 font-bold mb-2">
                         {sorted[2].score > 0 ? `+${sorted[2].score}` : sorted[2].score} pt
                       </span>
                       <div className="w-full h-18 sm:h-20 rounded-t-2xl bg-[#FED7AA] text-[#1E1E24] border-2 border-b-0 border-[#1E1E24] flex flex-col items-center justify-center">
                         <span className="font-display text-lg sm:text-xl font-black">#3</span>
-                        <span className="text-[9px] font-extrabold uppercase text-[#9A3412]">3rd Place</span>
+                        <span className="text-xs font-extrabold uppercase text-[#9A3412]">3rd Place</span>
                       </div>
                     </div>
                   ) : <div />}
@@ -287,7 +287,7 @@ const FullPodiumAndPunishmentModal: React.FC<{
                   </div>
                 ) : (
                   <div className="p-3 rounded-2xl bg-[#FAF7F2] border border-[#1E1E24]/10 space-y-1.5">
-                    <p className="text-[11px] font-bold text-[#64616C]">
+                    <p className="text-xs font-bold text-[#64616C]">
                       3 pemain di posisi klasemen terbawah wajib menjalani kartu hukuman:
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -298,10 +298,10 @@ const FullPodiumAndPunishmentModal: React.FC<{
                             key={p.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FEE2E2] border border-[#DC2626]/20 shadow-2xs"
                           >
-                            <span className="font-display font-black text-[10px] text-[#DC2626]">#{rank}</span>
+                            <span className="font-display font-black text-xs text-[#DC2626]">#{rank}</span>
                             <PlayerProfileAvatar characterId={p.avatarId} size={22} name={p.name} />
                             <span className="font-display font-bold text-xs text-[#1E1E24]">{p.name}</span>
-                            <span className="text-[10px] font-extrabold text-[#64616C]">({p.score} pt)</span>
+                            <span className="text-xs font-extrabold text-[#64616C]">({p.score} pt)</span>
                           </div>
                         );
                       })}
@@ -319,7 +319,7 @@ const FullPodiumAndPunishmentModal: React.FC<{
                   className="rounded-2xl p-4 sm:p-5 text-white border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24]"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="px-3 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-3 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-xs font-black uppercase tracking-wider">
                       Level: {activePunishment.intensity}
                     </span>
                     <span className="text-xs font-bold text-white/85">
@@ -466,7 +466,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
           <PlayerProfileAvatar characterId={player.avatarId} size={rank === 1 ? 38 : 30} name={player.name} />
         </div>
 
-        <p className="font-display font-bold text-[11px] text-[#1E1E24] truncate max-w-[80px] mt-1 text-center">
+        <p className="font-display font-bold text-xs text-[#1E1E24] truncate max-w-[85px] mt-1 text-center">
           {player.name}
         </p>
 
@@ -477,7 +477,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
           <span className="font-display font-black text-xs leading-none text-[#1E1E24]">
             #{rank}
           </span>
-          <span className="font-display font-extrabold text-[10px] text-[#1E1E24]/80 mt-0.5">
+          <span className="font-display font-extrabold text-xs text-[#1E1E24]/85 mt-0.5">
             {player.score > 0 ? `+${player.score}` : player.score}
           </span>
         </div>
@@ -629,7 +629,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
                     Live Podium & Skor
                   </h3>
                 </div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E6F7F1] border border-[#158467]/30 text-[10px] font-extrabold text-[#158467]">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E6F7F1] border border-[#158467]/30 text-xs font-extrabold text-[#158467]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#158467] animate-pulse" />
                   Realtime
                 </span>
@@ -709,7 +709,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
                             <p className="font-display font-bold text-xs text-[#1E1E24] truncate leading-tight">
                               {player.name}
                             </p>
-                            <span className="text-[10px] text-[#64616C] font-semibold block truncate">
+                            <span className="text-xs text-[#64616C] font-semibold block truncate">
                               {player.kubu}
                             </span>
                           </div>
@@ -747,7 +747,7 @@ export const GameDesktopLayout: React.FC<GameDesktopLayoutProps> = ({
                           <p className="font-display font-bold text-xs text-[#1E1E24] truncate">
                             {t.name}
                           </p>
-                          <p className="text-[10px] font-semibold text-[#64616C]">
+                          <p className="text-xs font-semibold text-[#64616C]">
                             {t.count} Anggota
                           </p>
                         </div>

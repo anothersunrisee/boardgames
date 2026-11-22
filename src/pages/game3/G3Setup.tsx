@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useGameStore, type Player, type G3BoySlot } from '../../store/useGameStore'
 import { WORD_CATEGORIES } from '../../data/game3-words'
 import { Button } from '../../components/ui/Button'
@@ -123,13 +123,13 @@ export default function G3Setup() {
             size={100}
           />
           <span className="inline-block px-3 py-1 rounded-full bg-[#E0EBFF] text-[#2568EF] text-xs font-black uppercase tracking-wider mb-2">
-            HOST MODE • LIVE INTEROGASI
+            LIVE INTEROGASI • COWOK VS CEWEK
           </span>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-[#2568EF]">
             Boys Stuff, Girls Guess!
           </h1>
           <p className="text-sm font-semibold text-[#64616C] mt-1 max-w-sm mx-auto">
-            Host memegang kata rahasia dunia pria. 7 cewek bertanya 2 pertanyaan live lalu menebak!
+            Host memegang kata rahasia dunia pria. {girlRows.length} cewek bertanya 2 pertanyaan live lalu menebak!
           </p>
         </div>
 
@@ -141,10 +141,10 @@ export default function G3Setup() {
               <button
                 key={cat.label}
                 type="button"
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3.5 py-2 min-h-[40px] rounded-full text-xs font-bold transition-all cursor-pointer ${
                   selectedCategory === cat.label
                     ? 'bg-[#2568EF] text-white shadow-xs'
-                    : 'bg-[#E0EBFF] text-[#2568EF] hover:bg-[#2568EF]/15'
+                    : 'bg-[#E0EBFF] text-[#1545A8] hover:bg-[#2568EF]/15'
                 }`}
                 onClick={() => {
                   sfx.playPop()
@@ -159,9 +159,8 @@ export default function G3Setup() {
 
         {/* Boys */}
         <Card className="mb-4 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#2568EF] flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" />
-            <span>Tim Cowok Pembawa Kata ({boyRows.length})</span>
+          <p className="font-display text-base font-bold mb-3 text-[#2568EF]">
+            Tim Cowok Pembawa Kata ({boyRows.length})
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {boyRows.map((row, i) => (
@@ -178,9 +177,8 @@ export default function G3Setup() {
 
         {/* Girls */}
         <Card className="mb-5 p-5 bg-white shadow-xs">
-          <p className="font-display text-base font-bold mb-3 text-[#D8317E] flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" />
-            <span>Tim Cewek Penebak ({girlRows.length})</span>
+          <p className="font-display text-base font-bold mb-3 text-[#D8317E]">
+            Tim Cewek Penebak ({girlRows.length})
           </p>
           <div className="space-y-2 overflow-x-hidden">
             {girlRows.map((row, i) => (
@@ -203,7 +201,7 @@ export default function G3Setup() {
             disabled={!isValid}
             onClick={handleStart}
           >
-            Mulai Interogasi Live (Mode Host) →
+            Mulai Interogasi Live
           </Button>
         </div>
       </motion.div>

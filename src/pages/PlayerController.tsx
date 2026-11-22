@@ -226,10 +226,10 @@ export default function PlayerController() {
         <div className="flex items-center gap-2.5">
           <PlayerProfileAvatar characterId={player.avatarId} size={38} name={player.name} />
           <div>
-            <p className="font-display text-sm font-bold text-[#1E1E24] leading-tight truncate max-w-[120px]">
+            <p className="font-display text-sm font-bold text-[#1E1E24] leading-tight truncate max-w-[140px]">
               {player.name}
             </p>
-            <span className="text-[10px] font-extrabold text-[#64616C]">
+            <span className="text-xs font-extrabold text-[#64616C]">
               Room: <strong className="text-[#1E1E24] tracking-wider">{session.roomCode}</strong>
             </span>
           </div>
@@ -241,16 +241,17 @@ export default function PlayerController() {
               isOnline ? 'bg-[#12B76A] animate-pulse' : 'bg-[#F04438]'
             }`}
           />
-          <span className="text-[10px] font-extrabold text-[#64616C]">
+          <span className="text-xs font-extrabold text-[#64616C]">
             {isOnline ? 'LIVE TV' : 'OFFLINE'}
           </span>
           <button
             type="button"
             onClick={handleExitRoom}
-            className="ml-2 p-1.5 rounded-xl text-[#64616C] hover:text-[#DC2626] hover:bg-black/5 transition cursor-pointer"
+            className="ml-1.5 w-10 h-10 rounded-xl text-[#64616C] hover:text-[#DC2626] hover:bg-black/5 transition cursor-pointer flex items-center justify-center"
             title="Keluar dari room"
+            aria-label="Keluar dari room"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -269,7 +270,7 @@ export default function PlayerController() {
             <div className="mb-3 inline-block">
               <BlobMascot shape="circle" mood="happy" color="#FCD34D" size={90} />
             </div>
-            <span className="inline-block px-3 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-[10px] font-black uppercase tracking-wider mb-2">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-xs font-black uppercase tracking-wider mb-2">
               TERHUBUNG KE LAYAR TV
             </span>
             <h2 className="font-display text-2xl font-black text-[#1E1E24]">
@@ -287,7 +288,7 @@ export default function PlayerController() {
         {activeGame === 'game1' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="text-center">
-              <span className="px-3 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-[10px] font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-[#D6F5EC] text-[#158467] text-xs font-black uppercase tracking-wider">
                 GAME 01 • SAME BRAIN? NO!
               </span>
               <h2 className="font-display text-lg font-black text-[#1E1E24] mt-2">
@@ -303,7 +304,7 @@ export default function PlayerController() {
                   "{g1Input}"
                 </p>
                 <p className="text-xs text-[#0F5E49] font-bold">
-                  👀 Perhatikan layar TV! Host akan segera membuka jawaban semua orang.
+                  Perhatikan layar TV! Host akan segera membuka jawaban semua orang.
                 </p>
               </Card>
             ) : (
@@ -313,7 +314,7 @@ export default function PlayerController() {
                     <label className="text-xs font-black text-[#158467] uppercase tracking-wider">
                       Jawaban Unikmu:
                     </label>
-                    <span className="text-[11px] font-bold text-[#64616C]">
+                    <span className="text-xs font-bold text-[#64616C]">
                       {g1Input.length}/30
                     </span>
                   </div>
@@ -326,8 +327,8 @@ export default function PlayerController() {
                     className="input-field text-xl font-bold py-3.5 px-4 rounded-2xl w-full text-center border-2 border-[#1E1E24]/20 focus:border-[#158467]"
                     autoFocus
                   />
-                  <p className="text-[11px] text-[#64616C] font-semibold mt-1.5 text-center">
-                    💡 Jawaban sama dengan orang lain = <strong className="text-[#F04438]">0 Poin</strong>!
+                  <p className="text-xs text-[#64616C] font-semibold mt-1.5 text-center">
+                    Jawaban sama dengan orang lain = <strong className="text-[#DC2626]">0 Poin</strong>!
                   </p>
                 </div>
 
@@ -340,7 +341,7 @@ export default function PlayerController() {
                       setG1Input('');
                     }}
                     disabled={!g1Input}
-                    className="py-3 px-2 rounded-2xl border-2 border-[#1E1E24]/15 bg-white text-xs font-bold text-[#64616C] hover:text-[#F04438] hover:border-[#F04438]/30 transition cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40"
+                    className="py-3 px-2 min-h-[44px] rounded-2xl border-2 border-[#1E1E24]/15 bg-white text-xs font-bold text-[#64616C] hover:text-[#DC2626] hover:border-[#DC2626]/30 transition cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Hapus</span>
@@ -370,7 +371,7 @@ export default function PlayerController() {
         {activeGame === 'game2' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="text-center">
-              <span className="px-3 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-[10px] font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-[#FCE4F0] text-[#D8317E] text-xs font-black uppercase tracking-wider">
                 GAME 02 • BEAUTY EXPERT
               </span>
             </div>
@@ -458,7 +459,7 @@ export default function PlayerController() {
         {activeGame === 'game3' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="text-center">
-              <span className="px-3 py-1 rounded-full bg-[#E0EBFF] text-[#2568EF] text-[10px] font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-[#E0EBFF] text-[#2568EF] text-xs font-black uppercase tracking-wider">
                 GAME 03 • BOYS STUFF
               </span>
             </div>
@@ -546,7 +547,7 @@ export default function PlayerController() {
         {activeGame === 'game4' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="text-center">
-              <span className="px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-[10px] font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-[#FFE8DF] text-[#EC5A29] text-xs font-black uppercase tracking-wider">
                 GAME 04 • DEBAT 2v2
               </span>
               <h2 className="font-display text-base font-bold text-[#1E1E24] mt-2">
@@ -557,20 +558,20 @@ export default function PlayerController() {
             {/* Voting Buttons untuk Juri / Penonton */}
             <div className="space-y-3">
               <p className="text-xs font-bold text-center text-[#64616C]">
-                {votedTeam ? '✅ Suaramu sudah terkunci di TV!' : '🗳️ Vote tim dengan argumen paling meyakinkan:'}
+                {votedTeam ? 'Suaramu sudah terkunci di TV!' : 'Vote tim dengan argumen paling meyakinkan:'}
               </p>
 
               <button
                 type="button"
                 disabled={!!votedTeam}
                 onClick={() => handleTriggerVoteConfirm('A')}
-                className={`w-full p-4 rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
+                className={`w-full p-4 min-h-[56px] rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
                   votedTeam === 'A'
                     ? 'bg-[#158467] text-white border-[#0F5E49] shadow-md'
                     : 'bg-white border-[#158467]/30 text-[#158467] hover:bg-[#D6F5EC]'
                 }`}
               >
-                <span>🔥 Tim A (PRO)</span>
+                <span>Tim A (PRO)</span>
                 {votedTeam === 'A' && <CheckCircle2 className="w-5 h-5 text-white" />}
               </button>
 
@@ -578,13 +579,13 @@ export default function PlayerController() {
                 type="button"
                 disabled={!!votedTeam}
                 onClick={() => handleTriggerVoteConfirm('B')}
-                className={`w-full p-4 rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
+                className={`w-full p-4 min-h-[56px] rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
                   votedTeam === 'B'
                     ? 'bg-[#2568EF] text-white border-[#1545A8] shadow-md'
                     : 'bg-white border-[#2568EF]/30 text-[#2568EF] hover:bg-[#E0EBFF]'
                 }`}
               >
-                <span>❄️ Tim B (KONTRA)</span>
+                <span>Tim B (KONTRA)</span>
                 {votedTeam === 'B' && <CheckCircle2 className="w-5 h-5 text-white" />}
               </button>
             </div>
@@ -596,7 +597,7 @@ export default function PlayerController() {
         {/* =================================================================== */}
         {activeGame === 'game5' && (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-4">
-            <span className="px-3 py-1 rounded-full bg-[#F3E8FF] text-[#7928CA] text-[10px] font-black uppercase tracking-wider">
+            <span className="px-3 py-1 rounded-full bg-[#F3E8FF] text-[#7928CA] text-xs font-black uppercase tracking-wider">
               GAME 05 • KUIS BERANTAI 16 SOAL
             </span>
 
@@ -605,43 +606,43 @@ export default function PlayerController() {
               <h2 className="font-display text-xl font-black text-white">
                 Fokus ke Layar TV Utama!
               </h2>
-              <p className="text-xs text-white/80 font-medium mt-1 leading-relaxed">
+              <p className="text-xs text-white/85 font-medium mt-1 leading-relaxed">
                 Kuis ini dimainkan langsung oleh tim yang maju berkelompok di depan TV. Tidak perlu ketik di HP.
               </p>
 
               {/* Cheer Hype Buttons */}
               <div className="mt-5 pt-4 border-t border-white/10">
-                <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider block mb-2">
+                <span className="text-xs font-bold text-white/85 uppercase tracking-wider block mb-2.5">
                   Beri Semangat Tim Temanmu:
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => handleSendCheer('👏')}
-                    className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center gap-1 cursor-pointer"
+                    className="p-3 min-h-[68px] rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center justify-center gap-1 cursor-pointer"
                   >
                     <span className="text-2xl">👏</span>
-                    <span className="text-[10px]">Tepuk Tangan</span>
+                    <span className="text-xs">Tepuk Tangan</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSendCheer('🔥')}
-                    className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center gap-1 cursor-pointer"
+                    className="p-3 min-h-[68px] rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center justify-center gap-1 cursor-pointer"
                   >
                     <span className="text-2xl">🔥</span>
-                    <span className="text-[10px]">Semangat</span>
+                    <span className="text-xs">Semangat</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSendCheer('🎉')}
-                    className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center gap-1 cursor-pointer"
+                    className="p-3 min-h-[68px] rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition active:scale-95 flex flex-col items-center justify-center gap-1 cursor-pointer"
                   >
                     <span className="text-2xl">🎉</span>
-                    <span className="text-[10px]">Hore</span>
+                    <span className="text-xs">Hore</span>
                   </button>
                 </div>
                 {cheerCount > 0 && (
-                  <p className="text-[11px] font-bold text-[#FBBF24] mt-2">
+                  <p className="text-xs font-bold text-[#FBBF24] mt-2.5">
                     {activeCheer || '✨'} Kamu sudah bersorak {cheerCount} kali!
                   </p>
                 )}
@@ -656,11 +657,11 @@ export default function PlayerController() {
         {activeGame === 'game6' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="text-center">
-              <span className="px-3 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-[10px] font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-[#FEF3C7] text-[#B45309] text-xs font-black uppercase tracking-wider">
                 GAME 06 • SELL ME THIS TRASH
               </span>
               <h2 className="font-display text-base font-bold text-[#1E1E24] mt-2">
-                Vote Sales Pitching Paling Ngakak & Gokil:
+                Vote Sales Pitching Paling Masuk Akal &amp; Gokil:
               </h2>
             </div>
 
@@ -669,13 +670,13 @@ export default function PlayerController() {
                 type="button"
                 disabled={!!votedTeam}
                 onClick={() => handleTriggerVoteConfirm('A')}
-                className={`w-full p-4 rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
+                className={`w-full p-4 min-h-[56px] rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
                   votedTeam === 'A'
                     ? 'bg-[#158467] text-white border-[#0F5E49] shadow-md'
                     : 'bg-white border-[#158467]/30 text-[#158467] hover:bg-[#D6F5EC]'
                 }`}
               >
-                <span>🛒 Tim Sales A</span>
+                <span>Tim Sales A</span>
                 {votedTeam === 'A' && <CheckCircle2 className="w-5 h-5 text-white" />}
               </button>
 
@@ -683,13 +684,13 @@ export default function PlayerController() {
                 type="button"
                 disabled={!!votedTeam}
                 onClick={() => handleTriggerVoteConfirm('B')}
-                className={`w-full p-4 rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
+                className={`w-full p-4 min-h-[56px] rounded-[24px] border-2 font-display text-base font-black transition flex items-center justify-between cursor-pointer ${
                   votedTeam === 'B'
                     ? 'bg-[#2568EF] text-white border-[#1545A8] shadow-md'
                     : 'bg-white border-[#2568EF]/30 text-[#2568EF] hover:bg-[#E0EBFF]'
                 }`}
               >
-                <span>🛒 Tim Sales B</span>
+                <span>Tim Sales B</span>
                 {votedTeam === 'B' && <CheckCircle2 className="w-5 h-5 text-white" />}
               </button>
             </div>
@@ -703,7 +704,7 @@ export default function PlayerController() {
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
             <ConfettiShower active particleCount={40} />
             <Trophy className="w-14 h-14 text-[#F59E0B] mx-auto mb-2 animate-bounce" />
-            <span className="text-[10px] font-black uppercase text-[#F59E0B] tracking-wider">
+            <span className="text-xs font-black uppercase text-[#B45309] tracking-wider">
               TOURNAMENT SELESAI
             </span>
             <h2 className="font-display text-2xl font-bold text-[#1E1E24] mt-1">
@@ -717,9 +718,9 @@ export default function PlayerController() {
       </div>
 
       {/* ─── Bottom Footer ─────────────────────────────────────────────────── */}
-      <div className="text-center py-2 border-t border-[#1E1E24]/10">
-        <span className="text-[10px] font-bold text-[#64616C]">
-          PartyHub Indonesia • Controller Terhubung Realtime 🚀
+      <div className="text-center py-2.5 border-t border-[#1E1E24]/10">
+        <span className="text-xs font-bold text-[#64616C]">
+          PartyHub Indonesia • Controller Terhubung Realtime
         </span>
       </div>
 
