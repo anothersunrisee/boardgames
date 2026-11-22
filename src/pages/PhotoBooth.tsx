@@ -3161,13 +3161,13 @@ export default function PhotoBooth() {
         {/* ==================================================================== */}
         {/* 3-PANEL STUDIO: KIRI (ADJUST) | TENGAH (FOTO 9:16) | KANAN (SHUTTER) */}
         {/* ==================================================================== */}
-        <main className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6 items-start">
+        <main className="max-w-[1220px] mx-auto px-3 sm:px-5 py-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-[285px_minmax(0,440px)_275px] xl:grid-cols-[335px_465px_315px] justify-center gap-3.5 xl:gap-4 items-start">
 
             {/* ================================================================ */}
             {/* KOLOM KIRI: NAVIGASI ADJUST & EDIT TEKS / NAMA YANG KALAH         */}
             {/* ================================================================ */}
-            <div className="lg:col-span-3 order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
+            <div className="order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
               {/* 2-Tab Switcher: Adjust & Bingkai | Teks & Yang Kalah */}
               <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-[20px] bg-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)]">
                 <button
@@ -3321,26 +3321,26 @@ export default function PhotoBooth() {
                                   sfx.playPop(600);
                                   setThemeId(t.id);
                                 }}
-                                className={`p-2 rounded-2xl border-2 text-left transition cursor-pointer flex items-center gap-2 ${
+                                className={`p-2 rounded-2xl border-2 text-left transition cursor-pointer flex items-center gap-1.5 ${
                                   active
                                     ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_3px_0_#0A0A0D]'
                                     : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
                                 }`}
                               >
-                                <div className="flex items-center -space-x-1.5 shrink-0">
+                                <div className="flex items-center -space-x-1 shrink-0">
                                   {t.previewSwatch.slice(0, 2).map((hex, i) => (
                                     <span
                                       key={i}
                                       style={{ backgroundColor: hex }}
-                                      className="w-5 h-5 rounded-full border-2 border-[#1E1E24] block"
+                                      className="w-4 h-4 rounded-full border-[1.5px] border-[#1E1E24] block"
                                     />
                                   ))}
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-display font-bold text-xs truncate">
+                                  <p className="font-display font-bold text-xs leading-tight">
                                     {t.name}
                                   </p>
-                                  <p className={`text-xs font-semibold truncate ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
+                                  <p className={`text-xs font-semibold leading-tight truncate ${active ? 'text-[#FBBF24]' : 'text-[#64616C]'}`}>
                                     {t.badge}
                                   </p>
                                 </div>
@@ -3686,8 +3686,19 @@ export default function PhotoBooth() {
             {/* ================================================================ */}
             {/* KOLOM TENGAH: LIVE BINGKAI 9:16 FULL UKURAN BESAR & UTUH        */}
             {/* ================================================================ */}
-            <div className="lg:col-span-6 order-1 lg:order-2 flex flex-col items-center space-y-2.5">
-              <div className="relative w-full max-w-[445px] sm:max-w-[470px] aspect-[9/16] rounded-[28px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
+            <div className="order-1 lg:order-2 flex flex-col items-center">
+              {(photoImg || cameraActive) && (
+                <div className="mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border-2 border-[#1E1E24] shadow-[0_3px_0_rgba(30,30,36,0.12)] text-xs font-bold text-[#1E1E24]">
+                  <Move className="w-3.5 h-3.5 text-[#2568EF] shrink-0" />
+                  <span>
+                    {photoImg
+                      ? 'Drag langsung di dalam foto untuk menggeser posisi'
+                      : 'Kamera aktif • siap jepret & atur posisi foto'}
+                  </span>
+                </div>
+              )}
+
+              <div className="relative w-full max-w-[465px] aspect-[9/16] rounded-[28px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
                 <AnimatePresence>
                   {flashActive && (
                     <motion.div
@@ -3714,19 +3725,12 @@ export default function PhotoBooth() {
                   }`}
                 />
               </div>
-
-              {(photoImg || cameraActive) && (
-                <p className="text-xs font-bold text-[#64616C] inline-flex items-center gap-1">
-                  <Move className="w-3.5 h-3.5" />
-                  <span>Drag langsung di dalam foto untuk menggeser posisi</span>
-                </p>
-              )}
             </div>
 
             {/* ================================================================ */}
             {/* KOLOM KANAN: KAMERA, SHUTTER, UPLOAD, DOWNLOAD & SHARE IG STORY  */}
             {/* ================================================================ */}
-            <div className="lg:col-span-3 order-2 lg:order-3 lg:sticky lg:top-16 space-y-3">
+            <div className="order-2 lg:order-3 lg:sticky lg:top-16 space-y-3">
               {/* Card 1: Kamera, Shutter & Upload Foto */}
               <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
