@@ -11,6 +11,7 @@ import { ScoreBoard } from '../components/ScoreBoard';
 import { GameOnboardingModal, type GameId } from '../components/modals/GameOnboardingModal';
 import {
   PlayfulPartyFooter,
+  PartyGuideModal,
   DeveloperInfoModal,
   QrisCoffeeModal,
 } from '../components/PlayfulPartyFooter';
@@ -121,8 +122,8 @@ export const Home: React.FC = () => {
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [transitionData, setTransitionData] = useState<{ active: boolean; title: string; route: string } | null>(null);
   const [onboardingGameId, setOnboardingGameId] = useState<GameId | null>(null);
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
   const [devModalOpen, setDevModalOpen] = useState(false);
-  const [devModalTab, setDevModalTab] = useState<'features' | 'limits'>('features');
   const [qrisModalOpen, setQrisModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(sfx.muted);
 
@@ -152,12 +153,20 @@ export const Home: React.FC = () => {
     if (!sfx.muted) sfx.playPop();
   };
 
-  const openDevModal = (tab: 'features' | 'limits' = 'features') => {
-    setDevModalTab(tab);
+  const openGuideModal = () => {
+    setDevModalOpen(false);
+    setQrisModalOpen(false);
+    setGuideModalOpen(true);
+  };
+
+  const openDevModal = () => {
+    setGuideModalOpen(false);
+    setQrisModalOpen(false);
     setDevModalOpen(true);
   };
 
   const openQrisModal = () => {
+    setGuideModalOpen(false);
     setDevModalOpen(false);
     setQrisModalOpen(true);
   };
@@ -429,16 +438,22 @@ export const Home: React.FC = () => {
         <PlayfulPartyFooter
           muted={isMuted}
           onToggleMute={handleToggleMute}
+          onOpenGuideModal={openGuideModal}
           onOpenDevModal={openDevModal}
           onOpenQrisModal={openQrisModal}
           onSelectGame={(gId) => handleGameCardClick(gId as GameId)}
         />
       </div>
 
-      {/* Developer Bio & Features / Limitations Modal */}
+      {/* General Party Games Hub Guide & Rules Modal */}
+      <PartyGuideModal
+        open={guideModalOpen}
+        onClose={() => setGuideModalOpen(false)}
+      />
+
+      {/* Separated Developer Info & Coffee Support Modal */}
       <DeveloperInfoModal
         open={devModalOpen}
-        initialTab={devModalTab}
         onClose={() => setDevModalOpen(false)}
         onOpenQris={openQrisModal}
       />
@@ -447,7 +462,7 @@ export const Home: React.FC = () => {
       <QrisCoffeeModal
         open={qrisModalOpen}
         onClose={() => setQrisModalOpen(false)}
-        onBackToDev={() => openDevModal('features')}
+        onBackToDev={openDevModal}
       />
     </div>
   );

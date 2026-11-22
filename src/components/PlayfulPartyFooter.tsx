@@ -597,10 +597,18 @@ interface PlaygroundMascotState {
 export const PlayfulPartyFooter: React.FC<{
   muted: boolean;
   onToggleMute: () => void;
-  onOpenDevModal: (initialTab?: 'features' | 'limits') => void;
+  onOpenGuideModal: () => void;
+  onOpenDevModal: () => void;
   onOpenQrisModal: () => void;
   onSelectGame: (gameId: string) => void;
-}> = ({ muted, onToggleMute, onOpenDevModal, onOpenQrisModal, onSelectGame }) => {
+}> = ({
+  muted,
+  onToggleMute,
+  onOpenGuideModal,
+  onOpenDevModal,
+  onOpenQrisModal,
+  onSelectGame,
+}) => {
   const [peekDucking, setPeekDucking] = useState(false);
   const [peekBubble, setPeekBubble] = useState<string | null>(null);
   const [peekLook, setPeekLook] = useState(0);
@@ -969,9 +977,9 @@ export const PlayfulPartyFooter: React.FC<{
                   type="button"
                   onClick={() => {
                     sfx.playPop();
-                    onOpenDevModal('features');
+                    onOpenGuideModal();
                   }}
-                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/12 text-sm font-bold text-left flex items-center gap-2.5 transition cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/8 hover:bg-white/15 text-sm font-bold text-left flex items-center gap-2.5 transition cursor-pointer"
                 >
                   <Info className="w-4 h-4 text-[#60A5FA]" />
                   <span>Cara Main Singkat</span>
@@ -979,32 +987,8 @@ export const PlayfulPartyFooter: React.FC<{
 
                 <button
                   type="button"
-                  onClick={() => {
-                    sfx.playPop();
-                    onOpenDevModal('features');
-                  }}
-                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/12 text-sm font-bold text-left flex items-center gap-2.5 transition cursor-pointer"
-                >
-                  <Code2 className="w-4 h-4 text-[#C4B5FD]" />
-                  <span>Info Developer</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    sfx.playCoffeeChime();
-                    onOpenQrisModal();
-                  }}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] font-display font-bold text-sm text-left flex items-center gap-2.5 shadow-[0_4px_0_#C49B10] active:translate-y-[3px] transition cursor-pointer"
-                >
-                  <Coffee className="w-4 h-4" />
-                  <span>Traktir Kopi ☕</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={onToggleMute}
-                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/12 text-sm font-bold text-left flex items-center justify-between transition cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/8 hover:bg-white/15 text-sm font-bold text-left flex items-center justify-between transition cursor-pointer"
                 >
                   <span className="flex items-center gap-2.5">
                     {muted ? (
@@ -1022,37 +1006,51 @@ export const PlayfulPartyFooter: React.FC<{
                     {muted ? 'OFF' : 'ON'}
                   </span>
                 </button>
+
+                {/* Soft-selling compact buttons for Developer Info & Coffee */}
+                <div className="grid grid-cols-2 gap-2 pt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop();
+                      onOpenDevModal();
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-white/5 hover:bg-white/12 border border-white/10 text-xs font-bold text-white/75 hover:text-white flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-[#C4B5FD]" />
+                    <span>Info Dev</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playCoffeeChime();
+                      onOpenQrisModal();
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-[#FBBF24]/12 hover:bg-[#FBBF24]/22 border border-[#FBBF24]/30 text-xs font-bold text-[#FBBF24] flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Coffee className="w-3.5 h-3.5" />
+                    <span>Traktir Kopi</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* ============================================================== */}
-          {/* BOTTOM COPYRIGHT, VERSION PILL & COMPACT SOCIAL LINKS          */}
+          {/* BOTTOM CENTERED COPYRIGHT & CREDITS (NO EXTERNAL LINKS)        */}
           {/* ============================================================== */}
-          <div className="pt-6 border-t border-white/12 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-xs text-white/75 font-semibold text-center sm:text-left">
-              <span>© 2026 Party Games Hub • Dibuat dengan ☕ &amp; Chaos oleh Fajarahnf</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#158467] text-white font-display font-bold text-[11px]">
+          <div className="pt-6 border-t border-white/12 flex flex-col items-center justify-center text-center gap-2">
+            <div className="inline-flex items-center justify-center gap-2 text-xs text-white/80 font-bold">
+              <span>© 2026 Party Games Hub</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#158467] text-white font-display font-bold text-xs">
                 v2.0
               </span>
             </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {SOCIAL_LINKS.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => sfx.playPop(600)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition"
-                >
-                  <span className="opacity-70">{link.platform}:</span>
-                  <span className="text-[#FBBF24]">{link.short}</span>
-                  <ExternalLink className="w-3 h-3 opacity-60" />
-                </a>
-              ))}
-            </div>
+            <p className="text-xs text-white/65 font-medium max-w-2xl leading-relaxed">
+              Dibuat dengan kopi tengah malam, pecut AI, serta 8 matkul UAS yang ditelantarkan oleh{' '}
+              <span className="text-[#FBBF24] font-bold">Fajarahnf.dev</span>
+            </p>
           </div>
         </div>
       </div>
@@ -1127,19 +1125,17 @@ export const DeveloperCornerButton: React.FC<{
 };
 
 // ============================================================================
-// 8. <DeveloperInfoModal /> — DEVELOPER CARD MODAL ("Hi, I'm Fajarahnf")
+// 8A. <PartyGuideModal /> — GENERAL PARTY GAMES HUB GUIDE & GAMEPLAY CARD
 // ============================================================================
-export const DeveloperInfoModal: React.FC<{
+export const PartyGuideModal: React.FC<{
   open: boolean;
-  initialTab?: 'features' | 'limits';
   onClose: () => void;
-  onOpenQris: () => void;
-}> = ({ open, initialTab = 'features', onClose, onOpenQris }) => {
-  const [activeTab, setActiveTab] = useState<'features' | 'limits'>(initialTab);
+}> = ({ open, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'features' | 'limits'>('features');
 
   useEffect(() => {
-    if (open) setActiveTab(initialTab);
-  }, [open, initialTab]);
+    if (open) setActiveTab('features');
+  }, [open]);
 
   return (
     <AnimatePresence>
@@ -1159,6 +1155,209 @@ export const DeveloperInfoModal: React.FC<{
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-xl bg-[#FAF7F2] rounded-[34px] border-[3.5px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden flex flex-col max-h-[90vh]"
           >
+            {/* MODAL HEADER: GENERAL PARTY GAMES HUB */}
+            <div className="relative bg-[#158467] text-[#FAF7F2] px-5 sm:px-6 pt-6 pb-5">
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playPop(460);
+                  onClose();
+                }}
+                aria-label="Tutup panduan Party Games Hub"
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/20 hover:bg-black/35 text-white flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-4 pr-8">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[24px] bg-[#FAF7F2] border-[3px] border-[#FBBF24] flex items-center justify-center shrink-0 shadow-md">
+                  <GrokMascot
+                    shape="cloud"
+                    color="#158467"
+                    size={64}
+                    mood="happy"
+                    stickerBorder={false}
+                  />
+                </div>
+
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#1E1E24] text-[#FBBF24] text-xs font-extrabold uppercase tracking-wider mb-1.5">
+                    <span>Party Games Hub • Panduan Umum</span>
+                  </span>
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight">
+                    Cara Main &amp; Fitur
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            {/* SCROLLABLE BODY */}
+            <div className="p-5 sm:p-6 space-y-5 overflow-y-auto custom-scroll">
+              <div className="rounded-[22px] bg-white border-2 border-[#1E1E24]/10 p-4 shadow-[0_4px_0_rgba(30,30,36,0.06)]">
+                <p className="text-xs sm:text-sm text-[#1E1E24] font-semibold leading-relaxed">
+                  Selamat datang di <strong className="text-[#158467]">Party Games Hub!</strong> Platform party game seru untuk bikin momen nongkrong, jeda kuliah, dan kumpul bareng makin pecah cukup bermodal <strong>1 layar rame-rame</strong> atau gabung lewat HP!
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-[20px] bg-[#F2ECE1] border border-[#1E1E24]/10">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop(580);
+                      setActiveTab('features');
+                    }}
+                    className={`py-2.5 px-3 rounded-[15px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                      activeTab === 'features'
+                        ? 'bg-[#1E1E24] text-[#FBBF24] shadow-xs'
+                        : 'text-[#64616C] hover:text-[#1E1E24]'
+                    }`}
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    <span>Cara Main &amp; Fitur</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.playPop(520);
+                      setActiveTab('limits');
+                    }}
+                    className={`py-2.5 px-3 rounded-[15px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                      activeTab === 'limits'
+                        ? 'bg-[#1E1E24] text-[#FF8AC2] shadow-xs'
+                        : 'text-[#64616C] hover:text-[#1E1E24]'
+                    }`}
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Catatan &amp; Tips</span>
+                  </button>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {activeTab === 'features' ? (
+                    <motion.div
+                      key="guide-features"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18 }}
+                      className="space-y-3"
+                    >
+                      <div className="rounded-[22px] bg-[#E0EBFF]/70 border-2 border-[#2568EF]/25 p-4 space-y-2">
+                        <h3 className="font-display font-bold text-sm text-[#2568EF] flex items-center gap-1.5">
+                          <Zap className="w-4 h-4" />
+                          <span>Alur Bermain Singkat</span>
+                        </h3>
+                        <p className="text-xs sm:text-[13px] text-[#1E1E24] font-semibold leading-relaxed">
+                          Daftarkan pemain &amp; kubu di Room (bisa 3 sampai 16 pemain) → pilih salah satu dari 6 mini-game → sistem mengacak role, soal, topik debat, atau item rahasia otomatis → kumpulkan poin individu &amp; kubu hingga penobatan Juara + Photo Booth Hukuman di Podium!
+                        </p>
+                      </div>
+
+                      <div className="rounded-[22px] bg-[#D6F5EC]/65 border-2 border-[#158467]/25 p-4 space-y-2">
+                        <h3 className="font-display font-bold text-sm text-[#158467] flex items-center gap-1.5">
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>Fitur Utama Party Games Hub</span>
+                        </h3>
+                        <ul className="space-y-1.5 text-xs sm:text-[13px] text-[#1E1E24] font-semibold">
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#158467] mt-0.5">✦</span>
+                            <span>
+                              <strong>6 Mini Party Games Lengkap:</strong> Same Brain? NO!, Beauty Expert?!, Boys Stuff, The Devil&apos;s Advocate, Cerdas Cermat Berantai, dan Sell Me This Trash!
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#158467] mt-0.5">✦</span>
+                            <span>
+                              <strong>Privacy Lock Oper HP &amp; Mode TV:</strong> Layar otomatis terkunci saat bergantian HP, atau langsung pakai mode Layar TV / HP Controller bersama Host.
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#158467] mt-0.5">✦</span>
+                            <span>
+                              <strong>Leaderboard Kumulatif &amp; Photo Booth:</strong> Skor terus terakumulasi antar-game hingga Podium Akhir, dilengkapi Kartu Hukuman &amp; bingkai foto untuk yang kalah!
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="guide-limits"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18 }}
+                      className="rounded-[22px] bg-[#FFE8DF]/75 border-2 border-[#EC5A29]/30 p-4 space-y-2.5"
+                    >
+                      <h3 className="font-display font-bold text-sm text-[#C2410C] flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>Tips &amp; Catatan Teknis Room</span>
+                      </h3>
+                      <ol className="space-y-2 text-xs sm:text-[13px] text-[#1E1E24] font-semibold">
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            1
+                          </span>
+                          <span>
+                            <strong>Main Bareng di Tempat:</strong> Dirancang untuk dimainkan bersama di satu ruangan menggunakan 1 layar utama (laptop/TV/HP Host) atau QR Room Code untuk controller HP.
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            2
+                          </span>
+                          <span>
+                            <strong>Penyimpanan Browser Lokal:</strong> Data pemain dan skor room tersimpan di <code>localStorage</code> perangkat Host selama cache browser tidak dihapus.
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            3
+                          </span>
+                          <span>
+                            <strong>Efek Suara &amp; Timer:</strong> Pastikan volume perangkat aktif agar countdown, buzzer, dan musik latar terdengar seru!
+                          </span>
+                        </li>
+                      </ol>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ============================================================================
+// 8B. <DeveloperInfoModal /> — DEVELOPER PROFILE & COFFEE SUPPORT CARD
+// ============================================================================
+export const DeveloperInfoModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  onOpenQris: () => void;
+}> = ({ open, onClose, onOpenQris }) => {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-50 bg-[#1E1E24]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.88, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 18 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg bg-[#FAF7F2] rounded-[34px] border-[3.5px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden flex flex-col max-h-[90vh]"
+          >
             {/* MODAL HEADER WITH ANIMATED DEV MASCOT */}
             <div className="relative bg-[#1E1E24] text-[#FAF7F2] px-5 sm:px-6 pt-6 pb-5">
               <button
@@ -1177,12 +1376,12 @@ export const DeveloperInfoModal: React.FC<{
                 <motion.div
                   animate={{ y: [0, -4, 0], rotate: [-2, 2, -2] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-20 h-20 rounded-[24px] bg-[#FAF7F2] border-[3px] border-[#FBBF24] flex items-center justify-center shrink-0 shadow-md"
+                  className="w-18 h-18 sm:w-20 sm:h-20 rounded-[24px] bg-[#FAF7F2] border-[3px] border-[#FBBF24] flex items-center justify-center shrink-0 shadow-md"
                 >
                   <GrokMascot
                     shape="squircle"
                     color="#2568EF"
-                    size={70}
+                    size={64}
                     mood="happy"
                     glasses
                     coffeeCup
@@ -1211,161 +1410,20 @@ export const DeveloperInfoModal: React.FC<{
 
             {/* SCROLLABLE BODY */}
             <div className="p-5 sm:p-6 space-y-5 overflow-y-auto custom-scroll">
-              {/* Sambutan Game */}
-              <div className="rounded-[22px] bg-white border-2 border-[#1E1E24]/10 p-4 shadow-[0_4px_0_rgba(30,30,36,0.06)]">
+              {/* Developer Story */}
+              <div className="rounded-[22px] bg-white border-2 border-[#1E1E24]/10 p-4 shadow-[0_4px_0_rgba(30,30,36,0.06)] space-y-2">
                 <p className="text-xs sm:text-sm text-[#1E1E24] font-semibold leading-relaxed">
-                  Selamat datang di <strong className="text-[#158467]">Party Games Hub!</strong> Game ini aku buat biar momen nongkrong, jeda kuliah, atau kumpul bareng teman gak cuma sibuk scroll HP masing-masing. Cukup pakai{' '}
-                  <strong>1 layar rame-rame</strong> buat seru-seruan, debat receh, sampai bagi hukuman kocak!
+                  <strong className="text-[#2568EF]">Fajarahnf.dev</strong> • Proyek iseng tengah malam yang lahir demi menyelamatkan tongkrongan dari canggungnya main HP sendiri-sendiri.
                 </p>
-              </div>
-
-              {/* Clean Pill Tabs: Fitur & Gameplay vs Keterbatasan Game */}
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-[20px] bg-[#F2ECE1] border border-[#1E1E24]/10">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sfx.playPop(580);
-                      setActiveTab('features');
-                    }}
-                    className={`py-2.5 px-3 rounded-[15px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      activeTab === 'features'
-                        ? 'bg-[#1E1E24] text-[#FBBF24] shadow-xs'
-                        : 'text-[#64616C] hover:text-[#1E1E24]'
-                    }`}
-                  >
-                    <Gamepad2 className="w-4 h-4" />
-                    <span>Fitur &amp; Gameplay</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sfx.playPop(520);
-                      setActiveTab('limits');
-                    }}
-                    className={`py-2.5 px-3 rounded-[15px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                      activeTab === 'limits'
-                        ? 'bg-[#1E1E24] text-[#FF8AC2] shadow-xs'
-                        : 'text-[#64616C] hover:text-[#1E1E24]'
-                    }`}
-                  >
-                    <AlertCircle className="w-4 h-4" />
-                    <span>Keterbatasan Game</span>
-                  </button>
-                </div>
-
-                {/* Tab Panel Content */}
-                <AnimatePresence mode="wait">
-                  {activeTab === 'features' ? (
-                    <motion.div
-                      key="tab-features"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.18 }}
-                      className="space-y-3"
-                    >
-                      <div className="rounded-[22px] bg-[#D6F5EC]/65 border-2 border-[#158467]/25 p-4 space-y-2">
-                        <h3 className="font-display font-bold text-sm text-[#158467] flex items-center gap-1.5">
-                          <ShieldCheck className="w-4 h-4" />
-                          <span>Fitur Utama</span>
-                        </h3>
-                        <ul className="space-y-1.5 text-xs sm:text-[13px] text-[#1E1E24] font-semibold">
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#158467] mt-0.5">✦</span>
-                            <span>
-                              <strong>6 Mini Party Games Seru:</strong> Same Brain? NO!, Beauty Expert?!, Boys Stuff, The Devil&apos;s Advocate, Cerdas Cermat Berantai, dan Sell Me This Trash!
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#158467] mt-0.5">✦</span>
-                            <span>
-                              <strong>Privacy Lock Oper HP:</strong> Layar otomatis terkunci saat berganti giliran agar rahasia aman dari intipan.
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-[#158467] mt-0.5">✦</span>
-                            <span>
-                              <strong>Leaderboard Kumulatif Room:</strong> Otomatis tersimpan di browser cache (<code>localStorage</code>), lengkap dengan Podium Juara 1-2-3, Shuffle Kartu Hukuman, dan Web Audio SFX.
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="rounded-[22px] bg-[#E0EBFF]/70 border-2 border-[#2568EF]/25 p-4 space-y-2">
-                        <h3 className="font-display font-bold text-sm text-[#2568EF] flex items-center gap-1.5">
-                          <Zap className="w-4 h-4" />
-                          <span>Cara Main (Gameplay)</span>
-                        </h3>
-                        <p className="text-xs sm:text-[13px] text-[#1E1E24] font-semibold leading-relaxed">
-                          Cukup <strong>1 HP / laptop untuk 2–20 pemain</strong> → pilih game favorit → atur nama pemain &amp; kubu → ikuti ronde jawaban unik, sesi Q&amp;A, estafet cerdas cermat, atau duel pitching → kumpulkan poin individu &amp; kubu sampai penentuan juara di akhir room!
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="tab-limits"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.18 }}
-                      className="rounded-[22px] bg-[#FFE8DF]/75 border-2 border-[#EC5A29]/30 p-4 space-y-2.5"
-                    >
-                      <h3 className="font-display font-bold text-sm text-[#C2410C] flex items-center gap-1.5">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>Catatan Keterbatasan Saat Ini</span>
-                      </h3>
-                      <ol className="space-y-2 text-xs sm:text-[13px] text-[#1E1E24] font-semibold">
-                        <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                            1
-                          </span>
-                          <span>
-                            <strong>Mode Offline 1 Layar (Pass-the-Device):</strong> Belum mendukung multiplayer online lintas perangkat jarak jauh.
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                            2
-                          </span>
-                          <span>
-                            <strong>Penyimpanan Lokal Browser (localStorage):</strong> Skor dan room hanya tersimpan di perangkat &amp; browser saat ini (akan hilang jika cache dibersihkan atau pindah HP).
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-[#EC5A29] text-white font-display font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                            3
-                          </span>
-                          <span>
-                            <strong>Optimalisasi Audio:</strong> Membutuhkan interaksi klik pertama &amp; volume HP aktif agar efek suara timer dan buzzer terdengar maksimal.
-                          </span>
-                        </li>
-                      </ol>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Sawer Developer Warm Callout Banner */}
-              <div className="rounded-[24px] bg-gradient-to-r from-[#FFF6D6] to-[#FFE8DF] border-2 border-[#1E1E24] p-4 flex items-center gap-3.5 shadow-[0_4px_0_rgba(30,30,36,0.12)]">
-                <div className="w-12 h-12 rounded-2xl bg-[#FBBF24] border-2 border-[#1E1E24] flex items-center justify-center shrink-0">
-                  <Heart className="w-6 h-6 text-[#D8317E] fill-[#D8317E]" />
-                </div>
-                <div>
-                  <h4 className="font-display font-bold text-sm sm:text-base text-[#1E1E24]">
-                    Bantu Sawer Developer Biar Makin Gacor! 🚀
-                  </h4>
-                  <p className="text-xs text-[#64616C] font-semibold leading-snug mt-0.5">
-                    Dukungan kopimu bakal dipakai buat nambah game baru, animasi Lottie makin mulus, dan riset fitur <strong>multiplayer online</strong> kedepannya!
-                  </p>
-                </div>
+                <p className="text-xs text-[#64616C] font-medium leading-relaxed">
+                  Dirakit bermodal kopi hitam jam 2 pagi, pecut AI tanpa henti, dan 8 mata kuliah UAS yang sempat terabaikan 😂.
+                </p>
               </div>
 
               {/* Social & Personal Website Tactile Pills */}
               <div className="space-y-2">
-                <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#64616C]">
-                  Temukan Fajarahnf di:
+                <p className="text-xs font-extrabold uppercase tracking-wider text-[#64616C]">
+                  Terhubung dengan Developer:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {SOCIAL_LINKS.map((item) => (
@@ -1389,26 +1447,36 @@ export const DeveloperInfoModal: React.FC<{
                 </div>
               </div>
 
-              {/* Prominent Tactile 3D Traktir Kopi CTA Button */}
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.98, y: 3 }}
-                onClick={() => {
-                  sfx.playCoffeeChime();
-                  onOpenQris();
-                }}
-                className="w-full py-4 px-6 rounded-[24px] bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[3px] border-[#1E1E24] shadow-[0_6px_0_#1E1E24] font-display font-bold text-base sm:text-lg flex items-center justify-center gap-2.5 cursor-pointer transition-colors"
-              >
-                <motion.span
-                  animate={{ rotate: [-6, 8, -6] }}
-                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                  className="inline-flex"
+              {/* Soft Support & Traktir Kopi */}
+              <div className="rounded-[24px] bg-gradient-to-r from-[#FFF6D6] to-[#FFE8DF] border-2 border-[#1E1E24]/15 p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FBBF24] border-2 border-[#1E1E24] flex items-center justify-center shrink-0">
+                    <Heart className="w-5 h-5 text-[#D8317E] fill-[#D8317E]" />
+                  </div>
+                  <div>
+                    <h4 className="font-display font-bold text-sm text-[#1E1E24]">
+                      Suka sama Party Games Hub?
+                    </h4>
+                    <p className="text-xs text-[#64616C] font-semibold leading-snug">
+                      Boleh banget traktir segelas kopi biar semangat nambah mini-game baru!
+                    </p>
+                  </div>
+                </div>
+
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98, y: 2 }}
+                  onClick={() => {
+                    sfx.playCoffeeChime();
+                    onOpenQris();
+                  }}
+                  className="w-full py-3 px-5 rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_4px_0_#1E1E24] font-display font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Coffee className="w-5 h-5 text-[#EC5A29]" />
-                </motion.span>
-                <span>Traktir Kopi Developer ☕</span>
-              </motion.button>
+                  <Coffee className="w-4 h-4 text-[#EC5A29]" />
+                  <span>Traktir Kopi Developer ☕</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
