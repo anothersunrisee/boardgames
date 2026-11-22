@@ -113,8 +113,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                     mood={idx === 0 ? 'winner' : 'idle'}
                   />
                   <div className="truncate min-w-0">
-                    <p className="text-xs font-bold leading-tight truncate">{player.name}</p>
-                    <p className="text-xs text-[#64616C] font-semibold truncate">
+                    <p className="text-sm font-bold leading-tight truncate">{player.name}</p>
+                    <p
+                      className={`text-xs font-semibold truncate ${
+                        idx < 3 ? 'text-[#4E4B56]' : 'text-white/80'
+                      }`}
+                    >
                       {player.kubu || player.team}
                     </p>
                   </div>
