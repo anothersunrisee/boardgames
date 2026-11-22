@@ -189,8 +189,8 @@ const POSTER_THEMES: Record<PosterThemeId, PosterThemeConfig> = {
     dialogBg: '#1E1E24',
     dialogText: '#FAF7F2',
     dialogAccent: '#4AE3B5',
-    losersHeadingFill: '#1E1E24',
-    losersHeadingShadow: '#FBBF24',
+    losersHeadingFill: '#EC5A29',
+    losersHeadingShadow: '#1E1E24',
     groundStyle: 'scalloped',
     groundPrimary: '#1E1E24',
     groundSecondary: '#FBBF24',
@@ -1867,13 +1867,13 @@ function drawPosterToCanvas(
   ctx.lineJoin = 'round';
   const headingW = ctx.measureText(headingText).width;
 
-  ctx.lineWidth = 14;
+  ctx.lineWidth = 10;
   ctx.strokeStyle = theme.losersHeadingShadow;
   ctx.strokeText(headingText, W / 2 + 5, loserSectionTopY + 6);
   ctx.fillStyle = theme.losersHeadingShadow;
   ctx.fillText(headingText, W / 2 + 5, loserSectionTopY + 6);
 
-  ctx.lineWidth = 14;
+  ctx.lineWidth = 10;
   ctx.strokeStyle = '#1E1E24';
   ctx.strokeText(headingText, W / 2, loserSectionTopY);
   ctx.fillStyle = theme.losersHeadingFill;
@@ -3167,23 +3167,23 @@ export default function PhotoBooth() {
             {/* ================================================================ */}
             {/* KOLOM KIRI: NAVIGASI ADJUST & EDIT TEKS / NAMA YANG KALAH         */}
             {/* ================================================================ */}
-            <div className="lg:col-span-4 order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
+            <div className="lg:col-span-3 order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
               {/* 2-Tab Switcher: Adjust & Bingkai | Teks & Yang Kalah */}
-              <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-[22px] bg-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)]">
+              <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-[20px] bg-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)]">
                 <button
                   type="button"
                   onClick={() => {
                     sfx.playPop(620);
                     setActiveTab('visual');
                   }}
-                  className={`py-2.5 px-3 min-h-[42px] rounded-2xl font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                  className={`py-2 px-2 min-h-[40px] rounded-xl font-display font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
                     activeTab === 'visual'
                       ? 'bg-[#1E1E24] text-[#4AE3B5] shadow-xs'
                       : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24]'
                   }`}
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span>Adjust &amp; Frame</span>
+                  <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
+                  <span>Adjust</span>
                 </button>
 
                 <button
@@ -3192,19 +3192,19 @@ export default function PhotoBooth() {
                     sfx.playPop(580);
                     setActiveTab('content');
                   }}
-                  className={`py-2.5 px-3 min-h-[42px] rounded-2xl font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                  className={`py-2 px-2 min-h-[40px] rounded-xl font-display font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
                     activeTab === 'content'
                       ? 'bg-[#1E1E24] text-[#FBBF24] shadow-xs'
                       : 'bg-[#FAF7F2] text-[#64616C] hover:text-[#1E1E24]'
                   }`}
                 >
-                  <Users className="w-4 h-4" />
+                  <Users className="w-3.5 h-3.5 shrink-0" />
                   <span>Teks &amp; Kalah</span>
                 </button>
               </div>
 
               {/* Left Panel Card Body */}
-              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 max-h-[calc(100vh-145px)] overflow-y-auto custom-scroll">
+              <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 max-h-[calc(100vh-145px)] overflow-y-auto custom-scroll">
                 <AnimatePresence mode="wait">
                   {activeTab === 'visual' && (
                     <motion.div
@@ -3310,7 +3310,7 @@ export default function PhotoBooth() {
                         <p className="text-xs font-extrabold uppercase text-[#64616C]">
                           Tema Warna Poster (9:16):
                         </p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-1.5">
                           {(Object.values(POSTER_THEMES) as PosterThemeConfig[]).map((t) => {
                             const active = themeId === t.id;
                             return (
@@ -3321,7 +3321,7 @@ export default function PhotoBooth() {
                                   sfx.playPop(600);
                                   setThemeId(t.id);
                                 }}
-                                className={`p-2.5 rounded-2xl border-2 text-left transition cursor-pointer flex items-center gap-2 ${
+                                className={`p-2 rounded-2xl border-2 text-left transition cursor-pointer flex items-center gap-2 ${
                                   active
                                     ? 'bg-[#1E1E24] text-[#FAF7F2] border-[#1E1E24] shadow-[0_3px_0_#0A0A0D]'
                                     : 'bg-[#FAF7F2] text-[#1E1E24] border-[#1E1E24]/15 hover:border-[#1E1E24]/45'
@@ -3686,8 +3686,8 @@ export default function PhotoBooth() {
             {/* ================================================================ */}
             {/* KOLOM TENGAH: LIVE BINGKAI 9:16 FULL UKURAN BESAR & UTUH        */}
             {/* ================================================================ */}
-            <div className="lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-16 flex flex-col items-center space-y-2">
-              <div className="relative w-full max-w-[396px] lg:w-auto lg:h-[calc(100vh-110px)] lg:max-h-[700px] aspect-[9/16] rounded-[28px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
+            <div className="lg:col-span-6 order-1 lg:order-2 flex flex-col items-center space-y-2.5">
+              <div className="relative w-full max-w-[445px] sm:max-w-[470px] aspect-[9/16] rounded-[28px] border-[4px] border-[#1E1E24] shadow-[0_12px_0_#1E1E24] overflow-hidden bg-[#1E1E24] select-none">
                 <AnimatePresence>
                   {flashActive && (
                     <motion.div
@@ -3726,15 +3726,15 @@ export default function PhotoBooth() {
             {/* ================================================================ */}
             {/* KOLOM KANAN: KAMERA, SHUTTER, UPLOAD, DOWNLOAD & SHARE IG STORY  */}
             {/* ================================================================ */}
-            <div className="lg:col-span-4 order-2 lg:order-3 lg:sticky lg:top-16 space-y-3.5">
+            <div className="lg:col-span-3 order-2 lg:order-3 lg:sticky lg:top-16 space-y-3">
               {/* Card 1: Kamera, Shutter & Upload Foto */}
-              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
                   <span className="font-display font-bold text-sm text-[#1E1E24]">
                     Kamera &amp; Shutter
                   </span>
                   <span className="text-xs font-bold text-[#64616C]">
-                    {cameraActive ? 'Kamera Aktif' : photoImg ? 'Foto Siap' : 'Pilih Sumber Foto'}
+                    {cameraActive ? 'Kamera Aktif' : photoImg ? 'Foto Siap' : 'Sumber'}
                   </span>
                 </div>
 
@@ -3744,17 +3744,17 @@ export default function PhotoBooth() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => (cameraActive ? stopCamera() : startCamera(facingMode))}
-                    className={`py-3 px-3 min-h-[46px] rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    className={`py-2.5 px-2.5 min-h-[44px] rounded-2xl border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                       cameraActive
                         ? 'bg-[#F04438] text-white'
                         : 'bg-[#2568EF] hover:bg-[#3576F8] text-white'
                     }`}
                   >
-                    <Camera className="w-4 h-4" />
+                    <Camera className="w-4 h-4 shrink-0" />
                     <span>{cameraActive ? 'Tutup Kamera' : photoImg ? 'Foto Ulang' : 'Buka Kamera'}</span>
                   </button>
 
@@ -3764,44 +3764,44 @@ export default function PhotoBooth() {
                       sfx.playPop();
                       fileInputRef.current?.click();
                     }}
-                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="py-2.5 px-2.5 min-h-[44px] rounded-2xl bg-[#FBBF24] hover:bg-[#FCD34D] text-[#1E1E24] border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-4 h-4 shrink-0" />
                     <span>{photoImg ? 'Ganti Foto' : 'Upload Foto'}</span>
                   </button>
                 </div>
 
                 {/* Dedicated Shutter Controls (No overlay blocking the photo frame!) */}
                 {cameraActive && (
-                  <div className="p-3 rounded-2xl bg-[#1E1E24] text-white space-y-2.5 border-2 border-[#FBBF24]">
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-2xl bg-[#1E1E24] text-white space-y-2 border-2 border-[#FBBF24]">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
                         disabled={countdown !== null}
                         onClick={startCountdownShot}
-                        className="py-3 px-3 min-h-[46px] rounded-xl bg-[#EC5A29] hover:bg-[#D94E20] text-white font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                        className="py-2.5 px-2 min-h-[44px] rounded-xl bg-[#EC5A29] hover:bg-[#D94E20] text-white font-display font-bold text-xs flex items-center justify-center gap-1 cursor-pointer disabled:opacity-60"
                       >
-                        <Timer className="w-4 h-4" />
-                        <span>{countdown !== null ? `Tahan... ${countdown}` : 'Jepret 3-2-1'}</span>
+                        <Timer className="w-3.5 h-3.5 shrink-0" />
+                        <span>{countdown !== null ? `Tahan ${countdown}` : 'Jepret 3-2-1'}</span>
                       </button>
                       <button
                         type="button"
                         disabled={countdown !== null}
                         onClick={captureFromCamera}
-                        className="py-3 px-3 min-h-[46px] rounded-xl bg-[#158467] hover:bg-[#199978] text-white font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="py-2.5 px-2 min-h-[44px] rounded-xl bg-[#158467] hover:bg-[#199978] text-white font-display font-bold text-xs flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        <Camera className="w-4 h-4" />
+                        <Camera className="w-3.5 h-3.5 shrink-0" />
                         <span>Jepret!</span>
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
                         onClick={() => startCamera(facingMode === 'user' ? 'environment' : 'user')}
-                        className="py-2 px-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="py-2 px-2 rounded-xl bg-white/12 hover:bg-white/20 text-white text-xs font-bold inline-flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        <RefreshCw className="w-3.5 h-3.5" />
+                        <RefreshCw className="w-3.5 h-3.5 shrink-0" />
                         <span>{facingMode === 'user' ? 'Depan' : 'Belakang'}</span>
                       </button>
                       <button
@@ -3810,11 +3810,11 @@ export default function PhotoBooth() {
                           sfx.playPop();
                           setMirrorPhoto((m) => !m);
                         }}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                        className={`py-2 px-2 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1 cursor-pointer ${
                           mirrorPhoto ? 'bg-[#FBBF24] text-[#1E1E24]' : 'bg-white/12 text-white'
                         }`}
                       >
-                        <FlipHorizontal className="w-3.5 h-3.5" />
+                        <FlipHorizontal className="w-3.5 h-3.5 shrink-0" />
                         <span>Mirror: {mirrorPhoto ? 'ON' : 'OFF'}</span>
                       </button>
                     </div>
@@ -3837,19 +3837,19 @@ export default function PhotoBooth() {
               </div>
 
               {/* Card 2: Download & Wajib Share / Upload IG Story */}
-              <div className="rounded-[26px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-4 space-y-3">
+              <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 space-y-2.5">
                 <span className="font-display font-bold text-sm text-[#1E1E24] block">
                   Simpan &amp; Upload IG Story
                 </span>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">
                   <button
                     type="button"
                     disabled={isExporting}
                     onClick={handleDownloadPng}
-                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-2.5 px-2.5 min-h-[44px] rounded-2xl bg-[#158467] hover:bg-[#199978] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
-                    <Download className="w-4 h-4 text-[#FBBF24]" />
+                    <Download className="w-4 h-4 text-[#FBBF24] shrink-0" />
                     <span>{isExporting ? 'Export...' : 'Download PNG'}</span>
                   </button>
 
@@ -3857,16 +3857,16 @@ export default function PhotoBooth() {
                     type="button"
                     disabled={isExporting}
                     onClick={handleShareIgStory}
-                    className="py-3 px-3 min-h-[46px] rounded-2xl bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+                    className="py-2.5 px-2.5 min-h-[44px] rounded-2xl bg-[#D8317E] hover:bg-[#E53E8C] text-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_#1E1E24] active:translate-y-[2px] font-display font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
                   >
-                    <Share2 className="w-4 h-4 text-[#FBBF24]" />
+                    <Share2 className="w-4 h-4 text-[#FBBF24] shrink-0" />
                     <span>{isExporting ? 'Siapkan...' : 'Upload IG Story!'}</span>
                   </button>
                 </div>
               </div>
 
               {/* Card 3: Aturan End-Game & Daftar Tag Semua Tim */}
-              <div className="rounded-[24px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_5px_0_#EC5A29] p-4 space-y-2.5">
+              <div className="rounded-[24px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_5px_0_#EC5A29] p-3.5 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                     <Instagram className="w-3.5 h-3.5" />
