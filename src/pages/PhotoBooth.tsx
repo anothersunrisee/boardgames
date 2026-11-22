@@ -25,7 +25,6 @@ import {
   Move,
   RotateCcw,
   Crown,
-  Trophy,
   ExternalLink,
   Database,
   Timer,
@@ -65,7 +64,6 @@ const ROOM_CACHE_KEY = 'party_games_hub_room_cache_v1';
 type PosterThemeId = 'pop-cobalt' | 'playverse-arcade' | 'partyhub-cream' | 'berry-night';
 type FrameStyleId = 'retro-monitor' | 'playverse-arcade' | 'classic-tv';
 type ControlTabId = 'content' | 'visual';
-type PosterFocusMode = 'losers' | 'winners';
 type MascotShape = 'squircle' | 'cloud' | 'circle' | 'triangle' | 'blob';
 type MascotMood = 'happy' | 'laugh' | 'cool' | 'shocked' | 'dizzy';
 type MascotMoodPreset = 'playful' | 'mocking' | 'cool';
@@ -76,7 +74,8 @@ interface LoserLabelItem {
   rotation: number; // degrees (-8 to +8)
   color: string;
   textColor: string;
-  frontSpot: boolean; // cheeky star/crown tag for the one standing right in front
+  frontSpot: boolean; // bottom losers standing in front during group photo
+  winnerSpot?: boolean; // top leaderboard spot highlight
 }
 
 interface TeamTagItem {
@@ -246,25 +245,11 @@ const SUBDIALOG_PRESETS = [
   { id: 's4', tag: 'Anti Hoki', template: 'Tim paling hoki (kebalikannya) bareng {team} 😂' },
 ];
 
-const WINNER_SUBDIALOG_PRESETS = [
-  { id: 'w1', tag: 'Juara', template: 'Pemenang skor teratas bareng {team} 🏆' },
-  { id: 'w2', tag: 'Tak Terkalahkan', template: 'Skuad paling jago main bareng {team} 👑' },
-  { id: 'w3', tag: 'Flex Time', template: 'Top skor PartyGamesHub bareng {team} 🔥' },
-  { id: 'w4', tag: 'Traktir', template: 'Yang kalah siap-siap traktir {team} 😎' },
-];
-
 const LOSER_HEADING_PRESETS = [
   "PARTY'S LOSERS!",
   'CERTIFIED LOSERS 💀',
   'SQUAD KALAH HARI INI',
   'HALL OF SHAME 😭',
-];
-
-const WINNER_HEADING_PRESETS = [
-  "PARTY'S WINNERS! 🏆",
-  'TOP SCORERS 👑',
-  'JUARA MALAM INI 🔥',
-  'UNDEFEATED SQUAD 😎',
 ];
 
 const STICKER_LABEL_PALETTE: { bg: string; text: string }[] = [
@@ -278,26 +263,16 @@ const STICKER_LABEL_PALETTE: { bg: string; text: string }[] = [
   { bg: '#FFFDF7', text: '#1E1E24' },
 ];
 
+const DEFAULT_LABEL_ROTS = [-4.2, 3.6, -3.4, 4.5, -2.8, 3.9, -4.0, 2.9, -3.5, 4.0, -3.0, 3.2];
+
 const DEFAULT_LOSERS: LoserLabelItem[] = [
-  { id: 'l1', name: 'Fajar', rotation: -5.5, color: '#FBBF24', textColor: '#1E1E24', frontSpot: true },
-  { id: 'l2', name: 'Dimas', rotation: 3.8, color: '#FF75B5', textColor: '#1E1E24', frontSpot: false },
-  { id: 'l3', name: 'Rizky', rotation: -4.2, color: '#4AE3B5', textColor: '#1E1E24', frontSpot: false },
+  { id: 'l1', name: 'Fajar', rotation: -4.2, color: '#FBBF24', textColor: '#1E1E24', frontSpot: false, winnerSpot: true },
+  { id: 'l2', name: 'Dimas', rotation: 3.6, color: '#4AE3B5', textColor: '#1E1E24', frontSpot: false },
+  { id: 'l3', name: 'Rizky', rotation: -3.4, color: '#7DD3FC', textColor: '#1E1E24', frontSpot: false },
+  { id: 'l4', name: 'Alya', rotation: 4.5, color: '#D9F99D', textColor: '#1E1E24', frontSpot: false },
+  { id: 'l5', name: 'Caca', rotation: -2.8, color: '#FF75B5', textColor: '#1E1E24', frontSpot: true },
+  { id: 'l6', name: 'Dara', rotation: 3.9, color: '#FF8A4C', textColor: '#1E1E24', frontSpot: true },
 ];
-
-const DEFAULT_WINNER_NAMES = ['Kevin', 'Alya', 'Reno', 'Farhan', 'Dara', 'Caca'];
-const DEFAULT_WINNER_ROTS = [-4.2, 3.6, -3.4, 4.5, -2.8, 3.9, -4.0, 2.9];
-
-const DEFAULT_WINNERS: LoserLabelItem[] = DEFAULT_WINNER_NAMES.slice(0, 4).map((name, idx) => {
-  const pal = STICKER_LABEL_PALETTE[idx % STICKER_LABEL_PALETTE.length];
-  return {
-    id: `w-def-${idx + 1}`,
-    name,
-    rotation: DEFAULT_WINNER_ROTS[idx % DEFAULT_WINNER_ROTS.length],
-    color: pal.bg,
-    textColor: pal.text,
-    frontSpot: idx === 0,
-  };
-});
 
 // ============================================================================
 // 2. ZERO-DEPENDENCY WEB AUDIO API SOUND ENGINE
@@ -691,7 +666,6 @@ function generateScannableQrMatrix(text: string): boolean[][] {
 interface PosterCanvasState {
   themeId: PosterThemeId;
   frameStyle: FrameStyleId;
-  focusMode: PosterFocusMode;
   subDialog: string;
   losersHeading: string;
   losers: LoserLabelItem[];
@@ -1471,7 +1445,7 @@ function drawPosterToCanvas(
         radius: 56,
         shape: 'squircle',
         color: '#EC5A29',
-        mood: state.focusMode === 'winners' ? 'cool' : 'dizzy',
+        mood: 'dizzy',
         rotation: -0.1,
       });
       drawCanvasMascot(ctx, {
@@ -1480,7 +1454,7 @@ function drawPosterToCanvas(
         radius: 62,
         shape: 'circle',
         color: '#FBBF24',
-        mood: state.focusMode === 'winners' ? 'happy' : 'shocked',
+        mood: 'shocked',
         rotation: 0.04,
       });
       drawCanvasMascot(ctx, {
@@ -1504,13 +1478,7 @@ function drawPosterToCanvas(
       ctx.fillStyle = '#FBBF24';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(
-        state.focusMode === 'winners'
-          ? 'SKOR TERATAS POSE JUARA! 🏆'
-          : 'YANG KALAH WAJIB DI DEPAN! 📸',
-        sx + sw / 2,
-        sy + sh - 90
-      );
+      ctx.fillText('YANG KALAH WAJIB DI DEPAN! 📸', sx + sw / 2, sy + sh - 90);
       ctx.font = '700 21px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = '#FFFFFF';
       ctx.fillText('Klik Buka Kamera / Upload Foto Tim', sx + sw / 2, sy + sh - 56);
@@ -1894,17 +1862,44 @@ function drawPosterToCanvas(
     });
   }
 
-  // 4. PLAYERS SECTION (ORGANIC ROTATED STICKER LABELS — LOSERS OR TOP WINNERS, AUTO-FIT 1..8)
-  const loserSectionTopY = 1178;
+  // 4. PLAYERS SECTION (ORDERED FROM TOP LEADERBOARD #1 DOWN TO BOTTOM LOSERS, AUTO-FIT 1..12)
+  const items = (state.losers.length > 0 ? state.losers : DEFAULT_LOSERS).slice(0, 12);
 
-  const fallbackHeading = state.focusMode === 'winners' ? "PARTY'S WINNERS! 🏆" : "PARTY'S LOSERS!";
-  const headingText = (state.losersHeading || fallbackHeading).trim().toUpperCase();
+  // Split symmetrically across 1, 2, or 3 rows so everything fits cleanly above ground horizon
+  const indexedItems = items.map((item, rankIdx) => ({ item, rankNum: rankIdx + 1 }));
+  type IndexedSticker = { item: LoserLabelItem; rankNum: number };
+  const maxRows: IndexedSticker[][] = [];
+  if (indexedItems.length <= 3) {
+    maxRows.push(indexedItems);
+  } else if (indexedItems.length === 4) {
+    maxRows.push(indexedItems.slice(0, 2), indexedItems.slice(2, 4));
+  } else if (indexedItems.length <= 6) {
+    maxRows.push(indexedItems.slice(0, 3), indexedItems.slice(3, 6));
+  } else if (indexedItems.length <= 8) {
+    maxRows.push(indexedItems.slice(0, 4), indexedItems.slice(4, 8));
+  } else if (indexedItems.length === 9) {
+    maxRows.push(indexedItems.slice(0, 3), indexedItems.slice(3, 6), indexedItems.slice(6, 9));
+  } else {
+    const firstRow = 4;
+    const secondRow = indexedItems.length >= 11 ? 4 : 3;
+    maxRows.push(
+      indexedItems.slice(0, firstRow),
+      indexedItems.slice(firstRow, firstRow + secondRow),
+      indexedItems.slice(firstRow + secondRow, 12)
+    );
+  }
+
+  const rowCount = maxRows.length;
+  const maxCols = Math.max(...maxRows.map((r) => r.length));
+  const loserSectionTopY = rowCount >= 3 ? 1152 : 1178;
+
+  const headingText = (state.losersHeading || "PARTY'S LOSERS!").trim().toUpperCase();
   ctx.save();
-  let headingFontSize = 48;
+  let headingFontSize = rowCount >= 3 ? 44 : 48;
   ctx.font = `700 ${headingFontSize}px "Fredoka", "Bungee", sans-serif`;
   let headingW = ctx.measureText(headingText).width;
   if (headingW > 740) {
-    headingFontSize = Math.max(34, Math.round(48 * (740 / headingW)));
+    headingFontSize = Math.max(34, Math.round(headingFontSize * (740 / headingW)));
     ctx.font = `700 ${headingFontSize}px "Fredoka", "Bungee", sans-serif`;
     headingW = ctx.measureText(headingText).width;
   }
@@ -1929,126 +1924,126 @@ function drawPosterToCanvas(
   drawFourPointStar(ctx, W / 2 + starOffset, loserSectionTopY - 2, 22, '#FF5AA5', '#1E1E24', 4);
   ctx.restore();
 
-  const fallbackItems = state.focusMode === 'winners' ? DEFAULT_WINNERS : DEFAULT_LOSERS;
-  const items = (state.losers.length > 0 ? state.losers : fallbackItems).slice(0, 8);
-
-  // Split symmetrically so 4 items render as 2+2, 6 as 3+3, 7 as 4+3, 8 as 4+4
-  const maxRows: LoserLabelItem[][] = [];
-  if (items.length <= 3) {
-    maxRows.push(items);
-  } else if (items.length === 4) {
-    maxRows.push(items.slice(0, 2), items.slice(2, 4));
-  } else if (items.length <= 6) {
-    maxRows.push(items.slice(0, 3), items.slice(3, 6));
-  } else {
-    maxRows.push(items.slice(0, 4), items.slice(4, 8));
-  }
-
-  const maxCols = Math.max(...maxRows.map((r) => r.length));
-  const isTwoRows = maxRows.length === 2;
-  const isCompactFour = isTwoRows && maxCols >= 4;
-  const baseRowY = !isTwoRows ? 1330 : isCompactFour ? 1272 : 1274;
-  const rowGap = isCompactFour ? 98 : 104;
+  const isCompactFour = rowCount === 2 && maxCols >= 4;
+  const isThreeRows = rowCount >= 3;
+  const baseRowY = rowCount === 1 ? 1330 : isThreeRows ? 1236 : isCompactFour ? 1272 : 1274;
+  const rowGap = isThreeRows ? 80 : isCompactFour ? 98 : 104;
 
   maxRows.forEach((row, rIdx) => {
-    const labelFontSize = !isTwoRows
-      ? row.length >= 3
-        ? 38
-        : 44
-      : isCompactFour
-      ? 29
-      : maxCols === 3
-      ? 34
-      : 38;
-    const pillH = !isTwoRows ? 82 : isCompactFour ? 66 : 72;
-    const minPillW = !isTwoRows ? 175 : isCompactFour ? 138 : 165;
-    const maxPillW = !isTwoRows ? 300 : isCompactFour ? 224 : maxCols === 3 ? 286 : 340;
-    const gapX = !isTwoRows ? 26 : isCompactFour ? 16 : 24;
+    const labelFontSize =
+      rowCount === 1
+        ? row.length >= 3
+          ? 38
+          : 44
+        : isThreeRows
+        ? maxCols >= 4
+          ? 24
+          : 27
+        : isCompactFour
+        ? 29
+        : maxCols === 3
+        ? 34
+        : 38;
+    const pillH = rowCount === 1 ? 82 : isThreeRows ? 54 : isCompactFour ? 66 : 72;
+    const minPillW = rowCount === 1 ? 175 : isThreeRows ? 130 : isCompactFour ? 138 : 165;
+    const maxPillW =
+      rowCount === 1
+        ? 310
+        : isThreeRows
+        ? maxCols >= 4
+          ? 222
+          : 280
+        : isCompactFour
+        ? 224
+        : maxCols === 3
+        ? 286
+        : 340;
+    const gapX = rowCount === 1 ? 26 : isThreeRows ? (maxCols >= 4 ? 14 : 20) : isCompactFour ? 16 : 24;
 
     ctx.font = `700 ${labelFontSize}px "Fredoka", sans-serif`;
 
-    const rawMeasured = row.map((item) => {
-      const iconPrefix = state.focusMode === 'winners' ? '👑 ' : '★ ';
-      const displayLabel = item.frontSpot ? `${iconPrefix}${item.name}` : item.name;
-      const w = Math.max(minPillW, Math.min(maxPillW, ctx.measureText(displayLabel).width + (isCompactFour ? 52 : 68)));
+    const rawMeasured = row.map(({ item, rankNum }) => {
+      const displayLabel = `#${rankNum} ${item.name}`;
+      const padX = isThreeRows ? 44 : isCompactFour ? 52 : 68;
+      const w = Math.max(minPillW, Math.min(maxPillW, ctx.measureText(displayLabel).width + padX));
       return { item, displayLabel, w, h: pillH };
     });
 
     const rawRowW = rawMeasured.reduce((sum, m) => sum + m.w, 0) + gapX * Math.max(0, rawMeasured.length - 1);
-    const widthScale = rawRowW > 970 ? 970 / rawRowW : 1;
+    const widthScale = rawRowW > 975 ? 975 / rawRowW : 1;
     const measured = rawMeasured.map((m) => ({ ...m, w: Math.round(m.w * widthScale) }));
 
     const totalRowW = measured.reduce((sum, m) => sum + m.w, 0) + gapX * Math.max(0, measured.length - 1);
     let curX = (W - totalRowW) / 2;
 
     measured.forEach((m, colIdx) => {
-      const verticalWave = isTwoRows
-        ? row.length >= 3
+      const verticalWave =
+        rowCount >= 2
           ? colIdx % 2 === 0
-            ? -6
-            : 6
+            ? isThreeRows
+              ? -4
+              : -5
+            : isThreeRows
+            ? 4
+            : 5
+          : measured.length === 3
+          ? colIdx === 1
+            ? -12
+            : 10
           : colIdx % 2 === 0
-          ? -5
-          : 5
-        : measured.length === 3
-        ? colIdx === 1
-          ? -12
-          : 10
-        : colIdx % 2 === 0
-        ? -6
-        : 6;
+          ? -6
+          : 6;
       const cx = curX + m.w / 2;
       const cy = baseRowY + rIdx * rowGap + verticalWave;
-      const rad = ((isTwoRows ? m.item.rotation * 0.72 : m.item.rotation) * Math.PI) / 180;
+      const rotScale = isThreeRows ? 0.5 : rowCount === 2 ? 0.72 : 1;
+      const rad = (m.item.rotation * rotScale * Math.PI) / 180;
 
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(rad);
 
-      roundRectPath(ctx, -m.w / 2 + 7, -m.h / 2 + 9, m.w, m.h, isCompactFour ? 24 : 28);
+      const outerRad = isThreeRows ? 20 : isCompactFour ? 24 : 28;
+      roundRectPath(ctx, -m.w / 2 + 6, -m.h / 2 + 8, m.w, m.h, outerRad);
       ctx.fillStyle = '#1E1E24';
       ctx.fill();
 
-      roundRectPath(ctx, -m.w / 2 - 4, -m.h / 2 - 4, m.w + 8, m.h + 8, isCompactFour ? 28 : 32);
+      roundRectPath(ctx, -m.w / 2 - 4, -m.h / 2 - 4, m.w + 8, m.h + 8, outerRad + 4);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
-      ctx.lineWidth = isCompactFour ? 5 : 6;
+      ctx.lineWidth = isThreeRows || isCompactFour ? 5 : 6;
       ctx.strokeStyle = '#1E1E24';
       ctx.stroke();
 
-      roundRectPath(ctx, -m.w / 2 + 3, -m.h / 2 + 3, m.w - 6, m.h - 6, isCompactFour ? 20 : 24);
+      roundRectPath(ctx, -m.w / 2 + 3, -m.h / 2 + 3, m.w - 6, m.h - 6, Math.max(16, outerRad - 4));
       ctx.fillStyle = m.item.color;
       ctx.fill();
-      ctx.lineWidth = isCompactFour ? 4 : 5;
+      ctx.lineWidth = isThreeRows || isCompactFour ? 4 : 5;
       ctx.strokeStyle = '#1E1E24';
       ctx.stroke();
 
-      if (m.item.frontSpot) {
-        const badgeW = isTwoRows ? 114 : 128;
-        const badgeH = isTwoRows ? 26 : 30;
-        const badgeOffsetY = -m.h / 2 - (isTwoRows ? 18 : 22);
+      if (m.item.frontSpot || m.item.winnerSpot) {
+        const isLoserTag = m.item.frontSpot;
+        const badgeW = isThreeRows ? 92 : rowCount === 2 ? 104 : 116;
+        const badgeH = isThreeRows ? 22 : rowCount === 2 ? 25 : 28;
+        const badgeOffsetY = -m.h / 2 - (isThreeRows ? 15 : rowCount === 2 ? 17 : 20);
         roundRectPath(ctx, -badgeW / 2, badgeOffsetY, badgeW, badgeH, badgeH / 2);
-        ctx.fillStyle = state.focusMode === 'winners' ? '#FBBF24' : '#EC5A29';
+        ctx.fillStyle = isLoserTag ? '#EC5A29' : '#FBBF24';
         ctx.fill();
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = '#1E1E24';
         ctx.stroke();
-        ctx.font = `800 ${isTwoRows ? 13 : 15}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = state.focusMode === 'winners' ? '#1E1E24' : '#FFFFFF';
+        ctx.font = `800 ${isThreeRows ? 11.5 : rowCount === 2 ? 13 : 14}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = isLoserTag ? '#FFFFFF' : '#1E1E24';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(
-          state.focusMode === 'winners' ? 'JUARA! 👑' : 'DI DEPAN! 👇',
-          0,
-          badgeOffsetY + badgeH / 2 + 0.5
-        );
+        ctx.fillText(isLoserTag ? 'KALAH 💀' : 'JUARA 👑', 0, badgeOffsetY + badgeH / 2 + 0.5);
       }
 
       ctx.font = `700 ${labelFontSize}px "Fredoka", sans-serif`;
       ctx.fillStyle = m.item.textColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(m.displayLabel, 0, 2, m.w - 28);
+      ctx.fillText(m.displayLabel, 0, 2, m.w - 24);
 
       ctx.restore();
       curX += m.w + gapX;
@@ -2538,46 +2533,39 @@ const getFrontLoserCount = (totalParticipants: number): number => {
   return 1;
 };
 
-const getDefaultWinnerCount = (totalParticipants: number): number => {
-  if (totalParticipants >= 8) return 6;
-  if (totalParticipants >= 6) return 4;
-  if (totalParticipants >= 4) return 3;
-  return Math.max(1, totalParticipants);
-};
-
-const buildStickerLabels = (
-  list: { id?: string; name: string }[],
-  mode: PosterFocusMode,
+const buildLeaderboardStickers = (
+  rankedDesc: { id?: string; name: string }[],
   idPrefix: string
-): LoserLabelItem[] =>
-  list.map((p, idx) => {
+): LoserLabelItem[] => {
+  const capped = rankedDesc.slice(0, 12);
+  const frontCount = getFrontLoserCount(rankedDesc.length);
+  const loserStartIdx = Math.max(0, capped.length - frontCount);
+  const hasWinnerCrown = capped.length > frontCount;
+
+  return capped.map((p, idx) => {
     const pal = STICKER_LABEL_PALETTE[idx % STICKER_LABEL_PALETTE.length];
     return {
       id: p.id || `${idPrefix}-${idx}`,
       name: p.name,
-      rotation: DEFAULT_WINNER_ROTS[idx % DEFAULT_WINNER_ROTS.length],
+      rotation: DEFAULT_LABEL_ROTS[idx % DEFAULT_LABEL_ROTS.length],
       color: pal.bg,
       textColor: pal.text,
-      frontSpot: mode === 'winners' ? idx === 0 : true,
+      frontSpot: idx >= loserStartIdx,
+      winnerSpot: hasWinnerCrown && idx === 0,
     };
   });
+};
 
 export default function PhotoBooth() {
   const navigate = useNavigate();
   const { players: storePlayers, roomName: storeRoomName } = useGameStore();
 
-  // Compute initial losers & top winners directly from storePlayers
+  // Compute initial leaderboard stickers sorted top (#1) -> bottom losers
   const initialRoomData = useMemo(() => {
     if (storePlayers.length > 0) {
       const rankedDesc = [...storePlayers].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-      const frontCount = getFrontLoserCount(rankedDesc.length);
-      const bottom = rankedDesc.slice(-frontCount).reverse();
-      const winCount = getDefaultWinnerCount(rankedDesc.length);
-      const topWinners = rankedDesc.slice(0, winCount);
       return {
-        losers: buildStickerLabels(bottom, 'losers', 'store-l'),
-        winners: buildStickerLabels(topWinners, 'winners', 'store-w'),
-        winnerCount: winCount,
+        losers: buildLeaderboardStickers(rankedDesc, 'store'),
         tags: storePlayers.map((p) => ({
           id: p.id,
           name: p.name,
@@ -2587,8 +2575,6 @@ export default function PhotoBooth() {
     }
     return {
       losers: DEFAULT_LOSERS,
-      winners: DEFAULT_WINNERS,
-      winnerCount: DEFAULT_WINNERS.length,
       tags: DEFAULT_LOSERS.map((l) => ({
         id: l.id,
         name: l.name,
@@ -2600,7 +2586,6 @@ export default function PhotoBooth() {
   // UI & Audio state
   const [muted, setMuted] = useState(false);
   const [activeTab, setActiveTab] = useState<ControlTabId>('visual');
-  const [focusMode, setFocusMode] = useState<PosterFocusMode>('losers');
   const [toast, setToast] = useState<string | null>(null);
   const [fontsLoadedTick, setFontsLoadedTick] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
@@ -2614,14 +2599,12 @@ export default function PhotoBooth() {
   const [showMascots, setShowMascots] = useState(true);
   const [mascotMoodPreset, setMascotMoodPreset] = useState<MascotMoodPreset>('playful');
 
-  // Poster Copy & Labels State (Separate lists for Terbawah vs Teratas)
+  // Poster Copy & Leaderboard Labels State
   const [teamName, setTeamName] = useState(() => storeRoomName || 'Tim Hore');
   const [subDialogIdx, setSubDialogIdx] = useState(0);
   const [customSubDialog, setCustomSubDialog] = useState<string | null>(null);
   const [losersHeading, setLosersHeading] = useState("PARTY'S LOSERS!");
-  const [winnersHeading, setWinnersHeading] = useState("PARTY'S WINNERS! 🏆");
   const [losers, setLosers] = useState<LoserLabelItem[]>(() => initialRoomData.losers);
-  const [winners, setWinners] = useState<LoserLabelItem[]>(() => initialRoomData.winners);
   const [newLoserName, setNewLoserName] = useState('');
   const [footerHook, setFooterHook] = useState('Cobain bareng gengmu!');
   const [footerSubCta, setFooterSubCta] = useState('Coba gratis sekarang!');
@@ -2655,19 +2638,16 @@ export default function PhotoBooth() {
   }>({ active: false, startX: 0, startY: 0, initPanX: 0, initPanY: 0 });
 
   const qrMatrix = useMemo(() => generateScannableQrMatrix(TARGET_WEBSITE_URL), []);
-
-  const activeItems = focusMode === 'winners' ? winners : losers;
-  const setActiveItems = focusMode === 'winners' ? setWinners : setLosers;
-  const activeHeading = focusMode === 'winners' ? winnersHeading : losersHeading;
-  const setActiveHeading = focusMode === 'winners' ? setWinnersHeading : setLosersHeading;
-  const activeSubPresets = focusMode === 'winners' ? WINNER_SUBDIALOG_PRESETS : SUBDIALOG_PRESETS;
-  const activeHeadingPresets = focusMode === 'winners' ? WINNER_HEADING_PRESETS : LOSER_HEADING_PRESETS;
+  const frontLoserCount = useMemo(
+    () => Math.max(1, losers.filter((l) => l.frontSpot).length),
+    [losers]
+  );
 
   const effectiveSubDialog = useMemo(() => {
     if (customSubDialog !== null) return customSubDialog;
-    const preset = activeSubPresets[subDialogIdx % activeSubPresets.length] || activeSubPresets[0];
+    const preset = SUBDIALOG_PRESETS[subDialogIdx % SUBDIALOG_PRESETS.length] || SUBDIALOG_PRESETS[0];
     return preset.template.replace('{team}', teamName.trim() || 'Tim Hore');
-  }, [customSubDialog, activeSubPresets, subDialogIdx, teamName]);
+  }, [customSubDialog, subDialogIdx, teamName]);
 
   const showToast = useCallback((msg: string) => setToast(msg), []);
 
@@ -2694,21 +2674,15 @@ export default function PhotoBooth() {
     };
   }, []);
 
-  // Auto-import lowest & top-scoring players from Zustand Store OR Room Cache
+  // Auto-import ALL players sorted descending from top leaderboard -> bottom losers
   const importRoomCache = useCallback(
     (silent = false) => {
       // 1. Prioritas dari Zustand Active Store!
       if (storePlayers.length > 0) {
         const rankedDesc = [...storePlayers].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+        const imported = buildLeaderboardStickers(rankedDesc, 'store');
         const frontCount = getFrontLoserCount(rankedDesc.length);
-        const sortedLowest = rankedDesc.slice(-frontCount).reverse();
-        const winCount = getDefaultWinnerCount(rankedDesc.length);
-        const topWinners = rankedDesc.slice(0, winCount);
-
-        const importedLosers = buildStickerLabels(sortedLowest, 'losers', 'store-l');
-        const importedWinners = buildStickerLabels(topWinners, 'winners', 'store-w');
-        setLosers(importedLosers);
-        setWinners(importedWinners);
+        setLosers(imported);
         if (storeRoomName) setTeamName(storeRoomName);
         setTeamTags(
           storePlayers.map((p) => ({
@@ -2720,7 +2694,7 @@ export default function PhotoBooth() {
         if (!silent) {
           sfx.playFanfare();
           showToast(
-            `Tersinkron! ${importedLosers.length} terbawah & ${importedWinners.length} teratas siap (${storePlayers.length} anggota)`
+            `Tersinkron! Urut #1 → #${imported.length} (${frontCount} terbawah wajib di depan)`
           );
         }
         return;
@@ -2742,15 +2716,9 @@ export default function PhotoBooth() {
         const rankedDesc = [...parsed.players].sort(
           (a, b) => (b.score ?? b.roomScore ?? 0) - (a.score ?? a.roomScore ?? 0)
         );
+        const imported = buildLeaderboardStickers(rankedDesc, 'cache');
         const frontCount = getFrontLoserCount(rankedDesc.length);
-        const sortedLowest = rankedDesc.slice(-frontCount).reverse();
-        const winCount = getDefaultWinnerCount(rankedDesc.length);
-        const topWinners = rankedDesc.slice(0, winCount);
-
-        const importedLosers = buildStickerLabels(sortedLowest, 'losers', 'cache-l');
-        const importedWinners = buildStickerLabels(topWinners, 'winners', 'cache-w');
-        setLosers(importedLosers);
-        setWinners(importedWinners);
+        setLosers(imported);
         setTeamTags(
           parsed.players.map((p) => ({
             id: p.id,
@@ -2761,7 +2729,7 @@ export default function PhotoBooth() {
         if (parsed.roomName) setTeamName(parsed.roomName);
         if (!silent) {
           sfx.playFanfare();
-          showToast(`Import ${importedLosers.length} terbawah & ${importedWinners.length} juara teratas!`);
+          showToast(`Import ${imported.length} anggota urut leaderboard (${frontCount} terbawah di depan)!`);
         }
       } catch {
         if (!silent) showToast('Gagal membaca data Room.');
@@ -2778,10 +2746,9 @@ export default function PhotoBooth() {
     () => ({
       themeId,
       frameStyle,
-      focusMode,
       subDialog: effectiveSubDialog,
-      losersHeading: activeHeading,
-      losers: activeItems,
+      losersHeading,
+      losers,
       footerHook,
       footerSubCta,
       frameTiltDeg,
@@ -2798,10 +2765,9 @@ export default function PhotoBooth() {
     [
       themeId,
       frameStyle,
-      focusMode,
       effectiveSubDialog,
-      activeHeading,
-      activeItems,
+      losersHeading,
+      losers,
       footerHook,
       footerSubCta,
       frameTiltDeg,
@@ -2986,56 +2952,17 @@ export default function PhotoBooth() {
     dragRef.current.active = false;
   };
 
-  const handleSwitchFocusMode = (nextMode: PosterFocusMode) => {
-    if (focusMode === nextMode) return;
-    sfx.playPop(nextMode === 'winners' ? 700 : 540);
-    setFocusMode(nextMode);
-    setCustomSubDialog(null);
-    setSubDialogIdx(0);
-    showToast(
-      nextMode === 'winners'
-        ? 'Mode Skor Teratas aktif! Pamer pemenangmu 🏆'
-        : 'Mode Hukuman Terbawah aktif! 😭'
-    );
-  };
-
-  const applyWinnerTopCount = (count: 3 | 4 | 6) => {
-    sfx.playPop(660);
-    let sourcePool: { id?: string; name: string }[] = [];
-    if (storePlayers.length > 0) {
-      sourcePool = [...storePlayers].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-    } else {
-      try {
-        const raw = window.localStorage.getItem(ROOM_CACHE_KEY);
-        const parsed = raw
-          ? (JSON.parse(raw) as { players?: { id: string; name: string; score?: number; roomScore?: number }[] })
-          : null;
-        if (parsed?.players && parsed.players.length > 0) {
-          sourcePool = [...parsed.players].sort(
-            (a, b) => (b.score ?? b.roomScore ?? 0) - (a.score ?? a.roomScore ?? 0)
-          );
-        }
-      } catch {}
-    }
-    if (sourcePool.length === 0) {
-      sourcePool = DEFAULT_WINNER_NAMES.map((name, i) => ({ id: `w-pool-${i + 1}`, name }));
-    }
-    const picked = sourcePool.slice(0, count);
-    setWinners(buildStickerLabels(picked, 'winners', 'top-w'));
-    showToast(`Menampilkan ${picked.length} pemain skor teratas! 🏆`);
-  };
-
   const addLoserLabel = () => {
     const trimmed = newLoserName.trim();
     if (!trimmed) return;
-    if (activeItems.length >= 8) {
-      showToast('Maksimal 8 label nama agar poster tetap muat & rapi!');
+    if (losers.length >= 12) {
+      showToast('Maksimal 12 label nama agar poster tetap muat & rapi!');
       return;
     }
     sfx.playPop(620);
-    const pal = STICKER_LABEL_PALETTE[activeItems.length % STICKER_LABEL_PALETTE.length];
+    const pal = STICKER_LABEL_PALETTE[losers.length % STICKER_LABEL_PALETTE.length];
     const randRot = Number(((Math.random() > 0.5 ? 1 : -1) * (2.2 + Math.random() * 4.0)).toFixed(1));
-    setActiveItems((prev) => [
+    setLosers((prev) => [
       ...prev,
       {
         id: `l-${Date.now()}`,
@@ -3044,35 +2971,51 @@ export default function PhotoBooth() {
         color: pal.bg,
         textColor: pal.text,
         frontSpot: false,
+        winnerSpot: false,
       },
     ]);
     setNewLoserName('');
   };
 
   const updateLoserName = (id: string, name: string) => {
-    setActiveItems((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)));
+    setLosers((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)));
   };
 
   const toggleFrontSpot = (id: string) => {
     sfx.playPop(600);
-    setActiveItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, frontSpot: !item.frontSpot } : item))
+    setLosers((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, frontSpot: !item.frontSpot, winnerSpot: !item.frontSpot ? false : item.winnerSpot }
+          : item
+      )
+    );
+  };
+
+  const toggleWinnerSpot = (id: string) => {
+    sfx.playPop(660);
+    setLosers((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, winnerSpot: !item.winnerSpot, frontSpot: !item.winnerSpot ? false : item.frontSpot }
+          : item
+      )
     );
   };
 
   const removeLoserLabel = (id: string) => {
-    if (activeItems.length <= 1) {
+    if (losers.length <= 1) {
       showToast('Minimal 1 nama tetap tampil ya!');
       return;
     }
     sfx.playPop(440);
-    setActiveItems((prev) => prev.filter((item) => item.id !== id));
+    setLosers((prev) => prev.filter((item) => item.id !== id));
   };
 
   const randomizeRotationsAndColors = () => {
     sfx.playShuffle();
     const shuffledPalette = [...STICKER_LABEL_PALETTE].sort(() => Math.random() - 0.5);
-    setActiveItems((prev) =>
+    setLosers((prev) =>
       prev.map((item, idx) => {
         const sign = idx % 2 === 0 ? -1 : 1;
         const mag = 2.4 + Math.random() * 4.2;
@@ -3147,9 +3090,10 @@ export default function PhotoBooth() {
     }
   };
 
-  const igCaptionText = `${effectiveSubDialog} (${activeHeading}: ${activeItems
-    .map((l) => l.name)
-    .join(', ')}${focusMode === 'losers' ? ' wajib di depan' : ' skor teratas'}). ${footerHook} Main gratis di ${TARGET_WEBSITE_URL}\n\nTag semua tim: ${teamTagString}`;
+  const frontNames = losers.filter((l) => l.frontSpot).map((l) => l.name);
+  const igCaptionText = `${effectiveSubDialog} (${losersHeading}: ${losers
+    .map((l, idx) => `#${idx + 1} ${l.name}`)
+    .join(', ')}${frontNames.length > 0 ? ` • ${frontNames.join(', ')} wajib di depan` : ''}). ${footerHook} Main gratis di ${TARGET_WEBSITE_URL}\n\nTag semua tim: ${teamTagString}`;
 
   const handleShareIgStory = async () => {
     if (isExporting) return;
@@ -3270,18 +3214,10 @@ export default function PhotoBooth() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-display text-base sm:text-xl font-bold leading-none text-[#1E1E24]">
-                    {focusMode === 'winners' ? 'Pamer Juara Photo Booth' : 'Hukuman Terakhir Photo Booth'}
+                    Hukuman Terakhir Photo Booth
                   </h1>
-                  <span
-                    className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-extrabold uppercase ${
-                      focusMode === 'winners'
-                        ? 'bg-[#FEF3C7] text-[#92400E] border-[#F59E0B]/40'
-                        : 'bg-[#FFE4E2] text-[#B42318] border-[#DC2626]/30'
-                    }`}
-                  >
-                    {focusMode === 'winners'
-                      ? `${activeItems.length} SKOR TERATAS 🏆`
-                      : `${activeItems.length} TERBAWAH DI DEPAN`}
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FFE4E2] text-[#B42318] border border-[#DC2626]/30 text-xs font-extrabold uppercase">
+                    {frontLoserCount} TERBAWAH DI DEPAN
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-[#64616C] mt-0.5">
@@ -3326,35 +3262,7 @@ export default function PhotoBooth() {
             {/* ================================================================ */}
             {/* KOLOM KIRI: NAVIGASI ADJUST & EDIT TEKS / NAMA YANG KALAH         */}
             {/* ================================================================ */}
-            <div className="order-3 lg:order-1 lg:sticky lg:top-16 space-y-2.5">
-              {/* Mode Switcher: Terbawah (Hukuman) vs Teratas (Juara Pamer) */}
-              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-[18px] bg-[#F2ECE1] border-2 border-[#1E1E24] shadow-[0_3px_0_rgba(30,30,36,0.08)]">
-                <button
-                  type="button"
-                  onClick={() => handleSwitchFocusMode('losers')}
-                  className={`py-1.5 px-2 min-h-[36px] rounded-xl font-display font-bold text-xs flex items-center justify-center gap-1 transition cursor-pointer ${
-                    focusMode === 'losers'
-                      ? 'bg-[#EC5A29] text-white shadow-xs'
-                      : 'text-[#64616C] hover:text-[#1E1E24]'
-                  }`}
-                >
-                  <span>😭</span>
-                  <span>Yang Kalah</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSwitchFocusMode('winners')}
-                  className={`py-1.5 px-2 min-h-[36px] rounded-xl font-display font-bold text-xs flex items-center justify-center gap-1 transition cursor-pointer ${
-                    focusMode === 'winners'
-                      ? 'bg-[#158467] text-white shadow-xs'
-                      : 'text-[#64616C] hover:text-[#1E1E24]'
-                  }`}
-                >
-                  <Trophy className="w-3.5 h-3.5 text-[#FBBF24] shrink-0" />
-                  <span>Skor Teratas</span>
-                </button>
-              </div>
-
+            <div className="order-3 lg:order-1 lg:sticky lg:top-16 space-y-3">
               {/* 2-Tab Switcher: Adjust & Bingkai | Teks & Nama */}
               <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-[20px] bg-white border-[2.5px] border-[#1E1E24] shadow-[0_4px_0_rgba(30,30,36,0.1)]">
                 <button
@@ -3391,7 +3299,7 @@ export default function PhotoBooth() {
               </div>
 
               {/* Left Panel Card Body */}
-              <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 max-h-[calc(100vh-195px)] overflow-y-auto custom-scroll">
+              <div className="rounded-[24px] bg-white border-[3px] border-[#1E1E24] shadow-[0_6px_0_rgba(30,30,36,0.1)] p-3.5 max-h-[calc(100vh-145px)] overflow-y-auto custom-scroll">
                 <AnimatePresence mode="wait">
                   {activeTab === 'visual' && (
                     <motion.div
@@ -3668,7 +3576,7 @@ export default function PhotoBooth() {
                             onClick={() => {
                               sfx.playShuffle();
                               setCustomSubDialog(null);
-                              setSubDialogIdx((i) => (i + 1) % activeSubPresets.length);
+                              setSubDialogIdx((i) => (i + 1) % SUBDIALOG_PRESETS.length);
                             }}
                             className="px-2.5 py-1.5 rounded-xl bg-[#FBBF24] text-[#1E1E24] border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
                           >
@@ -3715,7 +3623,7 @@ export default function PhotoBooth() {
                         </div>
 
                         <div className="flex flex-wrap gap-1.5">
-                          {activeSubPresets.map((p, idx) => (
+                          {SUBDIALOG_PRESETS.map((p, idx) => (
                             <button
                               key={p.id}
                               type="button"
@@ -3738,62 +3646,45 @@ export default function PhotoBooth() {
 
                       <hr className="border-dashed border-[#1E1E24]/15" />
 
-                      {/* Stickers (Losers or Top Winners) */}
+                      {/* Leaderboard Stickers (Sorted Top #1 -> Bottom Losers) */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-display text-sm font-bold text-[#1E1E24]">
-                            {focusMode === 'winners' ? 'Stiker Skor Teratas' : 'Stiker Yang Kalah'}
-                          </span>
+                          <div>
+                            <span className="font-display text-sm font-bold text-[#1E1E24] block leading-tight">
+                              Stiker Leaderboard
+                            </span>
+                            <span className="text-xs font-semibold text-[#64616C]">
+                              Urut #1 teratas ke terbawah
+                            </span>
+                          </div>
                           <button
                             type="button"
                             onClick={randomizeRotationsAndColors}
-                            className="px-2.5 py-1.5 rounded-xl bg-[#D8317E] text-white border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl bg-[#D8317E] text-white border-2 border-[#1E1E24] font-display font-bold text-xs inline-flex items-center gap-1 cursor-pointer shrink-0"
                           >
                             <Shuffle className="w-3 h-3 text-[#FBBF24]" />
                             <span>Acak Warna</span>
                           </button>
                         </div>
 
-                        {focusMode === 'winners' && (
-                          <div className="flex items-center justify-between gap-1.5 bg-[#FAF7F2] border border-[#1E1E24]/15 rounded-xl p-1.5">
-                            <span className="text-xs font-bold text-[#64616C] pl-1">Ambil Cepat:</span>
-                            <div className="flex items-center gap-1">
-                              {([3, 4, 6] as const).map((cnt) => (
-                                <button
-                                  key={cnt}
-                                  type="button"
-                                  onClick={() => applyWinnerTopCount(cnt)}
-                                  className={`px-2.5 py-1 rounded-lg text-xs font-display font-bold border transition cursor-pointer ${
-                                    activeItems.length === cnt
-                                      ? 'bg-[#158467] text-white border-[#1E1E24]'
-                                      : 'bg-white text-[#1E1E24] border-[#1E1E24]/20 hover:border-[#1E1E24]'
-                                  }`}
-                                >
-                                  Top {cnt}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
                         <input
-                          value={activeHeading}
-                          onChange={(e) => setActiveHeading(e.target.value)}
+                          value={losersHeading}
+                          onChange={(e) => setLosersHeading(e.target.value)}
                           maxLength={32}
                           className="w-full px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-display font-bold text-sm outline-none transition"
                         />
 
                         <div className="flex flex-wrap gap-1">
-                          {activeHeadingPresets.map((preset) => (
+                          {LOSER_HEADING_PRESETS.map((preset) => (
                             <button
                               key={preset}
                               type="button"
                               onClick={() => {
                                 sfx.playPop(600);
-                                setActiveHeading(preset);
+                                setLosersHeading(preset);
                               }}
                               className={`px-2.5 py-1 rounded-full text-xs font-display font-bold border-2 transition cursor-pointer ${
-                                activeHeading === preset
+                                losersHeading === preset
                                   ? 'bg-[#1E1E24] text-[#4AE3B5] border-[#1E1E24]'
                                   : 'bg-[#FAF7F2] text-[#64616C] border-[#1E1E24]/15 hover:border-[#1E1E24]'
                               }`}
@@ -3808,7 +3699,7 @@ export default function PhotoBooth() {
                             value={newLoserName}
                             onChange={(e) => setNewLoserName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addLoserLabel()}
-                            placeholder="Tambah nama (maks 8)..."
+                            placeholder="Tambah nama (maks 12)..."
                             maxLength={16}
                             className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-[#F2ECE1] border-2 border-transparent focus:border-[#1E1E24] focus:bg-white font-bold text-xs sm:text-sm outline-none transition"
                           />
@@ -3823,37 +3714,47 @@ export default function PhotoBooth() {
                         </div>
 
                         <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-1.5">
-                          {activeItems.map((item) => (
+                          {losers.map((item, idx) => (
                             <div
                               key={item.id}
                               style={{ backgroundColor: item.color }}
                               className="rounded-xl border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] p-1.5 space-y-1"
                             >
                               <div className="flex items-center justify-between gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleFrontSpot(item.id)}
-                                  title={
-                                    focusMode === 'winners'
-                                      ? 'Tandai juara utama'
-                                      : 'Tandai paling depan'
-                                  }
-                                  className={`px-2 py-0.5 rounded-full text-xs font-extrabold border border-[#1E1E24] inline-flex items-center gap-1 cursor-pointer transition ${
-                                    item.frontSpot
-                                      ? focusMode === 'winners'
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs font-black text-[#1E1E24] px-1">
+                                    #{idx + 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleWinnerSpot(item.id)}
+                                    title="Tandai Juara Teratas"
+                                    className={`w-6 h-6 rounded-full text-xs font-extrabold border border-[#1E1E24] inline-flex items-center justify-center cursor-pointer transition ${
+                                      item.winnerSpot
                                         ? 'bg-[#1E1E24] text-[#FBBF24]'
-                                        : 'bg-[#EC5A29] text-white'
-                                      : 'bg-white/90 text-[#1E1E24] hover:bg-white'
-                                  }`}
-                                >
-                                  <Crown className="w-3 h-3" />
-                                  <span>{focusMode === 'winners' ? 'Juara' : 'Depan'}</span>
-                                </button>
+                                        : 'bg-white/90 text-[#64616C] hover:text-[#1E1E24]'
+                                    }`}
+                                  >
+                                    <Crown className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleFrontSpot(item.id)}
+                                    title="Tandai Kalah"
+                                    className={`px-2 py-0.5 rounded-full text-xs font-extrabold border border-[#1E1E24] cursor-pointer transition ${
+                                      item.frontSpot
+                                        ? 'bg-[#EC5A29] text-white'
+                                        : 'bg-white/90 text-[#1E1E24] hover:bg-white'
+                                    }`}
+                                  >
+                                    <span>Kalah</span>
+                                  </button>
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => removeLoserLabel(item.id)}
                                   aria-label={`Hapus ${item.name}`}
-                                  className="w-6 h-6 rounded-full bg-white/85 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer"
+                                  className="w-6 h-6 rounded-full bg-white/85 hover:bg-[#FFE4E2] text-[#1E1E24] hover:text-[#B42318] flex items-center justify-center cursor-pointer shrink-0"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -4085,24 +3986,11 @@ export default function PhotoBooth() {
               </div>
 
               {/* Card 3: Aturan End-Game & Daftar Tag Semua Tim */}
-              <div
-                className={`rounded-[24px] border-[3px] p-3.5 space-y-2.5 ${
-                  focusMode === 'winners'
-                    ? 'bg-[#ECFDF5] border-[#158467] shadow-[0_5px_0_#158467]'
-                    : 'bg-[#FFE8DF] border-[#EC5A29] shadow-[0_5px_0_#EC5A29]'
-                }`}
-              >
+              <div className="rounded-[24px] bg-[#FFE8DF] border-[3px] border-[#EC5A29] shadow-[0_5px_0_#EC5A29] p-3.5 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-xs font-black uppercase tracking-wider ${
-                      focusMode === 'winners' ? 'bg-[#158467]' : 'bg-[#EC5A29]'
-                    }`}
-                  >
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EC5A29] text-white text-xs font-black uppercase tracking-wider">
                     <Instagram className="w-3.5 h-3.5" />
-                    <span>
-                      {teamTags.length} Anggota • {activeItems.length}{' '}
-                      {focusMode === 'winners' ? 'Juara' : 'Di Depan'}
-                    </span>
+                    <span>{teamTags.length} Anggota • {frontLoserCount} Terbawah</span>
                   </span>
                   <button
                     type="button"
@@ -4119,15 +4007,7 @@ export default function PhotoBooth() {
                 </div>
 
                 <p className="text-xs font-bold text-[#1E1E24] leading-snug">
-                  {focusMode === 'winners' ? (
-                    <>
-                      <strong>Pamer {activeItems.length} pemain skor teratas!</strong> Upload IG Story &amp; tag semua anggota tim:
-                    </>
-                  ) : (
-                    <>
-                      <strong>{activeItems.length} pemain terbawah wajib di depan!</strong> Wajib upload IG Story &amp; tag semua anggota tim:
-                    </>
-                  )}
+                  <strong>{frontLoserCount} pemain terbawah wajib di depan!</strong> Wajib upload IG Story &amp; tag semua anggota tim:
                 </p>
 
                 <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scroll pr-1">
