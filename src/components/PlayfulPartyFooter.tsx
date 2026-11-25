@@ -23,6 +23,8 @@ import {
   RefreshCw,
   Info,
   Zap,
+  Download,
+  Maximize2,
 } from 'lucide-react';
 import { FluentEmoji } from './ui/FluentEmoji';
 
@@ -418,6 +420,177 @@ class SoundEffects {
         gain.connect(ctx.destination);
         osc.start(start);
         osc.stop(start + 0.085);
+      });
+    } catch {}
+  }
+
+  /** Deep rising cosmic synth swell + 6-stone crystalline chime for Infinity Gauntlet */
+  playGauntletCharge(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.045 : 0.11;
+
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sawtooth';
+      sub.frequency.setValueAtTime(68, now);
+      sub.frequency.exponentialRampToValueAtTime(168, now + 1.15);
+
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(220, now);
+      lp.frequency.exponentialRampToValueAtTime(1400, now + 1.15);
+
+      subGain.gain.setValueAtTime(0.001, now);
+      subGain.gain.linearRampToValueAtTime(vol * 0.75, now + 0.85);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+
+      sub.connect(lp);
+      lp.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(now);
+      sub.stop(now + 1.28);
+
+      const stoneNotes = [523.25, 659.25, 783.99, 987.77, 1174.66, 1567.98];
+      stoneNotes.forEach((freq, idx) => {
+        const start = now + 0.1 + idx * 0.15;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        g.gain.setValueAtTime(0.001, start);
+        g.gain.linearRampToValueAtTime(vol * 0.65, start + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0008, start + 0.34);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.36);
+      });
+    } catch {}
+  }
+
+  /** Crisp percussive finger-snap transient + cosmic sub-bass thud */
+  playThanosSnap(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.08 : 0.2;
+
+      const bufSize = Math.floor(ctx.sampleRate * 0.065);
+      const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.16));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(2600, now);
+      bp.Q.setValueAtTime(2.4, now);
+
+      const nGain = ctx.createGain();
+      nGain.gain.setValueAtTime(vol * 1.4, now);
+      nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+
+      noise.connect(bp);
+      bp.connect(nGain);
+      nGain.connect(ctx.destination);
+      noise.start(now);
+
+      const snapOsc = ctx.createOscillator();
+      const snapGain = ctx.createGain();
+      snapOsc.type = 'triangle';
+      snapOsc.frequency.setValueAtTime(2200, now);
+      snapOsc.frequency.exponentialRampToValueAtTime(640, now + 0.045);
+      snapGain.gain.setValueAtTime(vol * 0.85, now);
+      snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+      snapOsc.connect(snapGain);
+      snapGain.connect(ctx.destination);
+      snapOsc.start(now);
+      snapOsc.stop(now + 0.06);
+
+      const bass = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      bass.type = 'sine';
+      bass.frequency.setValueAtTime(125, now + 0.02);
+      bass.frequency.exponentialRampToValueAtTime(34, now + 0.45);
+      bassGain.gain.setValueAtTime(vol * 1.1, now + 0.02);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      bass.connect(bassGain);
+      bassGain.connect(ctx.destination);
+      bass.start(now + 0.02);
+      bass.stop(now + 0.52);
+    } catch {}
+  }
+
+  /** Soft filtered white-noise wind/sand whoosh for ash disintegration */
+  playDustDisintegrate(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const dur = 1.45;
+      const bufSize = Math.floor(ctx.sampleRate * dur);
+      const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(520, now);
+      filter.frequency.exponentialRampToValueAtTime(2900, now + dur);
+      filter.Q.setValueAtTime(1.6, now);
+
+      const gain = ctx.createGain();
+      const peak = subtle ? 0.032 : 0.085;
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.25);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + dur);
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      src.start(now);
+      src.stop(now + dur + 0.02);
+    } catch {}
+  }
+
+  /** Emerald Time Stone crystalline reverse-blip arpeggio chime */
+  playTimeRewind(subtle = false) {
+    if (this.muted) return;
+    try {
+      const ctx = this.ensureCtx(subtle);
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const vol = subtle ? 0.045 : 0.11;
+      const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
+      notes.forEach((freq, idx) => {
+        const start = now + idx * 0.065;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq * 0.92, start);
+        osc.frequency.exponentialRampToValueAtTime(freq, start + 0.09);
+        g.gain.setValueAtTime(0.001, start);
+        g.gain.linearRampToValueAtTime(vol, start + 0.035);
+        g.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.32);
       });
     } catch {}
   }
@@ -1144,6 +1317,13 @@ type AgentAction =
   | 'saiyan_power'
   | 'moonwalk'
   | 'kirby_float'
+  | 'gauntlet_ascend'
+  | 'gauntlet_snap'
+  | 'gauntlet_descend'
+  | 'panic_freeze'
+  | 'dusted_dissolve'
+  | 'dusted_gone'
+  | 'time_respawn'
   | 'exit_swap'
   | 'enter_swap';
 
@@ -1185,7 +1365,59 @@ interface MascotAgent {
   portalTargetX: number;
   portalSwap: boolean;
   triggeredByUser: boolean;
+  // Infinity Gauntlet disintegration & Time Stone respawn fields
+  dustProgress: number;
+  dustSpawnAccum: number;
+  timeGlow: number;
 }
+
+interface GauntletSnapState {
+  active: boolean;
+  slot: number;
+  phase: 'ascend' | 'snap' | 'dust' | 'rewind';
+  timer: number;
+  phaseElapsed: number;
+  balancedShown: boolean;
+  flashAlpha: number;
+  shockwaveProgress: number;
+  snapBadgeAlpha: number;
+  vignetteAlpha: number;
+  timeRuneProgress: number;
+  stoneOrbitAngle: number;
+  gauntletTilt: number;
+  gauntletScale: number;
+  triggeredByUser: boolean;
+}
+
+interface AshParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+  rot: number;
+  vrot: number;
+  phase: number;
+  glow?: string;
+}
+
+const INFINITY_STONES = [
+  { name: 'Power', color: '#A855F7', tx: 12, ty: 17 },
+  { name: 'Space', color: '#3B82F6', tx: 18, ty: 15 },
+  { name: 'Reality', color: '#EF4444', tx: 24, ty: 16 },
+  { name: 'Soul', color: '#F97316', tx: 30, ty: 18 },
+  { name: 'Time', color: '#22C55E', tx: 9, ty: 27 },
+  { name: 'Mind', color: '#FACC15', tx: 21, ty: 25 },
+];
+
+const ASH_COLORS = ['#4B5563', '#6B7280', '#9CA3AF', '#D1D5DB', '#1E1E24'];
+const PANIC_PHRASES = ['Eh?! 😱', 'Gawat!!', 'Mr. Fajar...', 'Jangan di-snap!'];
+const DUST_PHRASES = ['Mr. Fajar, gak enak badan...', 'Jadi abu... 💨', 'Waduhh...'];
+const RESPAWN_PHRASES = ['Eh balik lagi! 💚', 'Respawn! ✨', 'Tadi ke mana?! 😅'];
 
 interface BallState {
   x: number;
@@ -1289,6 +1521,7 @@ const InteractiveMascotPlayground: React.FC = () => {
   const [bubbles, setBubbles] = useState<(BubbleState | null)[]>([null, null, null, null]);
   const [draggedSlot, setDraggedSlot] = useState<number | null>(null);
   const [angrySlots, setAngrySlots] = useState<boolean[]>([false, false, false, false]);
+  const [combo, setCombo] = useState<{ count: number; key: number }>({ count: 0, key: 0 });
 
   // Refs synced for zero-stale-closure RAF loop
   const modeRef = useRef<PlaygroundMode>('auto');
@@ -1301,6 +1534,8 @@ const InteractiveMascotPlayground: React.FC = () => {
   const shakeIntensityRef = useRef(0);
   const bubbleTimersRef = useRef<(number | null)[]>([null, null, null, null]);
   const angryTimersRef = useRef<(number | null)[]>([null, null, null, null]);
+  const comboTimerRef = useRef<number | null>(null);
+  const comboCountRef = useRef(0);
   const dragInfoRef = useRef<{
     slot: number;
     startX: number;
@@ -1320,6 +1555,7 @@ const InteractiveMascotPlayground: React.FC = () => {
   const auraRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   const spinRingRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   const speedLineRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const timeHaloRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   const eyeRefs = useRef<React.RefObject<SVGGElement | null>[]>([
     React.createRef<SVGGElement | null>(),
     React.createRef<SVGGElement | null>(),
@@ -1332,6 +1568,15 @@ const InteractiveMascotPlayground: React.FC = () => {
   const ballShadowRef = useRef<HTMLDivElement | null>(null);
 
   // Dedicated Pop-Culture VFX DOM Refs
+  const ashCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const vignetteRef = useRef<HTMLDivElement | null>(null);
+  const flashRef = useRef<HTMLDivElement | null>(null);
+  const shockwaveRef = useRef<HTMLDivElement | null>(null);
+  const snapBadgeRef = useRef<HTMLDivElement | null>(null);
+  const timeRuneRef = useRef<HTMLDivElement | null>(null);
+  const gauntletWrapRef = useRef<HTMLDivElement | null>(null);
+  const gauntletSvgRef = useRef<HTMLDivElement | null>(null);
+  const stoneElsRef = useRef<(HTMLDivElement | null)[]>([null, null, null, null, null, null]);
   const laserOrbRef = useRef<HTMLDivElement | null>(null);
   const laserBeamRef = useRef<HTMLDivElement | null>(null);
   const laserCoreRef = useRef<HTMLDivElement | null>(null);
@@ -1402,6 +1647,24 @@ const InteractiveMascotPlayground: React.FC = () => {
     opacity: 0,
     timer: 0,
   });
+  const gauntletRef = useRef<GauntletSnapState>({
+    active: false,
+    slot: -1,
+    phase: 'ascend',
+    timer: 0,
+    phaseElapsed: 0,
+    balancedShown: false,
+    flashAlpha: 0,
+    shockwaveProgress: 0,
+    snapBadgeAlpha: 0,
+    vignetteAlpha: 0,
+    timeRuneProgress: 0,
+    stoneOrbitAngle: 0,
+    gauntletTilt: 0,
+    gauntletScale: 0,
+    triggeredByUser: false,
+  });
+  const ashParticlesRef = useRef<AshParticle[]>([]);
   const particlesRef = useRef<Particle[]>(
     Array.from({ length: PARTICLE_POOL_SIZE }).map((_, i) => ({
       active: false,
@@ -1430,6 +1693,7 @@ const InteractiveMascotPlayground: React.FC = () => {
   // Sync mode ref
   useEffect(() => {
     modeRef.current = mode;
+    if (gauntletRef.current.active) return;
     const width = stageSizeRef.current.width;
     const busyActions: AgentAction[] = [
       'exit_swap',
@@ -1442,6 +1706,13 @@ const InteractiveMascotPlayground: React.FC = () => {
       'vent_peek',
       'vent_exit',
       'vent_enter',
+      'gauntlet_ascend',
+      'gauntlet_snap',
+      'gauntlet_descend',
+      'panic_freeze',
+      'dusted_dissolve',
+      'dusted_gone',
+      'time_respawn',
     ];
     agentsRef.current.forEach((a, idx) => {
       if (busyActions.includes(a.action) || a.isDragged) return;
@@ -1608,15 +1879,94 @@ const InteractiveMascotPlayground: React.FC = () => {
     [pickNextCastIndex]
   );
 
+  // Trigger the signature 4-Phase "I AM INEVITABLE!" Infinity Gauntlet Snap sequence
+  const triggerGauntletSnap = useCallback(
+    (a: MascotAgent, fromUser: boolean) => {
+      if (gauntletRef.current.active) return false;
+      const width = stageSizeRef.current.width;
+
+      laserRef.current.active = false;
+      coinBlockRef.current.active = false;
+      portalRef.current.active = false;
+      ventRef.current.active = false;
+
+      gauntletRef.current = {
+        active: true,
+        slot: a.slot,
+        phase: 'ascend',
+        timer: 1.35,
+        phaseElapsed: 0,
+        balancedShown: false,
+        flashAlpha: 0,
+        shockwaveProgress: 0,
+        snapBadgeAlpha: 0,
+        vignetteAlpha: 0,
+        timeRuneProgress: 0,
+        stoneOrbitAngle: 0,
+        gauntletTilt: -8,
+        gauntletScale: 0.05,
+        triggeredByUser: fromUser,
+      };
+
+      a.action = 'gauntlet_ascend';
+      a.actionTimer = 1.35;
+      a.triggeredByUser = fromUser;
+      a.isDragged = false;
+      a.angryTimer = 0;
+      a.crouchTimer = 0;
+      a.spinSpeed = 0;
+      a.spinAngle = 0;
+      a.dustProgress = 0;
+      a.visibilityScale = 1;
+      a.vx *= 0.2;
+      a.vy = 110;
+      showBubble(a.slot, 'I AM INEVITABLE! 🫰', '#7C3AED', 1650);
+      sfx.playGauntletCharge(!fromUser);
+
+      let panicIdx = 0;
+      agentsRef.current.forEach((other) => {
+        if (other.slot === a.slot) return;
+        if (other.x < 46) other.x = 56;
+        if (other.x > width - 46) other.x = width - 56;
+        other.isDragged = false;
+        other.action = 'panic_freeze';
+        other.crouchTimer = 0;
+        other.spinSpeed = 0;
+        other.spinAngle = 0;
+        other.dustProgress = 0;
+        other.dustSpawnAccum = 0;
+        other.visibilityScale = 1;
+        other.vx *= 0.12;
+        other.facing = other.x < width * 0.5 ? 1 : -1;
+        showBubble(
+          other.slot,
+          PANIC_PHRASES[panicIdx % PANIC_PHRASES.length],
+          '#1E1E24',
+          1350
+        );
+        panicIdx++;
+      });
+
+      return true;
+    },
+    [showBubble]
+  );
+
   // Trigger a specific skill or famous pop-culture Easter Egg on a mascot!
   const triggerSpecialSkill = useCallback(
     (a: MascotAgent, fromUser: boolean) => {
+      if (gauntletRef.current.active) return;
       const width = stageSizeRef.current.width;
       const profile = MASCOT_CAST[a.castIdx];
       a.triggeredByUser = fromUser;
       a.crouchTimer = 0;
       a.spinSpeed = 0;
       a.spinAngle = 0;
+
+      // Signature "I AM INEVITABLE!" Snap (28% on tap, 22% in auto-mix)
+      if (Math.random() < (fromUser ? 0.28 : 0.22)) {
+        if (triggerGauntletSnap(a, fromUser)) return;
+      }
 
       const options: string[] = [
         'spin_dash',
@@ -1809,12 +2159,13 @@ const InteractiveMascotPlayground: React.FC = () => {
         }
       }
     },
-    [showBubble]
+    [showBubble, triggerGauntletSnap]
   );
 
   // Trigger smooth mascot swap (via Edge Sprint, Glowing Portal Dive, or Among Us Floor Vent!)
   const triggerSwapOnSlot = useCallback(
     (preferredSlot?: number, withSound = false) => {
+      if (gauntletRef.current.active) return;
       const agents = agentsRef.current;
       const width = stageSizeRef.current.width;
       const busyActions: AgentAction[] = [
@@ -1828,6 +2179,13 @@ const InteractiveMascotPlayground: React.FC = () => {
         'vent_peek',
         'vent_exit',
         'vent_enter',
+        'gauntlet_ascend',
+        'gauntlet_snap',
+        'gauntlet_descend',
+        'panic_freeze',
+        'dusted_dissolve',
+        'dusted_gone',
+        'time_respawn',
       ];
       let chosen: MascotAgent | undefined;
       if (preferredSlot !== undefined) {
@@ -1881,6 +2239,12 @@ const InteractiveMascotPlayground: React.FC = () => {
       const rect = stageEl.getBoundingClientRect();
       if (rect.width > 0) {
         stageSizeRef.current = { width: rect.width, height: rect.height };
+        const canvas = ashCanvasRef.current;
+        if (canvas) {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(rect.width * dpr);
+          canvas.height = Math.round(rect.height * dpr);
+        }
       }
     };
     updateSize();
@@ -1927,6 +2291,9 @@ const InteractiveMascotPlayground: React.FC = () => {
         portalTargetX: w0 * 0.5,
         portalSwap: false,
         triggeredByUser: false,
+        dustProgress: 0,
+        dustSpawnAccum: 0,
+        timeGlow: 0,
       }));
       ballRef.current.x = w0 * 0.48;
       ballRef.current.y = 64;
@@ -2006,28 +2373,31 @@ const InteractiveMascotPlayground: React.FC = () => {
       const coinBlock = coinBlockRef.current;
       const portal = portalRef.current;
       const vent = ventRef.current;
+      const gauntlet = gauntletRef.current;
 
       // ------------------------------------------------------------------
       // 1. AUTOMATIC CHARACTER ROTATION & SPECIAL POP-CULTURE SCHEDULER
       // ------------------------------------------------------------------
-      swapTimerRef.current -= dt;
-      if (swapTimerRef.current <= 0) {
-        swapTimerRef.current = 7.4 + Math.random() * 3.2;
-        triggerSwapOnSlot(undefined, false);
-      }
+      if (!gauntlet.active) {
+        swapTimerRef.current -= dt;
+        if (swapTimerRef.current <= 0) {
+          swapTimerRef.current = 7.4 + Math.random() * 3.2;
+          triggerSwapOnSlot(undefined, false);
+        }
 
-      if (modeRef.current !== 'ball') {
-        specialEventTimerRef.current -= dt;
-        if (specialEventTimerRef.current <= 0) {
-          specialEventTimerRef.current = modeRef.current === 'parkour' ? 2.6 + Math.random() * 1.8 : 3.4 + Math.random() * 2.4;
-          const free = agents.filter(
-            (a) =>
-              !a.isDragged &&
-              (a.action === 'walk' || a.action === 'run' || a.action === 'play_ball')
-          );
-          if (free.length > 0) {
-            const picked = free[Math.floor(Math.random() * free.length)];
-            triggerSpecialSkill(picked, false);
+        if (modeRef.current !== 'ball') {
+          specialEventTimerRef.current -= dt;
+          if (specialEventTimerRef.current <= 0) {
+            specialEventTimerRef.current = modeRef.current === 'parkour' ? 2.6 + Math.random() * 1.8 : 3.4 + Math.random() * 2.4;
+            const free = agents.filter(
+              (a) =>
+                !a.isDragged &&
+                (a.action === 'walk' || a.action === 'run' || a.action === 'play_ball')
+            );
+            if (free.length > 0) {
+              const picked = free[Math.floor(Math.random() * free.length)];
+              triggerSpecialSkill(picked, false);
+            }
           }
         }
       }
@@ -2097,7 +2467,7 @@ const InteractiveMascotPlayground: React.FC = () => {
       ball.sx = Math.max(0.72, Math.min(1.32, ball.sx + ball.vsx * dt));
       ball.sy = Math.max(0.72, Math.min(1.32, ball.sy + ball.vsy * dt));
 
-      if (ball.y === 0 && Math.abs(ball.vx) < 2) {
+      if (ball.y === 0 && Math.abs(ball.vx) < 2 && !gauntlet.active) {
         ball.vx = (ball.x < width * 0.5 ? 1 : -1) * 42;
       }
 
@@ -2288,6 +2658,239 @@ const InteractiveMascotPlayground: React.FC = () => {
         }
       }
 
+      // E) 4-Phase "I AM INEVITABLE!" Infinity Gauntlet Snap Director
+      if (gauntlet.active) {
+        gauntlet.timer -= dt;
+        gauntlet.phaseElapsed += dt;
+        gauntlet.stoneOrbitAngle += dt * 4.6;
+        const snapper = agents[gauntlet.slot];
+
+        if (gauntlet.phase === 'ascend') {
+          gauntlet.vignetteAlpha += (1 - gauntlet.vignetteAlpha) * Math.min(1, dt * 4.5);
+          gauntlet.gauntletScale += (1 - gauntlet.gauntletScale) * Math.min(1, dt * 10);
+          gauntlet.gauntletTilt = -10 + Math.sin(now * 0.012) * 5;
+
+          if (snapper && Math.random() < dt * 18) {
+            ashParticlesRef.current.push({
+              x: snapper.x + (Math.random() - 0.5) * 64,
+              y: snapper.y + 10 + Math.random() * 44,
+              vx: (Math.random() - 0.5) * 26,
+              vy: 28 + Math.random() * 34,
+              size: 2.5 + Math.random() * 2.5,
+              color: Math.random() < 0.5 ? '#FACC15' : '#C084FC',
+              alpha: 0.9,
+              life: 0.55,
+              maxLife: 0.55,
+              rot: Math.random() * Math.PI * 2,
+              vrot: 4,
+              phase: Math.random() * Math.PI * 2,
+              glow: '#FACC15',
+            });
+          }
+
+          if (gauntlet.timer <= 0) {
+            gauntlet.phase = 'snap';
+            gauntlet.timer = 0.38;
+            gauntlet.phaseElapsed = 0;
+            gauntlet.flashAlpha = 0.92;
+            gauntlet.shockwaveProgress = 0.01;
+            gauntlet.snapBadgeAlpha = 1;
+            gauntlet.gauntletTilt = 26;
+            shakeIntensityRef.current = 6.2;
+
+            sfx.playThanosSnap(!gauntlet.triggeredByUser);
+            sfx.playDustDisintegrate(!gauntlet.triggeredByUser);
+
+            if (snapper) {
+              snapper.action = 'gauntlet_snap';
+              snapper.vsx += 4.6;
+              snapper.vsy -= 4.4;
+              spawnSparkleRing(snapper.x + 28, snapper.y + 26, '#FACC15', 10);
+            }
+
+            let victimIdx = 0;
+            agents.forEach((other) => {
+              if (other.slot === gauntlet.slot) return;
+              other.action = 'dusted_dissolve';
+              other.dustProgress = 0;
+              other.dustSpawnAccum = 0;
+              other.vx = 0;
+              other.vy = 0;
+              showBubble(
+                other.slot,
+                DUST_PHRASES[victimIdx % DUST_PHRASES.length],
+                '#4B5563',
+                1450
+              );
+              victimIdx++;
+            });
+          }
+        } else if (gauntlet.phase === 'snap') {
+          gauntlet.flashAlpha = Math.max(0, gauntlet.flashAlpha - dt * 3.1);
+          gauntlet.shockwaveProgress = Math.min(1, gauntlet.shockwaveProgress + dt * 2.1);
+          gauntlet.gauntletTilt += (6 - gauntlet.gauntletTilt) * Math.min(1, dt * 11);
+
+          if (gauntlet.timer <= 0) {
+            gauntlet.phase = 'dust';
+            gauntlet.timer = 2.3;
+            gauntlet.phaseElapsed = 0;
+            gauntlet.balancedShown = false;
+          }
+        } else if (gauntlet.phase === 'dust') {
+          gauntlet.flashAlpha = Math.max(0, gauntlet.flashAlpha - dt * 4);
+          gauntlet.shockwaveProgress =
+            gauntlet.shockwaveProgress > 0 && gauntlet.shockwaveProgress < 1
+              ? Math.min(1, gauntlet.shockwaveProgress + dt * 1.9)
+              : 0;
+          gauntlet.snapBadgeAlpha = Math.max(0, gauntlet.snapBadgeAlpha - dt * 1.35);
+
+          if (!gauntlet.balancedShown && gauntlet.phaseElapsed > 0.25 && snapper) {
+            gauntlet.balancedShown = true;
+            showBubble(snapper.slot, 'Balanced! 😌', '#D97706', 1450);
+          }
+
+          if (gauntlet.phaseElapsed > 1.05 && snapper && snapper.action === 'gauntlet_snap') {
+            snapper.action = 'gauntlet_descend';
+          }
+          if (gauntlet.phaseElapsed > 1.1) {
+            gauntlet.vignetteAlpha = Math.max(0, gauntlet.vignetteAlpha - dt * 1.2);
+            gauntlet.gauntletScale = Math.max(0, gauntlet.gauntletScale - dt * 2.2);
+          }
+
+          if (gauntlet.timer <= 0) {
+            gauntlet.phase = 'rewind';
+            gauntlet.timer = 0.95;
+            gauntlet.phaseElapsed = 0;
+            gauntlet.timeRuneProgress = 0.01;
+            gauntlet.gauntletScale = 0;
+            gauntlet.vignetteAlpha = 0;
+
+            sfx.playTimeRewind(!gauntlet.triggeredByUser);
+
+            let respIdx = 0;
+            agents.forEach((other) => {
+              if (other.slot === gauntlet.slot) return;
+              const freshProfile =
+                Math.random() < 0.65 ? swapMascotCharacter(other) : MASCOT_CAST[other.castIdx];
+              other.action = 'time_respawn';
+              other.actionTimer = 0.72;
+              other.dustProgress = 0;
+              other.timeGlow = 1;
+              other.visibilityScale = 0.08;
+              other.y = 14;
+              other.vy = 195 + Math.random() * 55;
+              other.vx = (Math.random() - 0.5) * 90;
+              other.vsx -= 4.2;
+              other.vsy += 4.6;
+              showBubble(
+                other.slot,
+                RESPAWN_PHRASES[respIdx % RESPAWN_PHRASES.length],
+                '#158467',
+                1550
+              );
+              for (let k = 0; k < 12; k++) {
+                const ang = (Math.PI * 2 * k) / 12 + Math.random() * 0.25;
+                ashParticlesRef.current.push({
+                  x: other.x + Math.cos(ang) * 18,
+                  y: 26 + Math.sin(ang) * 18,
+                  vx: Math.cos(ang) * (55 + Math.random() * 40),
+                  vy: Math.sin(ang) * (55 + Math.random() * 40) + 35,
+                  size: 3 + Math.random() * 2.5,
+                  color: k % 2 === 0 ? '#22C55E' : '#BBF7D0',
+                  alpha: 1,
+                  life: 0.55 + Math.random() * 0.2,
+                  maxLife: 0.75,
+                  rot: 0,
+                  vrot: 6,
+                  phase: k,
+                  glow: '#22C55E',
+                });
+              }
+              spawnSparkleRing(other.x, 28, freshProfile.color, 6);
+              respIdx++;
+            });
+          }
+        } else if (gauntlet.phase === 'rewind') {
+          gauntlet.timeRuneProgress = Math.min(1, gauntlet.timeRuneProgress + dt * 1.25);
+          if (gauntlet.timer <= 0) {
+            gauntlet.active = false;
+            gauntlet.timeRuneProgress = 0;
+            gauntlet.snapBadgeAlpha = 0;
+            gauntlet.flashAlpha = 0;
+            gauntlet.shockwaveProgress = 0;
+            gauntlet.vignetteAlpha = 0;
+          }
+        }
+      }
+
+      if (vignetteRef.current) {
+        vignetteRef.current.style.opacity = `${gauntlet.active ? gauntlet.vignetteAlpha : 0}`;
+      }
+      if (flashRef.current) {
+        flashRef.current.style.opacity = `${gauntlet.active ? gauntlet.flashAlpha : 0}`;
+      }
+      if (shockwaveRef.current) {
+        const snapper = gauntlet.slot >= 0 ? agents[gauntlet.slot] : null;
+        if (gauntlet.active && snapper && gauntlet.shockwaveProgress > 0 && gauntlet.shockwaveProgress < 1) {
+          const prog = gauntlet.shockwaveProgress;
+          const sc = 0.25 + prog * 7.2;
+          shockwaveRef.current.style.opacity = `${(1 - prog) * 0.92}`;
+          shockwaveRef.current.style.transform = `translate3d(${snapper.x + 12 - 36}px, ${-(snapper.y + 28) - 36}px, 0) scale(${sc})`;
+        } else {
+          shockwaveRef.current.style.opacity = '0';
+        }
+      }
+      if (snapBadgeRef.current) {
+        const snapper = gauntlet.slot >= 0 ? agents[gauntlet.slot] : null;
+        if (gauntlet.active && snapper && gauntlet.snapBadgeAlpha > 0.02) {
+          const popScale = 0.88 + Math.min(0.24, (1 - gauntlet.snapBadgeAlpha) * 0.5);
+          snapBadgeRef.current.style.opacity = `${gauntlet.snapBadgeAlpha}`;
+          snapBadgeRef.current.style.transform = `translate3d(${snapper.x + 26}px, ${-(snapper.y + 52)}px, 0) scale(${popScale}) rotate(-8deg)`;
+        } else {
+          snapBadgeRef.current.style.opacity = '0';
+        }
+      }
+      if (timeRuneRef.current) {
+        if (gauntlet.active && gauntlet.phase === 'rewind' && gauntlet.timeRuneProgress > 0) {
+          const p = gauntlet.timeRuneProgress;
+          const op = Math.sin(p * Math.PI);
+          const sc = 0.35 + p * 3.2;
+          timeRuneRef.current.style.opacity = `${Math.max(0, op * 0.92)}`;
+          timeRuneRef.current.style.transform = `translate3d(${width * 0.5 - 48}px, -42px, 0) scale(${sc}) rotate(${-p * 180}deg)`;
+        } else {
+          timeRuneRef.current.style.opacity = '0';
+        }
+      }
+      if (gauntletWrapRef.current && gauntletSvgRef.current) {
+        const snapper = gauntlet.slot >= 0 ? agents[gauntlet.slot] : null;
+        if (gauntlet.active && snapper && gauntlet.gauntletScale > 0.02) {
+          const gx = snapper.x + 20;
+          const gy = snapper.y + 8 + Math.sin(now * 0.01) * 2.5;
+          gauntletWrapRef.current.style.opacity = `${Math.min(1, gauntlet.gauntletScale * 1.4)}`;
+          gauntletWrapRef.current.style.transform = `translate3d(${gx}px, ${-gy}px, 0) scale(${gauntlet.gauntletScale})`;
+          gauntletSvgRef.current.style.transform = `rotate(${gauntlet.gauntletTilt}deg)`;
+
+          const converge =
+            gauntlet.phase === 'ascend'
+              ? Math.min(1, Math.pow(gauntlet.phaseElapsed / 1.05, 1.4))
+              : 1;
+          const orbitRadius = (1 - converge) * 34;
+          const stonePulse = 0.92 + Math.sin(now * 0.024) * 0.24;
+
+          for (let s = 0; s < INFINITY_STONES.length; s++) {
+            const stEl = stoneElsRef.current[s];
+            if (!stEl) continue;
+            const st = INFINITY_STONES[s];
+            const ang = gauntlet.stoneOrbitAngle + (s * Math.PI * 2) / 6;
+            const sx = st.tx + Math.cos(ang) * orbitRadius;
+            const sy = st.ty + Math.sin(ang) * orbitRadius * 0.72;
+            stEl.style.transform = `translate3d(${sx - 3.5}px, ${sy - 3.5}px, 0) scale(${stonePulse})`;
+          }
+        } else {
+          gauntletWrapRef.current.style.opacity = '0';
+        }
+      }
+
       // ------------------------------------------------------------------
       // 4. MASCOT AGENTS AI, PHYSICS, DRAG-LIFT, ANGRY HEADSET & SKILLS
       // ------------------------------------------------------------------
@@ -2307,7 +2910,9 @@ const InteractiveMascotPlayground: React.FC = () => {
         let showAura = false;
         let showSpinRing = false;
         let showSpeedLines = false;
+        let cosmicAura = false;
         let targetVisScale = 1;
+        if (a.timeGlow > 0) a.timeGlow = Math.max(0, a.timeGlow - dt * 1.5);
 
         if (a.isDragged) {
           a.vx = 0;
@@ -2319,6 +2924,111 @@ const InteractiveMascotPlayground: React.FC = () => {
           customTilt = Math.sin(now * 0.025) * 14;
         } else {
           switch (a.action) {
+            case 'gauntlet_ascend': {
+              customGravity = 0;
+              cosmicAura = true;
+              const centerX = width * 0.5;
+              const hoverY = Math.min(84, Math.max(58, height - 105)) + Math.sin(now * 0.008) * 4;
+              targetVx = (centerX - a.x) * 3.8;
+              a.y += (hoverY - a.y) * Math.min(1, dt * 5.2);
+              a.vy = 0;
+              a.facing = 1;
+              customTilt = Math.sin(now * 0.009) * 4;
+              targetSx = 1.04;
+              targetSy = 1.04;
+              break;
+            }
+
+            case 'gauntlet_snap': {
+              customGravity = 0;
+              cosmicAura = true;
+              const hoverY = Math.min(84, Math.max(58, height - 105)) + Math.sin(now * 0.007) * 3.5;
+              targetVx = (width * 0.5 - a.x) * 2.5;
+              a.y += (hoverY - a.y) * Math.min(1, dt * 5);
+              a.vy = 0;
+              a.facing = 1;
+              customTilt = Math.sin(now * 0.008) * 3;
+              break;
+            }
+
+            case 'gauntlet_descend': {
+              customGravity = 0;
+              targetVx = 0;
+              a.y += (0 - a.y) * Math.min(1, dt * 5.6);
+              a.vy = 0;
+              if (a.y < 1.5) {
+                a.y = 0;
+                a.vsx += 2.6;
+                a.vsy -= 2.6;
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
+            case 'panic_freeze': {
+              targetVx = 0;
+              a.vx *= Math.pow(0.08, dt);
+              customTilt = Math.sin(now * 0.058 + a.slot * 2.1) * 7.5;
+              targetSx = 1.04;
+              targetSy = 0.94;
+              break;
+            }
+
+            case 'dusted_dissolve': {
+              customGravity = 0;
+              targetVx = 0;
+              a.vx = 0;
+              a.vy = 0;
+              a.dustProgress = Math.min(1, a.dustProgress + dt * 0.82);
+              customTilt = Math.sin(now * 0.045 + a.slot) * 4;
+
+              a.dustSpawnAccum += dt * 24;
+              while (a.dustSpawnAccum >= 1 && a.dustProgress < 0.98) {
+                a.dustSpawnAccum -= 1;
+                const edgeX = a.x + (0.5 - a.dustProgress) * 44 + (Math.random() - 0.5) * 10;
+                const edgeY = a.y + 6 + Math.random() * 44;
+                ashParticlesRef.current.push({
+                  x: edgeX,
+                  y: edgeY,
+                  vx: 52 + Math.random() * 88,
+                  vy: 26 + Math.random() * 54,
+                  size: 2.5 + Math.random() * 3.5,
+                  color: ASH_COLORS[Math.floor(Math.random() * ASH_COLORS.length)],
+                  alpha: 0.92,
+                  life: 1.05 + Math.random() * 0.65,
+                  maxLife: 1.7,
+                  rot: Math.random() * Math.PI * 2,
+                  vrot: (Math.random() - 0.5) * 7,
+                  phase: Math.random() * Math.PI * 2,
+                });
+              }
+
+              if (a.dustProgress >= 1) {
+                a.action = 'dusted_gone';
+              }
+              break;
+            }
+
+            case 'dusted_gone': {
+              customGravity = 0;
+              targetVx = 0;
+              a.vx = 0;
+              a.vy = 0;
+              targetVisScale = 0;
+              a.visibilityScale = 0;
+              break;
+            }
+
+            case 'time_respawn': {
+              a.actionTimer -= dt;
+              targetVx = a.vx * 0.6;
+              targetVisScale = 1;
+              if (a.actionTimer <= 0 && a.y <= 1) {
+                pickRoutineAction(a, width);
+              }
+              break;
+            }
+
             case 'exit_swap': {
               targetVx = a.exitDir * 240;
               a.facing = a.exitDir;
@@ -2776,12 +3486,24 @@ const InteractiveMascotPlayground: React.FC = () => {
             a.action === 'enter_swap' ||
             a.action === 'portal_enter' ||
             a.action === 'vent_exit' ||
-            a.action === 'vent_peek';
+            a.action === 'vent_peek' ||
+            a.action === 'gauntlet_ascend' ||
+            a.action === 'gauntlet_snap' ||
+            a.action === 'gauntlet_descend' ||
+            a.action === 'panic_freeze' ||
+            a.action === 'dusted_dissolve' ||
+            a.action === 'dusted_gone';
           if (!ignoreSep) {
             for (let j = 0; j < agents.length; j++) {
               if (i === j) continue;
               const other = agents[j];
-              if (other.isDragged || other.action === 'exit_swap' || other.action === 'enter_swap') continue;
+              if (
+                other.isDragged ||
+                other.action === 'exit_swap' ||
+                other.action === 'enter_swap' ||
+                other.action === 'dusted_gone' ||
+                other.action === 'dusted_dissolve'
+              ) continue;
               const sepDx = a.x - other.x;
               const minGap = 48;
               if (Math.abs(sepDx) < minGap && Math.abs(a.y - other.y) < 34) {
@@ -2892,7 +3614,16 @@ const InteractiveMascotPlayground: React.FC = () => {
         // Smooth eye tracking
         let targetEyeX = a.facing * 3.8;
         let targetEyeY = a.y > 10 ? Math.max(-3.5, Math.min(3.5, -a.vy / 150)) : 0;
-        if (a.action === 'play_ball' || Math.abs(ball.x - a.x) < 145) {
+        if (a.action === 'panic_freeze' && gauntlet.active && gauntlet.slot >= 0) {
+          const snapper = agents[gauntlet.slot];
+          if (snapper) {
+            const dxSnap = snapper.x - a.x;
+            const dySnap = a.y - snapper.y;
+            const dSnap = Math.max(1, Math.hypot(dxSnap, dySnap));
+            targetEyeX = (dxSnap / dSnap) * 5.2;
+            targetEyeY = Math.max(-4.5, (dySnap / dSnap) * 4.5);
+          }
+        } else if (a.action === 'play_ball' || Math.abs(ball.x - a.x) < 145) {
           const dxEye = ball.x - a.x;
           const dyEye = a.y + 24 - (ball.y + ballRadius);
           const distEye = Math.max(1, Math.hypot(dxEye, dyEye));
@@ -2910,17 +3641,42 @@ const InteractiveMascotPlayground: React.FC = () => {
         const auraEl = auraRefs.current[i];
         const spinRingEl = spinRingRefs.current[i];
         const speedLineEl = speedLineRefs.current[i];
+        const timeHaloEl = timeHaloRefs.current[i];
 
         if (posEl) {
-          posEl.style.transform = `translate3d(${a.x - MASCOT_SIZE / 2}px, ${-a.y}px, 0)`;
+          const panicJitter =
+            a.action === 'panic_freeze' ? Math.sin(now * 0.065 + i * 2) * 2.2 : 0;
+          posEl.style.transform = `translate3d(${a.x - MASCOT_SIZE / 2 + panicJitter}px, ${-a.y}px, 0)`;
         }
         if (bodyEl) {
           const totalRot = a.tilt + a.spinAngle;
           const vs = a.visibilityScale;
           bodyEl.style.transform = `translate3d(0, ${bobY}px, 0) rotate(${totalRot}deg) scale(${a.sx * vs}, ${a.sy * vs})`;
+
+          if (a.action === 'dusted_dissolve') {
+            const p = a.dustProgress;
+            bodyEl.style.filter = `grayscale(${p.toFixed(2)}) brightness(${(1 - p * 0.35).toFixed(2)}) contrast(${(1 + p * 0.12).toFixed(2)})`;
+            bodyEl.style.clipPath = `inset(0 ${(p * 100).toFixed(1)}% 0 0)`;
+            bodyEl.style.opacity = `${Math.max(0, 1 - p * 0.92).toFixed(2)}`;
+            bodyEl.style.pointerEvents = 'none';
+          } else if (a.action === 'dusted_gone') {
+            bodyEl.style.opacity = '0';
+            bodyEl.style.pointerEvents = 'none';
+          } else {
+            bodyEl.style.filter = 'none';
+            bodyEl.style.clipPath = 'none';
+            bodyEl.style.opacity = '1';
+            bodyEl.style.pointerEvents = 'auto';
+          }
         }
         if (shadowEl) {
-          const hFactor = Math.max(0.28, 1 - a.y / 165) * a.visibilityScale;
+          const dustFade =
+            a.action === 'dusted_gone'
+              ? 0
+              : a.action === 'dusted_dissolve'
+                ? Math.max(0, 1 - a.dustProgress)
+                : 1;
+          const hFactor = Math.max(0.28, 1 - a.y / 165) * a.visibilityScale * dustFade;
           shadowEl.style.transform = `translate3d(${a.x - 22}px, 0, 0) scale(${hFactor * a.sx}, ${hFactor})`;
           shadowEl.style.opacity = `${0.25 * hFactor}`;
         }
@@ -2928,10 +3684,20 @@ const InteractiveMascotPlayground: React.FC = () => {
           eyeEl.style.transform = `translate3d(${a.eyeX}px, ${a.eyeY}px, 0)`;
         }
         if (auraEl) {
-          auraEl.style.opacity = showAura ? '1' : '0';
-          if (showAura) {
+          const activeAura = showAura || cosmicAura;
+          auraEl.style.opacity = activeAura ? '1' : '0';
+          if (activeAura) {
             const ap = 1.05 + Math.sin(now * 0.03) * 0.1;
             auraEl.style.transform = `scale(${ap}) rotate(${Math.sin(now * 0.02) * 8}deg)`;
+            auraEl.style.filter = cosmicAura
+              ? 'hue-rotate(255deg) saturate(1.45) drop-shadow(0 0 14px rgba(168,85,247,0.9))'
+              : 'none';
+          }
+        }
+        if (timeHaloEl) {
+          timeHaloEl.style.opacity = a.timeGlow > 0.02 ? `${a.timeGlow}` : '0';
+          if (a.timeGlow > 0.02) {
+            timeHaloEl.style.transform = `scale(${0.85 + (1 - a.timeGlow) * 0.6}) rotate(${a.timeGlow * 180}deg)`;
           }
         }
         if (spinRingEl) {
@@ -3030,6 +3796,49 @@ const InteractiveMascotPlayground: React.FC = () => {
         el.style.transform = `translate3d(${r.x - 22}px, ${-r.y - 22}px, 0) scale(${0.25 + prog * 1.75})`;
       }
 
+      // ------------------------------------------------------------------
+      // 7. HIGH-DPI 60FPS ASH / DUST & COSMIC PARTICLE CANVAS RENDERER
+      // ------------------------------------------------------------------
+      const ashCanvas = ashCanvasRef.current;
+      if (ashCanvas) {
+        const ctx = ashCanvas.getContext('2d');
+        const ashList = ashParticlesRef.current;
+        if (ctx) {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, width, height);
+
+          for (let i = ashList.length - 1; i >= 0; i--) {
+            const p = ashList[i];
+            p.life -= dt;
+            if (p.life <= 0) {
+              ashList.splice(i, 1);
+              continue;
+            }
+            const swirl = Math.sin(now * 0.006 + p.phase) * 28;
+            p.x += (p.vx + swirl * 0.45) * dt;
+            p.y += (p.vy + Math.cos(now * 0.005 + p.phase) * 16) * dt;
+            p.rot += p.vrot * dt;
+
+            const lifeFrac = Math.max(0, p.life / p.maxLife);
+            const canvasY = height - GROUND_OFFSET_PX - p.y;
+            const drawSize = p.size * (0.45 + lifeFrac * 0.65);
+
+            ctx.save();
+            ctx.globalAlpha = Math.min(1, lifeFrac * 1.4) * p.alpha;
+            ctx.translate(p.x, canvasY);
+            ctx.rotate(p.rot);
+            if (p.glow) {
+              ctx.shadowBlur = 7;
+              ctx.shadowColor = p.glow;
+            }
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-drawSize * 0.5, -drawSize * 0.5, drawSize, drawSize * 0.78);
+            ctx.restore();
+          }
+        }
+      }
+
       rafId = requestAnimationFrame(tick);
     };
 
@@ -3040,8 +3849,21 @@ const InteractiveMascotPlayground: React.FC = () => {
       ro.disconnect();
       bubbleTimersRef.current.forEach((t) => t && window.clearTimeout(t));
       angryTimersRef.current.forEach((t) => t && window.clearTimeout(t));
+      if (comboTimerRef.current) window.clearTimeout(comboTimerRef.current);
     };
   }, [spawnParticle, spawnSparkleRing, showBubble, triggerSpecialSkill, triggerSwapOnSlot, swapMascotCharacter]);
+
+  const registerTapCombo = useCallback(() => {
+    comboCountRef.current += 1;
+    const next = comboCountRef.current;
+    setCombo({ count: next, key: Date.now() + Math.random() });
+    if (comboTimerRef.current) window.clearTimeout(comboTimerRef.current);
+    comboTimerRef.current = window.setTimeout(() => {
+      comboCountRef.current = 0;
+      setCombo({ count: 0, key: 0 });
+    }, 2200);
+    return next;
+  }, []);
 
   // Global Pointer Move & Up for Dragging & Lifting Mascots smoothly + Tap-to-Skill!
   useEffect(() => {
@@ -3116,14 +3938,26 @@ const InteractiveMascotPlayground: React.FC = () => {
           showBubble(info.slot, phrase, profile.color, 1800);
         }
       } else {
-        // Quick click / tap -> headphone bot gets angry; others unleash a random pop-culture skill!
+        // Quick click / tap -> register rapid combo; every 5th tap guarantees Infinity Gauntlet Snap!
+        if (a.action === 'dusted_gone' || a.action === 'dusted_dissolve') return;
+        const nextCombo = registerTapCombo();
+        a.vsx += 5.4;
+        a.vsy -= 5.0;
+        spawnSparkleRing(a.x, a.y + 32, profile.color, 9);
+
+        if (gauntletRef.current.active) {
+          sfx.playPop(profile.pitch, 0.14);
+          return;
+        }
+
+        if (nextCombo % 5 === 0 && triggerGauntletSnap(a, true)) {
+          return;
+        }
+
         if (profile.headphones) {
           triggerAngryHeadset(info.slot);
           a.vy = 210;
         } else {
-          a.vsx += 5.4;
-          a.vsy -= 5.0;
-          spawnSparkleRing(a.x, a.y + 32, profile.color, 9);
           triggerSpecialSkill(a, true);
         }
       }
@@ -3135,7 +3969,7 @@ const InteractiveMascotPlayground: React.FC = () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [showBubble, spawnSparkleRing, triggerAngryHeadset, triggerSpecialSkill]);
+  }, [registerTapCombo, showBubble, spawnSparkleRing, triggerAngryHeadset, triggerGauntletSnap, triggerSpecialSkill]);
 
   // Stage Click/Tap: Ripple + Toss & bounce the soccer ball toward clicked location!
   const handleStageClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -3172,7 +4006,15 @@ const InteractiveMascotPlayground: React.FC = () => {
   const handleMascotPointerDown = (e: React.PointerEvent, slot: number) => {
     e.stopPropagation();
     const a = agentsRef.current[slot];
-    if (!a) return;
+    if (
+      !a ||
+      a.action === 'dusted_gone' ||
+      a.action === 'dusted_dissolve' ||
+      a.action === 'gauntlet_ascend' ||
+      a.action === 'gauntlet_snap'
+    ) {
+      return;
+    }
     dragInfoRef.current = {
       slot,
       startX: e.clientX,
@@ -3253,7 +4095,25 @@ const InteractiveMascotPlayground: React.FC = () => {
         onClick={handleStageClick}
         className="relative h-48 sm:h-52 rounded-[22px] bg-gradient-to-b from-[#F7F1E7] via-[#F4ECE0] to-[#EFE5D6] border-2 border-dashed border-[#1E1E24]/18 overflow-hidden select-none cursor-crosshair touch-none"
       >
-        {/* Micro-Shake Inner Wrapper (for Kamehameha laser impact!) */}
+        {/* Playful Floating Rapid-Tap Combo Badge */}
+        <div className="pointer-events-none absolute top-2.5 left-3 z-40">
+          <AnimatePresence mode="wait">
+            {combo.count >= 2 && (
+              <motion.div
+                key={combo.key}
+                initial={{ opacity: 0, scale: 0.65, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: -6 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 20 }}
+                className="px-2.5 py-0.5 rounded-full bg-[#FBBF24] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_2px_0_#1E1E24] font-display font-bold text-[11px]"
+              >
+                COMBO x{combo.count}! ✨
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Micro-Shake Inner Wrapper (for Kamehameha laser & Infinity Snap impact!) */}
         <div ref={stageShakeRef} className="absolute inset-0 will-change-transform">
           {/* Playful Mini-Scenery */}
           <svg
@@ -3294,6 +4154,49 @@ const InteractiveMascotPlayground: React.FC = () => {
           {/* Dashed Playground Turf Track Ground */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-[#E6DDD0] border-t-2 border-[#1E1E24]/10 flex items-center justify-center">
             <div className="w-[92%] border-t-2 border-dashed border-[#1E1E24]/12" />
+          </div>
+
+          {/* Subtle Cosmic Radial Vignette during "I AM INEVITABLE!" Ascension */}
+          <div
+            ref={vignetteRef}
+            style={{
+              opacity: 0,
+              background:
+                'radial-gradient(circle at 50% 34%, rgba(250,204,21,0.16) 0%, rgba(124,58,237,0.28) 54%, rgba(30,30,36,0.58) 100%)',
+            }}
+            className="pointer-events-none absolute inset-0 z-10 will-change-transform"
+          />
+
+          {/* Emerald Green Time Stone Reverse-Blip Rune Ring */}
+          <div
+            ref={timeRuneRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-24 h-24 z-30 will-change-transform flex items-center justify-center"
+          >
+            <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_12px_rgba(34,197,94,0.95)]">
+              <circle
+                cx="50"
+                cy="50"
+                r="44"
+                fill="none"
+                stroke="#22C55E"
+                strokeWidth="3.5"
+                strokeDasharray="10 6"
+              />
+              <polygon
+                points="50,12 84,70 16,70"
+                fill="none"
+                stroke="#86EFAC"
+                strokeWidth="2.5"
+              />
+              <polygon
+                points="50,88 84,30 16,30"
+                fill="none"
+                stroke="#4ADE80"
+                strokeWidth="2.5"
+              />
+              <circle cx="50" cy="50" r="22" fill="none" stroke="#BBF7D0" strokeWidth="2" />
+            </svg>
           </div>
 
           {/* Among Us Floor Vent Hatch VFX */}
@@ -3497,6 +4400,15 @@ const InteractiveMascotPlayground: React.FC = () => {
                   className="pointer-events-none absolute -inset-1.5 rounded-full border-[3.5px] border-dashed border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.8)] will-change-transform z-30"
                 />
 
+                {/* Emerald Green Time Stone Materialize Halo */}
+                <div
+                  ref={(el) => {
+                    timeHaloRefs.current[slot] = el;
+                  }}
+                  style={{ opacity: 0 }}
+                  className="pointer-events-none absolute -inset-2 rounded-full border-[3px] border-[#22C55E] shadow-[0_0_16px_rgba(34,197,94,0.95)] will-change-transform z-30"
+                />
+
                 <button
                   ref={(el) => {
                     mascotBodyRefs.current[slot] = el;
@@ -3542,6 +4454,96 @@ const InteractiveMascotPlayground: React.FC = () => {
           >
             <div ref={laserCoreRef} className="w-full h-2.5 rounded-full bg-white/95 shadow-[0_0_8px_#FFFFFF]" />
           </div>
+
+          {/* Cartoon Golden Infinity Gauntlet + 6 Converging Glowing Infinity Stones */}
+          <div
+            ref={gauntletWrapRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-[44px] h-[48px] z-30 will-change-transform"
+          >
+            <div ref={gauntletSvgRef} className="w-full h-full relative will-change-transform">
+              <svg
+                viewBox="0 0 44 48"
+                className="w-full h-full overflow-visible drop-shadow-[0_3px_8px_rgba(250,204,21,0.75)]"
+              >
+                <path
+                  d="M11,34 L33,34 L36,45 L8,45 Z"
+                  fill="#D97706"
+                  stroke="#1E1E24"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10,34 L10,16 C10,13 14,13 14,16 L14,12 C14,9 19,9 19,12 L19,11 C19,8 24,8 24,11 L24,13 C24,10 29,10 29,13 L29,17 C29,14 34,15 34,19 L33,34 Z"
+                  fill="#FBBF24"
+                  stroke="#1E1E24"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10,29 L5,25 C3,23 5,19 8,21 L12,24"
+                  fill="#FCD34D"
+                  stroke="#1E1E24"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15,30 L29,30"
+                  stroke="#FEF08A"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+
+              {INFINITY_STONES.map((stone, sIdx) => (
+                <div
+                  key={stone.name}
+                  ref={(el) => {
+                    stoneElsRef.current[sIdx] = el;
+                  }}
+                  style={{
+                    backgroundColor: stone.color,
+                    boxShadow: `0 0 8px ${stone.color}, 0 0 3px #FFFFFF`,
+                  }}
+                  className="pointer-events-none absolute top-0 left-0 w-[7px] h-[7px] rounded-full border border-white will-change-transform"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Expanding Golden-Purple Snap Shockwave Ring */}
+          <div
+            ref={shockwaveRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 w-[72px] h-[72px] rounded-full border-[4px] border-[#FACC15] shadow-[0_0_24px_rgba(168,85,247,0.9),inset_0_0_16px_rgba(250,204,21,0.85)] z-30 will-change-transform"
+          />
+
+          {/* Comic "*SNAP!* 🫰" Burst Badge */}
+          <div
+            ref={snapBadgeRef}
+            style={{ bottom: `${GROUND_OFFSET_PX}px`, opacity: 0 }}
+            className="pointer-events-none absolute left-0 px-2.5 py-0.5 rounded-xl bg-[#FACC15] text-[#1E1E24] border-2 border-[#1E1E24] shadow-[0_3px_0_#1E1E24] font-display font-bold text-xs whitespace-nowrap z-40 will-change-transform"
+          >
+            *SNAP!* 🫰
+          </div>
+
+          {/* High-DPI 60fps Drifting Ash & Cosmic Dust Particle Canvas */}
+          <canvas
+            ref={ashCanvasRef}
+            className="pointer-events-none absolute inset-0 w-full h-full z-30"
+          />
+
+          {/* Golden-White Screen Flash Overlay on THE SNAP! */}
+          <div
+            ref={flashRef}
+            style={{
+              opacity: 0,
+              background:
+                'radial-gradient(circle at 50% 38%, rgba(255,255,255,0.98) 0%, rgba(254,240,138,0.88) 48%, rgba(192,132,252,0.55) 100%)',
+            }}
+            className="pointer-events-none absolute inset-0 z-40"
+          />
 
           {/* Glossy Arcade Soccer Ball (2D Physics) */}
           <div
@@ -4462,12 +5464,15 @@ export const QrisCoffeeModal: React.FC<{
 }> = ({ open, onClose, onBackToDev }) => {
   const [selectedTier, setSelectedTier] = useState<CoffeeTier>(COFFEE_TIERS[0]);
   const [customQrisUrl, setCustomQrisUrl] = useState<string | null>(null);
+  const [showPosterPreview, setShowPosterPreview] = useState(false);
+  const [qrImgError, setQrImgError] = useState(false);
   const [thanked, setThanked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!open) {
       setThanked(false);
+      setShowPosterPreview(false);
     }
   }, [open]);
 
@@ -4675,8 +5680,8 @@ export const QrisCoffeeModal: React.FC<{
                         <div className="w-1/3 bg-[#1E3A8A]" />
                       </div>
 
-                      {/* QRIS Header */}
-                      <div className="px-4 pt-3.5 pb-2 border-b border-dashed border-[#1E1E24]/15 flex items-center justify-between gap-2">
+                      {/* Official QRIS Merchant Header */}
+                      <div className="px-4 pt-3.5 pb-2.5 border-b border-dashed border-[#1E1E24]/15 flex items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="font-display font-bold text-xl tracking-tight text-[#1E1E24]">
@@ -4686,37 +5691,60 @@ export const QrisCoffeeModal: React.FC<{
                               QR Indonesia
                             </span>
                           </div>
-                          <p className="text-xs font-mono font-bold text-[#64616C] mt-0.5">
-                            NMID: ID1026FAJARAHNF
+                          <p className="text-[11px] font-mono font-bold text-[#64616C] mt-0.5">
+                            NMID: ID1025439320629
                           </p>
                         </div>
 
                         <div className="text-right">
-                          <p className="font-display font-bold text-xs text-[#1E1E24]">
-                            FAJARAHNF DEV
+                          <p className="font-display font-bold text-xs text-[#1E1E24] leading-tight">
+                            FLAMOURE.ID, AKSESORIS FA
                           </p>
-                          <p className="text-xs font-extrabold text-[#158467]">
-                            KOPI STUDIO
+                          <p className="text-[11px] font-extrabold text-[#0097C7]">
+                            GOPAY MERCHANT • A01
                           </p>
                         </div>
                       </div>
 
-                      {/* QR Image Container */}
+                      {/* QR Image Container (Cropped Scannable QR or Full GoPay Poster Preview) */}
                       <div className="p-4 flex flex-col items-center">
-                        <div className="w-48 h-48 sm:w-52 sm:h-52 p-2.5 rounded-2xl bg-white border-2 border-[#1E1E24]/15 shadow-inner flex items-center justify-center overflow-hidden">
+                        <div
+                          className={`rounded-2xl bg-white border-2 border-[#1E1E24]/15 shadow-inner flex items-center justify-center overflow-hidden transition-all ${
+                            showPosterPreview && !customQrisUrl
+                              ? 'w-56 sm:w-64 p-1.5 bg-[#009AD5]'
+                              : 'w-48 h-48 sm:w-52 sm:h-52 p-2'
+                          }`}
+                        >
                           {customQrisUrl ? (
                             <img
                               src={customQrisUrl}
-                              alt="QRIS Asli Fajarahnf"
+                              alt="QRIS Custom Preview"
                               className="w-full h-full object-contain rounded-lg"
+                            />
+                          ) : showPosterPreview ? (
+                            <img
+                              src="/qris/gopay-qris-poster.jpg"
+                              alt="Poster GoPay Merchant QRIS FLAMOURE.ID, AKSESORIS FA"
+                              className="w-full h-auto object-contain rounded-xl"
+                            />
+                          ) : !qrImgError ? (
+                            <img
+                              src="/qris/gopay-qris-code.png"
+                              alt="QRIS FLAMOURE.ID, AKSESORIS FA (NMID ID1025439320629)"
+                              onError={() => setQrImgError(true)}
+                              className="w-full h-full object-contain"
                             />
                           ) : (
                             <StylizedQrisSvg />
                           )}
                         </div>
 
-                        {/* Optional Upload Real QRIS Preview Button */}
-                        <div className="mt-3 flex items-center gap-2">
+                        <p className="mt-2 text-[10px] font-mono font-bold text-[#64616C]">
+                          Dicetak oleh: 93600914 • QR Code Standar Pembayaran Nasional
+                        </p>
+
+                        {/* Poster Toggle + Download + Optional Upload Preview */}
+                        <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2">
                           <input
                             ref={fileInputRef}
                             type="file"
@@ -4724,15 +5752,35 @@ export const QrisCoffeeModal: React.FC<{
                             onChange={handleUploadQris}
                             className="hidden"
                           />
+                          {!customQrisUrl && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                sfx.playPop(560);
+                                setShowPosterPreview((prev) => !prev);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[11px] font-bold text-[#0369A1] transition cursor-pointer"
+                            >
+                              <Maximize2 className="w-3 h-3" />
+                              <span>{showPosterPreview ? 'Zoom Kode QR' : 'Lihat Poster Asli'}</span>
+                            </button>
+                          )}
+                          <a
+                            href="/qris/gopay-qris-poster.jpg"
+                            download="QRIS-FLAMOURE-ID1025439320629.jpg"
+                            onClick={() => sfx.playPop(600)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D6F5EC] hover:bg-[#B4EEDB] text-[11px] font-bold text-[#065F46] transition"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>Simpan QRIS</span>
+                          </a>
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2ECE1] hover:bg-[#E7DFD1] text-[11px] font-bold text-[#1E1E24] transition cursor-pointer"
                           >
                             <Upload className="w-3 h-3" />
-                            <span>
-                              {customQrisUrl ? 'Ganti Gambar QRIS' : 'Upload QRIS Asli (Preview)'}
-                            </span>
+                            <span>{customQrisUrl ? 'Ganti Gambar' : 'Upload Preview'}</span>
                           </button>
                           {customQrisUrl && (
                             <button
@@ -4741,7 +5789,7 @@ export const QrisCoffeeModal: React.FC<{
                                 sfx.playPop();
                                 setCustomQrisUrl(null);
                               }}
-                              title="Reset ke QRIS Vektor"
+                              title="Kembali ke QRIS Asli"
                               className="p-1.5 rounded-full bg-[#FFE4E2] text-[#B42318] hover:bg-[#FECACA] cursor-pointer"
                             >
                               <RotateCcw className="w-3 h-3" />
