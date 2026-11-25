@@ -1415,8 +1415,8 @@ const INFINITY_STONES = [
 ];
 
 const ASH_COLORS = ['#4B5563', '#6B7280', '#9CA3AF', '#D1D5DB', '#1E1E24'];
-const PANIC_PHRASES = ['Eh?! 😱', 'Gawat!!', 'Mr. Fajar...', 'Jangan di-snap!'];
-const DUST_PHRASES = ['Mr. Fajar, gak enak badan...', 'Jadi abu... 💨', 'Waduhh...'];
+const PANIC_PHRASES = ['Eh?! 😱', 'Gawat!!', 'Tidaaak!! 😱', 'Jangan di-snap!'];
+const DUST_PHRASES = ['Badanku gak enak... 🫥', 'Jadi abu... 💨', 'Waduhh...'];
 const RESPAWN_PHRASES = ['Eh balik lagi! 💚', 'Respawn! ✨', 'Tadi ke mana?! 😅'];
 
 interface BallState {
